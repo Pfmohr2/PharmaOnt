@@ -11,3 +11,15 @@ export {
   buildPilotKpiDashboard,
   renderPilotKpiDashboardMarkdown
 } from "./observability.js";
+
+export {
+  PILOT_ENVIRONMENT,
+  PILOT_OUTPUT_PATH,
+  PILOT_TENANT_DISPLAY_NAME,
+  PILOT_TENANT_ID,
+  applyAntiplateletStagingProvisioningPlan,
+  assertAntiplateletStagingProvisioningPlan,
+  buildAntiplateletStagingProvisioningPlan,
+  rollbackAntiplateletStagingProvisioningPlan,
+  verifyAntiplateletStagingProvisioningPlan
+} from "./pilot-provisioning.js";
