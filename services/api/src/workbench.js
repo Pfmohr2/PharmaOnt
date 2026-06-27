@@ -1,4 +1,4 @@
-import { buildAuthorizedExport } from "../../export/src/index.js";
+import { SourceLicenseExportPolicyError, buildAuthorizedExport, readSourceLicenseApprovalPacket } from "../../export/src/index.js";
 import { querySearchIndex } from "../../search/src/index.js";
 import { executeAuthorizedQuery } from "./query-boundary.js";
 
@@ -20,6 +20,7 @@ export class Phase5WorkbenchApi {
     resolveSearchIndex,
     resolveEntityDetail,
     resolveExportScope,
+    resolveSourceLicenseApprovalPacket = null,
     explanationService = null,
     resolveSearchHit = null,
     clock = () => new Date(),
@@ -28,6 +29,7 @@ export class Phase5WorkbenchApi {
     this.resolveSearchIndex = requiredResolver(resolveSearchIndex, "resolveSearchIndex");
     this.resolveEntityDetail = requiredResolver(resolveEntityDetail, "resolveEntityDetail");
     this.resolveExportScope = requiredResolver(resolveExportScope, "resolveExportScope");
+    this.resolveSourceLicenseApprovalPacket = resolveSourceLicenseApprovalPacket;
     this.explanationService = explanationService;
     this.resolveSearchHit = resolveSearchHit;
     this.clock = clock;
@@ -211,20 +213,26 @@ export class Phase5WorkbenchApi {
       throw new WorkbenchApiError("resolveExportScope must return an array");
     }
     const export_id = request.export_id ?? `export:${this.idFactory()}`;
+    const dryRun = request.dry_run === true;
+    const sourceLicenseApprovalPacket = await this.sourceLicenseApprovalPacketFor({ principal, request, releaseContext });
+    const requestedScopes = requestedExportScopesFor({ request, scope, dryRun });
     const authorizedExport = buildAuthorizedExport({
       principal,
       candidateResults,
       export_id,
       releaseContext,
-      format: request.format ?? "json"
+      format: request.format ?? "json",
+      sourceLicenseApprovalPacket,
+      requestedScopes,
+      action: dryRun ? "export.preview" : "export.create"
     });
-    const exportJob = request.dry_run === true || authorizedExport.record_count === 0
+    const exportJob = dryRun || authorizedExport.record_count === 0
       ? null
       : {
           job_id: export_id,
           status: "ready",
           created_by: principal.user_id ?? principal.service_account_id ?? null,
-          audit_event_id: `audit:${export_id}`,
+          audit_event_id: authorizedExport.source_license_policy?.audit_event?.audit_event_id ?? `audit:${export_id}`,
           artifact_hash: authorizedExport.manifest_digest,
           download_url: null
         };
@@ -242,11 +250,13 @@ export class Phase5WorkbenchApi {
       rows: authorizedExport.rows,
       row_content_hashes: authorizedExport.row_content_hashes,
       manifest_digest: authorizedExport.manifest_digest,
+      source_license_policy: authorizedExport.source_license_policy,
       export_scope: scope,
       formats: DEFAULT_EXPORT_FORMATS,
       default_format: "json",
       preserved_fields: [
         "canonical_ids",
+        "source_name",
         "source_vocabulary_version",
         "target_vocabulary_version",
         "evidence_refs",
@@ -254,12 +264,27 @@ export class Phase5WorkbenchApi {
         "source_version",
         "release_id",
         "artifact_hash",
+        "audit_event_ids",
+        "row_hashes",
         "license_classification",
         "license_policy_id"
       ],
       restrictions: summarizeExportRestrictions(authorizedExport.rows),
       export_job: exportJob
     };
+  }
+
+  async sourceLicenseApprovalPacketFor({ principal, request, releaseContext }) {
+    if (request.source_license_approval_packet) {
+      return request.source_license_approval_packet;
+    }
+    if (typeof this.resolveSourceLicenseApprovalPacket === "function") {
+      return this.resolveSourceLicenseApprovalPacket({ principal, request, releaseContext });
+    }
+    if (request.source_license_approval_packet_path) {
+      return readSourceLicenseApprovalPacket({ packetPath: request.source_license_approval_packet_path });
+    }
+    return null;
   }
 
   async resolveAuthorizedHit({ principal, hitId, hit, releaseContext }) {
@@ -397,13 +422,56 @@ function countBy(results, field) {
 }
 
 function previewExport({ principal, candidateResults, releaseContext, exportId }) {
-  return buildAuthorizedExport({
-    principal,
-    candidateResults,
-    export_id: exportId,
-    releaseContext,
-    format: "json"
-  });
+  try {
+    return buildAuthorizedExport({
+      principal,
+      candidateResults,
+      export_id: exportId,
+      releaseContext,
+      format: "json",
+      action: "export.preview",
+      requestedScopes: ["export.preview"]
+    });
+  } catch (error) {
+    if (!(error instanceof SourceLicenseExportPolicyError)) {
+      throw error;
+    }
+    return {
+      export_id: exportId,
+      tenant_id: principal.tenant_id,
+      environment: principal.environment,
+      format: "json",
+      authorization_filtered: true,
+      record_count: 0,
+      invalid_record_count: 0,
+      rows: [],
+      row_content_hashes: [],
+      source_license_policy: {
+        allowed: false,
+        export_job_creatable: false,
+        denied_scopes: error.details?.denied_scopes ?? [],
+        blocks: error.details?.blocks ?? [error.message],
+        approval_ids: [],
+        audit_event: error.details?.audit_event ?? null,
+        requested_scopes: ["export.preview"]
+      },
+      manifest_digest: null
+    };
+  }
+}
+
+function requestedExportScopesFor({ request, scope, dryRun }) {
+  const scopes = request.requested_export_scopes
+    ?? request.export_scopes
+    ?? request.requestedScopes
+    ?? scope.requested_export_scopes
+    ?? scope.export_scopes
+    ?? scope.requestedScopes
+    ?? null;
+  if (Array.isArray(scopes)) {
+    return scopes;
+  }
+  return dryRun ? ["export.preview"] : ["export.released_curated_assertions"];
 }
 
 function summarizeExportRestrictions(rows) {

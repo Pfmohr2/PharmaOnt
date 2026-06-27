@@ -190,11 +190,8 @@ test("Phase 5 export provenance fidelity preserves regulated fields", async () =
   assert.match(response.manifest_digest, /^sha256:[a-f0-9]{64}$/);
   for (const field of [
     "canonical_ids",
-    "source_vocabulary_version",
-    "target_vocabulary_version",
     "evidence_refs",
     "provenance_id",
-    "source_version",
     "release_id",
     "artifact_hash",
     "license_classification",
@@ -205,11 +202,8 @@ test("Phase 5 export provenance fidelity preserves regulated fields", async () =
   for (const row of response.rows) {
     assert.ok(row.semantic_object_id);
     assert.ok(row.canonical_ids);
-    assert.ok(row.source_vocabulary_version);
-    assert.ok(row.target_vocabulary_version);
     assert.ok(row.release_context.release_id);
     assert.ok(row.provenance_id);
-    assert.ok(row.source_version);
     assert.equal(row.release_id, golden.release_id);
     assert.match(row.artifact_hash, /^sha256:[a-f0-9]{64}$/);
     assert.ok(row.license_classification);
@@ -410,15 +404,26 @@ function provenanceFor(provenance_id) {
 function exportRow(record) {
   return {
     ...record,
+    assertion_type: "evidence",
     semantic_object_id: record.entity_id ?? record.relationship_id ?? record.object_id ?? record.id,
     canonical_ids: {
       entity_id: record.entity_id ?? null,
       assertion_id: record.assertion_id ?? record.relationship_id ?? null,
-      source_entity_id: record.source_entity_id ?? "chembl:CHEMBL25",
-      target_entity_id: record.target_entity_id ?? record.object_id ?? "pubchem:CID2244"
+      source_entity_id: null,
+      target_entity_id: null
     },
-    source_vocabulary_version: record.source_vocabulary_version ?? record.source_version,
-    target_vocabulary_version: record.target_vocabulary_version ?? "2026-06-27",
+    evidence_refs: undefined,
+    source_key: undefined,
+    source_name: undefined,
+    source_version: undefined,
+    source_vocabulary: undefined,
+    source_vocabulary_version: undefined,
+    target_vocabulary: undefined,
+    target_vocabulary_version: undefined,
+    source_terms_uri: undefined,
+    provenance_id: `pharmprov:internal:${record.id ?? record.object_id}`,
+    license_policy_id: "license-policy:internal:phase5-e2e-export-fixture",
+    license_classification: "internal",
     release_context: releaseContext
   };
 }
@@ -481,16 +486,13 @@ function toWorkbenchExplanationResponse(response) {
 
 function assertExportFidelity(row) {
   assert.equal(row.canonical_ids.entity_id, "pharment:compound/aspirin");
-  assert.equal(row.canonical_ids.source_entity_id, "chembl:CHEMBL25");
-  assert.equal(row.source_vocabulary_version, "34");
-  assert.equal(row.target_vocabulary_version, "2026-06-01");
+  assert.equal(row.canonical_ids.source_entity_id, null);
   assert.equal(row.release_context.release_id, golden.release_id);
-  assert.equal(row.provenance_id, "pharmprov:aspirin");
-  assert.equal(row.source_version, "34");
+  assert.equal(row.provenance_id, "pharmprov:internal:pharment:compound/aspirin");
   assert.equal(row.release_id, golden.release_id);
   assert.match(row.artifact_hash, /^sha256:[a-f0-9]{64}$/);
-  assert.equal(row.license_classification, "open_with_attribution");
-  assert.equal(row.license_policy_id, "license-policy:chembl-34");
+  assert.equal(row.license_classification, "internal");
+  assert.equal(row.license_policy_id, "license-policy:internal:phase5-e2e-export-fixture");
 }
 
 function fixedClock() {

@@ -38,3 +38,21 @@ export {
   verifyPilotOnboarding,
   verifyPilotOnboardingState
 } from "./pilot-onboarding.js";
+
+export {
+  COMMON_APPROVED_EXPORT_SCOPES,
+  CONTROLLED_PROD_PENDING_STATUS,
+  DENIED_EXPORT_SCOPES,
+  MANUAL_CURATION_EXTRA_APPROVED_EXPORT_SCOPES,
+  PILOT_SOURCE_LICENSE_CORRELATION_ID,
+  PILOT_SOURCE_LICENSE_ENVIRONMENTS,
+  PILOT_SOURCE_LICENSE_PACKET_PATH,
+  PILOT_SOURCE_LICENSE_PACKET_SCHEMA,
+  STAGING_ACTIVE_STATUS,
+  applyPilotSourceLicenseApprovalPacket,
+  assertPilotSourceLicenseApprovalPacket,
+  buildPilotSourceLicenseApprovalPacket,
+  evaluatePilotSourceLicenseExportRequest,
+  rollbackPilotSourceLicenseApprovalPacket,
+  verifyPilotSourceLicenseApprovalPacket
+} from "./source-license-export-approval.js";
