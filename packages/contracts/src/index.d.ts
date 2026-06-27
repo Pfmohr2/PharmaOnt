@@ -68,4 +68,7 @@ export const mappingReviewStatuses: readonly MappingReviewStatus[];
 export const mappingObjectRequiredFields: readonly string[];
 export const mappingObjectSchemaContract: Readonly<Record<string, unknown>>;
 export const relationshipAssertionSchemaContract: Readonly<Record<string, unknown>>;
+export const relationshipAssertionSchemaSource: "docs/semantic-bridge/contracts/relationship-assertion.schema.json";
+export const relationshipAssertionValidator: (value: unknown) => boolean;
 export function validateMappingObjectShape(value: unknown): { valid: boolean; errors: string[] };
+export function validateRelationshipAssertionContract(value: unknown): { valid: boolean; errors: string[] };
