@@ -32,8 +32,9 @@ export function buildAuthorizedExport({
     action: "export",
     releaseContext
   });
-  const rows = authorizedRows.filter(isExportRegulatedResultComplete);
-  const droppedForMissingFields = authorizedRows.length - rows.length;
+  const exportRows = authorizedRows.map(normalizeExportCandidateRow);
+  const rows = exportRows.filter(isExportRegulatedResultComplete);
+  const droppedForMissingFields = exportRows.length - rows.length;
   if (!sourceLicenseApprovalPacket && requiresSourceLicenseApprovalPacket({ rows })) {
     throw missingSourceLicenseApprovalPacketError({
       principal,
@@ -215,28 +216,52 @@ export function missingExportFields(row) {
 
 export function canonicalExportRow(row) {
   assertExportRowComplete(row);
+  const sourceName = row.source_name ?? firstNonEmpty(row.source_names) ?? null;
+  const sourceVersion = row.source_version ?? firstNonEmpty(row.source_versions) ?? null;
   return sortValue({
     id: row.id,
+    object_id: row.object_id ?? null,
+    object_type: row.object_type ?? null,
+    result_type: row.result_type ?? null,
     resource_id: row.resource_id ?? null,
     semantic_object_id: row.semantic_object_id ?? null,
     tenant_id: row.tenant_id,
     environment: row.environment,
     assertion_type: row.assertion_type ?? row.result_type ?? null,
+    relationship_id: row.relationship_id ?? null,
+    relationship_assertion_id: row.relationship_assertion_id ?? null,
+    relationship_assertion_type: row.relationship_assertion_type ?? null,
+    relationship_class: row.relationship_class ?? null,
+    predicate: row.predicate ?? null,
+    source_entity_id: row.source_entity_id ?? null,
+    target_entity_id: row.target_entity_id ?? null,
+    directionality: row.directionality ?? null,
+    polarity: row.polarity ?? null,
     release_id: row.release_id,
+    release_candidate_id: row.release_candidate_id ?? null,
+    release_context: row.release_context ?? null,
+    graph_name: row.graph_name ?? null,
     lifecycle_status: row.lifecycle_status ?? null,
     review_status: row.review_status ?? null,
     provenance_id: row.provenance_id,
     source_key: row.source_key ?? null,
-    source_name: row.source_name ?? null,
+    source_name: sourceName,
     source_vocabulary: row.source_vocabulary ?? null,
     source_vocabulary_version: row.source_vocabulary_version ?? null,
     target_vocabulary: row.target_vocabulary ?? null,
     target_vocabulary_version: row.target_vocabulary_version ?? null,
-    source_version: row.source_version ?? null,
+    source_version: sourceVersion,
+    source_names: row.source_names ?? [],
+    source_versions: row.source_versions ?? [],
+    source_record_ids: row.source_record_ids ?? [],
     artifact_hash: row.artifact_hash,
+    payload_hash: row.payload_hash ?? null,
     content_hash: row.content_hash ?? null,
     manifest_digest: row.manifest_digest ?? null,
     evidence_ids: row.evidence_ids ?? [],
+    evidence_refs: row.evidence_refs ?? [],
+    validation_report_id: row.validation_report_id ?? null,
+    validation_report_ids: row.validation_report_ids ?? [],
     license_status: row.license_status,
     license_classification: row.license_classification ?? row.license?.classification ?? row.license?.license_classification,
     license_policy_id: row.license_policy_id,
@@ -244,6 +269,7 @@ export function canonicalExportRow(row) {
     license_conditions: row.license_conditions ?? row.license?.conditions ?? null,
     permitted_uses: row.permitted_uses ?? row.license?.permitted_uses ?? [],
     export_restrictions: row.export_restrictions ?? row.license?.export_restrictions ?? [],
+    export_authorization_status: row.export_authorization_status ?? null,
     disclaimer_ids: row.disclaimer_ids ?? row.license?.disclaimer_ids ?? [],
     audit_event_ids: row.audit_event_ids ?? [],
     row_hashes: row.row_hashes ?? []
@@ -261,6 +287,32 @@ function sha256(value) {
 function requiresVocabularyVersions(row) {
   const assertionType = String(row?.assertion_type ?? row?.result_type ?? "");
   return ["mapping", "synonym", "relationship", "canonical", "approved", "released"].includes(assertionType);
+}
+
+function normalizeExportCandidateRow(row) {
+  if (!row || typeof row !== "object" || Array.isArray(row)) {
+    return row;
+  }
+  const sourceName = row.source_name ?? firstNonEmpty(row.source_names);
+  const sourceVersion = row.source_version ?? firstNonEmpty(row.source_versions);
+  const targetVersion = row.target_vocabulary_version ?? lastNonEmpty(row.source_versions) ?? sourceVersion;
+  return {
+    ...row,
+    id: row.id ?? row.relationship_assertion_id ?? row.relationship_id ?? row.object_id,
+    assertion_type: row.assertion_type ?? (row.relationship_assertion_id ? "relationship" : undefined),
+    source_name: sourceName,
+    source_version: sourceVersion,
+    source_vocabulary_version: row.source_vocabulary_version ?? sourceVersion,
+    target_vocabulary_version: targetVersion
+  };
+}
+
+function firstNonEmpty(value) {
+  return Array.isArray(value) ? value.find(nonEmpty) : undefined;
+}
+
+function lastNonEmpty(value) {
+  return Array.isArray(value) ? value.filter(nonEmpty).at(-1) : undefined;
 }
 
 function nonEmpty(value) {
