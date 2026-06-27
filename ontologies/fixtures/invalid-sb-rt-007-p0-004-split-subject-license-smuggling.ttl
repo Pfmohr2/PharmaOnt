@@ -1,0 +1,58 @@
+@prefix pharm: <https://w3id.org/pharmaops/ontology/core#> .
+@prefix pharmrel: <https://w3id.org/pharmaops/ontology/relationship#> .
+@prefix pharment: <https://example.pharmaops.local/tenant/acme/entity/> .
+@prefix pharmrelobj: <https://example.pharmaops.local/tenant/acme/relationship/> .
+@prefix pharmev: <https://example.pharmaops.local/tenant/acme/evidence/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+pharmrelobj:rt007-p0-004-split-subject-license-smuggling
+    a pharm:RelationshipAssertion ;
+    pharm:canonicalId "pharmrelobj:rt007-p0-004-split-subject-license-smuggling" ;
+    pharm:entityType "RelationshipAssertion" ;
+    pharm:preferredLabel "Invalid released relationship with split-subject blocked license" ;
+    pharm:lifecycleStatus "released" ;
+    pharm:assertionType "human_curated" ;
+    pharm:hasAssertionType "human_curated" ;
+    pharm:hasRelationshipClass "mechanistic" ;
+    pharm:relationshipDirectionality "directed" ;
+    pharm:relationshipPolarity "positive" ;
+    pharm:confidenceScore 0.91 ;
+    pharm:confidenceBand "high" ;
+    pharm:hasEvidenceStrength "strong" ;
+    pharm:hasEvidence pharmev:rt007-p0-004 ;
+    pharm:reviewStatus "released" ;
+    pharm:reviewedBy "curator:fixture" ;
+    pharm:reviewedAt "2026-06-27T14:28:00Z"^^xsd:dateTime ;
+    pharm:dataLicenseClass "open_materializable" ;
+    pharm:releaseId "2026.1" ;
+    pharm:validationReportId "validation:rt007-p0-004" ;
+    pharm:createdBy "curator:fixture" ;
+    pharm:createdAt "2026-06-27T14:28:00Z"^^xsd:dateTime ;
+    pharm:updatedAt "2026-06-27T14:28:00Z"^^xsd:dateTime ;
+    pharm:hasCausalClaimStatus "not_causal" ;
+    pharm:usesRestrictedEvidence false ;
+    pharm:exportAuthorizationStatus "authorized" ;
+    pharm:releaseMembership "graph:tenant:acme:release:2026.1:canonical" ;
+    pharm:relationshipSubject pharment:rt007-p0-004-source ;
+    pharm:relationshipPredicate pharmrel:compound_has_target ;
+    pharm:relationshipObject pharment:rt007-p0-004-target ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:rt007-p0-004" ;
+        pharm:activityType "release" ;
+        pharm:activityId "activity:rt007-p0-004" ;
+        pharm:methodType "release_process" ;
+        pharm:confidenceType "reviewer_decision" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "released" ;
+        pharm:auditEventId "audit:rt007-p0-004" ;
+        pharm:actor "release-manager:fixture" ;
+        pharm:sourceName "Creed RT-007 fixture" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T14:28:00Z"^^xsd:dateTime
+    ] .
+
+pharmrelobj:rt007-p0-004-split-subject-license-smuggling
+    pharm:dataLicenseClass "blocked_pending_legal_review" .
+

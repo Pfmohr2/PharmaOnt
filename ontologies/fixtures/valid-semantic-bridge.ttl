@@ -75,7 +75,7 @@ pharmrelobj:rel-bridge-000001
     pharm:lifecycleStatus "approved" ;
     pharm:assertionType "human_curated" ;
     pharm:hasAssertionType "human_curated" ;
-    pharm:hasRelationshipClass "clinical" ;
+    pharm:hasRelationshipClass "mechanistic" ;
     pharm:relationshipDirectionality "directed" ;
     pharm:relationshipPolarity "positive" ;
     pharm:confidenceScore 0.82 ;
@@ -89,7 +89,7 @@ pharmrelobj:rel-bridge-000001
     pharm:createdBy "curator:semantic-bridge-fixture" ;
     pharm:createdAt "2026-06-27T11:22:00Z"^^xsd:dateTime ;
     pharm:updatedAt "2026-06-27T11:23:00Z"^^xsd:dateTime ;
-    pharm:hasCausalClaimStatus "association_only" ;
+    pharm:hasCausalClaimStatus "not_causal" ;
     pharm:usesRestrictedEvidence false ;
     pharm:exportAuthorizationStatus "authorized" ;
     pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;

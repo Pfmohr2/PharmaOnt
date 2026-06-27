@@ -190,22 +190,22 @@ pharm:RelationshipCompletenessShape
     a sh:NodeShape ;
     sh:targetClass pharm:RelationshipAssertion ;
     sh:property [ sh:path pharm:relationshipSubject ; sh:minCount 1 ; sh:nodeKind sh:IRI ] ;
-    sh:property [ sh:path pharm:relationshipPredicate ; sh:minCount 1 ] ;
+    sh:property [ sh:path pharm:relationshipPredicate ; sh:minCount 1 ; sh:maxCount 1 ; sh:nodeKind sh:IRI ] ;
     sh:property [ sh:path pharm:relationshipObject ; sh:minCount 1 ; sh:nodeKind sh:IRI ] ;
-    sh:property [ sh:path pharm:hasRelationshipClass ; sh:minCount 1 ; sh:in ( "identity" "vocabulary_crosswalk" "hierarchical" "mechanistic" "clinical" "safety" "regulatory" "commercial" "operational" "evidence_support" "inferred" "hypothesis" "blocked" ) ; sh:message "Relationship assertions require one approved relationship class." ] ;
-    sh:property [ sh:path pharm:assertionType ; sh:minCount 1 ; sh:in ( "asserted" "imported" "human_curated" "inferred" "model_suggested" "system_generated" "deprecated" ) ] ;
-    sh:property [ sh:path pharm:hasAssertionType ; sh:minCount 1 ; sh:in ( "asserted" "imported" "human_curated" "inferred" "model_suggested" "system_generated" "deprecated" ) ; sh:message "Relationship assertions require addendum hasAssertionType metadata." ] ;
-    sh:property [ sh:path pharm:relationshipDirectionality ; sh:minCount 1 ; sh:in ( "directed" "undirected" "bidirectional" ) ] ;
-    sh:property [ sh:path pharm:relationshipPolarity ; sh:minCount 1 ; sh:in ( "positive" "negative" "neutral" "unknown" ) ] ;
+    sh:property [ sh:path pharm:hasRelationshipClass ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( "identity" "vocabulary_crosswalk" "hierarchical" "mechanistic" "clinical" "safety" "regulatory" "commercial" "operational" "evidence_support" "inferred" "hypothesis" "blocked" ) ; sh:message "Relationship assertions require one approved relationship class." ] ;
+    sh:property [ sh:path pharm:assertionType ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( "asserted" "imported" "human_curated" "inferred" "model_suggested" "system_generated" "deprecated" ) ] ;
+    sh:property [ sh:path pharm:hasAssertionType ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( "asserted" "imported" "human_curated" "inferred" "model_suggested" "system_generated" "deprecated" ) ; sh:message "Relationship assertions require addendum hasAssertionType metadata." ] ;
+    sh:property [ sh:path pharm:relationshipDirectionality ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( "directed" "undirected" "bidirectional" ) ] ;
+    sh:property [ sh:path pharm:relationshipPolarity ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( "positive" "negative" "neutral" "unknown" ) ] ;
     sh:property [ sh:path pharm:confidenceScore ; sh:minCount 1 ; sh:datatype xsd:decimal ; sh:minInclusive 0.0 ; sh:maxInclusive 1.0 ] ;
-    sh:property [ sh:path pharm:confidenceBand ; sh:minCount 1 ; sh:in ( "high" "medium" "low" "blocked" ) ] ;
-    sh:property [ sh:path pharm:hasEvidenceStrength ; sh:minCount 1 ; sh:in ( "strong" "moderate" "weak" "insufficient" "blocked" ) ] ;
+    sh:property [ sh:path pharm:confidenceBand ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( "high" "medium" "low" "blocked" ) ] ;
+    sh:property [ sh:path pharm:hasEvidenceStrength ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( "strong" "moderate" "weak" "insufficient" "blocked" ) ] ;
     sh:property [ sh:path pharm:hasEvidence ; sh:minCount 1 ; sh:class pharm:DocumentEvidenceSource ] ;
-    sh:property [ sh:path pharm:reviewStatus ; sh:minCount 1 ; sh:in ( "draft" "proposed" "in_review" "approved" "rejected" "released" "deprecated" "superseded" "blocked" ) ; sh:message "Relationship assertions require governed review status." ] ;
-    sh:property [ sh:path pharm:dataLicenseClass ; sh:minCount 1 ; sh:in ( "open_materializable" "open_with_attribution" "licensed_federated" "licensed_materializable_with_restrictions" "internal_confidential" "contains_phi_or_pii" "blocked_pending_legal_review" ) ; sh:message "Relationship assertions require license metadata." ] ;
+    sh:property [ sh:path pharm:reviewStatus ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( "draft" "proposed" "in_review" "approved" "rejected" "released" "deprecated" "superseded" "blocked" ) ; sh:message "Relationship assertions require governed review status." ] ;
+    sh:property [ sh:path pharm:dataLicenseClass ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( "open_materializable" "open_with_attribution" "licensed_federated" "licensed_materializable_with_restrictions" "internal_confidential" "contains_phi_or_pii" "blocked_pending_legal_review" ) ; sh:message "Relationship assertions require license metadata." ] ;
     sh:property [ sh:path pharm:lifecycleStatus ; sh:minCount 1 ; sh:in ( "draft" "proposed" "validated" "in_review" "revision_requested" "approved" "staged" "released" "deprecated" "superseded" "rejected" "rolled_back" ) ] ;
-    sh:property [ sh:path pharm:releaseMembership ; sh:minCount 1 ; sh:datatype xsd:string ] .
-    sh:property [ sh:path pharm:releaseId ; sh:minCount 1 ; sh:datatype xsd:string ; sh:message "Relationship assertions require explicit release context; use not_released before publication." ] ;
+    sh:property [ sh:path pharm:releaseMembership ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path pharm:releaseId ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ; sh:message "Relationship assertions require explicit release context; use not_released before publication." ] ;
     sh:property [ sh:path pharm:createdBy ; sh:minCount 1 ; sh:datatype xsd:string ; sh:minLength 1 ] ;
     sh:property [ sh:path pharm:createdAt ; sh:minCount 1 ; sh:datatype xsd:dateTime ] ;
     sh:property [ sh:path pharm:updatedAt ; sh:minCount 1 ; sh:datatype xsd:dateTime ] ;
@@ -348,6 +348,36 @@ pharm:IdentityMappingSeparationShape
     sh:severity sh:Violation ;
     sh:message "CRITICAL: MappingAssertion and RelationshipAssertion must stay distinct; identity/vocabulary mappings are not collapsed into bare relationship edges." .
 
+pharm:RelationshipPredicateClassMatrixShape
+    a sh:NodeShape ;
+    sh:targetClass pharm:RelationshipAssertion ;
+    sh:sparql [
+        sh:message "CRITICAL: relationshipPredicate must be legal for the relationship_class; mapping predicates such as exactMatch are illegal on evidence/domain classes." ;
+        sh:select """
+            PREFIX pharm: <https://w3id.org/pharmaops/ontology/core#>
+            PREFIX pharmrel: <https://w3id.org/pharmaops/ontology/relationship#>
+            SELECT $this WHERE {
+              $this pharm:hasRelationshipClass ?class ;
+                    pharm:relationshipPredicate ?predicate .
+              FILTER (
+                (?class = "identity" && ?predicate NOT IN (pharmrel:same_as, pharmrel:has_synonym, pharmrel:has_external_identifier, pharmrel:identity_replaced_by, pharmrel:exactMatch)) ||
+                (?class = "vocabulary_crosswalk" && ?predicate NOT IN (pharmrel:exactMatch, pharmrel:closeMatch, pharmrel:broadMatch, pharmrel:narrowMatch, pharmrel:relatedMatch, pharmrel:replacedBy, pharmrel:hasDbXref, pharmrel:notMatch, pharmrel:uncertainMatch, pharmrel:requiresReview, pharmrel:term_maps_to_standard, pharmrel:regulatory_crosswalk_to)) ||
+                (?class = "hierarchical" && ?predicate NOT IN (pharmrel:broader_than, pharmrel:narrower_than, pharmrel:parent_of, pharmrel:child_of, pharmrel:part_of, pharmrel:has_part, pharmrel:subclass_of)) ||
+                (?class = "mechanistic" && ?predicate NOT IN (pharmrel:compound_has_target, pharmrel:target_associated_with_disease, pharmrel:mechanistically_related_to, pharmrel:inhibits, pharmrel:activates, pharmrel:binds_target, pharmrel:modulates_pathway)) ||
+                (?class = "clinical" && ?predicate NOT IN (pharmrel:trial_studies_condition, pharmrel:trial_uses_intervention, pharmrel:trial_has_endpoint, pharmrel:clinically_related_to, pharmrel:associated_with_outcome, pharmrel:biomarker_stratifies_response)) ||
+                (?class = "safety" && ?predicate NOT IN (pharmrel:product_has_adverse_event, pharmrel:safety_context_related_to, pharmrel:has_reported_event_context, pharmrel:label_mentions_safety_event, pharmrel:safety_signal_for_investigation)) ||
+                (?class = "regulatory" && ?predicate NOT IN (pharmrel:regulatory_crosswalk_to, pharmrel:uses_submission_term, pharmrel:label_contains_concept, pharmrel:submission_codelist_maps_to, pharmrel:controlled_term_for_context)) ||
+                (?class = "commercial" && ?predicate NOT IN (pharmrel:commercially_related_to, pharmrel:product_aligned_to_indication, pharmrel:market_segment_for_population, pharmrel:payer_concept_related_to)) ||
+                (?class = "operational" && ?predicate NOT IN (pharmrel:operational_dependency_of, pharmrel:dataset_feeds_dashboard, pharmrel:api_consumer_uses_term, pharmrel:workflow_depends_on_source, pharmrel:downstream_uses_mapping)) ||
+                (?class = "evidence_support" && ?predicate NOT IN (pharmrel:entity_supported_by_evidence, pharmrel:assertion_supported_by_evidence, pharmrel:evidence_supports_relationship, pharmrel:evidence_contradicts_relationship, pharmrel:evidence_context_for_relationship)) ||
+                (?class = "inferred" && ?predicate NOT IN (pharmrel:inferred_from_path, pharmrel:inferred_mechanistic_bridge, pharmrel:inferred_clinical_bridge, pharmrel:inferred_safety_context)) ||
+                (?class = "hypothesis" && ?predicate NOT IN (pharmrel:hypothesis_bridge, pharmrel:is_hypothesis_about, pharmrel:may_relate_to_investigation, pharmrel:accepted_for_investigation, pharmrel:convertedToRelationshipAssertion)) ||
+                (?class = "blocked" && ?predicate NOT IN (pharmrel:unsupported, pharmrel:blocked, pharmrel:notMatch, pharmrel:contradicted_by_evidence, pharmrel:license_blocked, pharmrel:causal_claim_blocked, pharmrel:access_blocked))
+              )
+            }
+        """ ;
+    ] .
+
 pharm:SafetyLimitationRequirementsShape
     a sh:NodeShape ;
     sh:targetClass pharm:RelationshipAssertion ;
@@ -357,7 +387,7 @@ pharm:SafetyLimitationRequirementsShape
             sh:property [ sh:path pharm:hasRelationshipClass ; sh:hasValue "safety" ] ;
             sh:property [ sh:path pharm:safetyLimitationId ; sh:minCount 1 ; sh:datatype xsd:string ; sh:minLength 1 ] ;
             sh:property [ sh:path pharm:knownLimitation ; sh:minCount 1 ; sh:datatype xsd:string ; sh:minLength 1 ] ;
-            sh:property [ sh:path pharm:hasCausalClaimStatus ; sh:minCount 1 ; sh:in ( "not_causal" "hypothesis_only" "association_only" "approved_causal_claim" ) ] ;
+            sh:property [ sh:path pharm:hasCausalClaimStatus ; sh:minCount 1 ; sh:in ( "not_causal" "causal_review_required" "causal_review_approved" "causal_prohibited" "blocked_overclaim" ) ] ;
         ]
     ) ;
     sh:severity sh:Violation ;
@@ -366,18 +396,28 @@ pharm:SafetyLimitationRequirementsShape
 pharm:CausalClaimRestrictionsShape
     a sh:NodeShape ;
     sh:targetClass pharm:RelationshipAssertion ;
+    sh:property [
+        sh:path pharm:hasCausalClaimStatus ;
+        sh:maxCount 1 ;
+        sh:in ( "not_causal" "causal_review_required" "causal_review_approved" "causal_prohibited" "blocked_overclaim" ) ;
+        sh:message "causal_claim_status must use Andy's canonical enum." ;
+    ] ;
     sh:or (
-        [ sh:not [ sh:property [ sh:path pharm:hasCausalClaimStatus ; sh:hasValue "approved_causal_claim" ] ] ]
         [
-            sh:property [ sh:path pharm:hasCausalClaimStatus ; sh:hasValue "approved_causal_claim" ] ;
-            sh:property [ sh:path pharm:causalReviewStatus ; sh:hasValue "approved_causal_review" ] ;
+            sh:property [ sh:path pharm:hasCausalClaimStatus ; sh:in ( "not_causal" "causal_review_approved" ) ] ;
+        ]
+        [
+            sh:not [ sh:property [ sh:path pharm:lifecycleStatus ; sh:in ( "approved" "staged" "released" ) ] ] ;
+        ]
+        [
+            sh:property [ sh:path pharm:hasCausalClaimStatus ; sh:hasValue "causal_review_approved" ] ;
             sh:property [ sh:path pharm:reviewStatus ; sh:in ( "approved" "released" ) ] ;
             sh:property [ sh:path pharm:reviewedBy ; sh:minCount 1 ; sh:datatype xsd:string ; sh:minLength 1 ] ;
             sh:property [ sh:path pharm:reviewedAt ; sh:minCount 1 ; sh:datatype xsd:dateTime ] ;
         ]
     ) ;
     sh:severity sh:Violation ;
-    sh:message "CRITICAL: causal claims require approved causal review; FAERS/openFDA associations cannot be promoted as causal by default." .
+    sh:message "CRITICAL: causal_claim_status must use Andy's canonical enum; non-cleared states block approved, staged, and released assertions." .
 
 pharm:ReviewStateRestrictionsShape
     a sh:NodeShape ;
@@ -408,17 +448,60 @@ pharm:ReleasedRelationshipRequirementsShape
     sh:severity sh:Violation ;
     sh:message "CRITICAL: released relationships require evidence, release ID, released review status, and validation report." .
 
+pharm:ReleasedRelationshipLicenseReviewerShape
+    a sh:NodeShape ;
+    sh:targetClass pharm:RelationshipAssertion ;
+    sh:or (
+        [ sh:not [ sh:property [ sh:path pharm:lifecycleStatus ; sh:hasValue "released" ] ] ]
+        [
+            sh:property [ sh:path pharm:reviewedBy ; sh:minCount 1 ; sh:datatype xsd:string ; sh:minLength 1 ; sh:not [ sh:hasValue "null" ] ] ;
+            sh:property [ sh:path pharm:reviewedAt ; sh:minCount 1 ; sh:datatype xsd:dateTime ] ;
+            sh:property [ sh:path pharm:dataLicenseClass ; sh:not [ sh:hasValue "blocked_pending_legal_review" ] ] ;
+            sh:property [ sh:path pharm:exportAuthorizationStatus ; sh:not [ sh:hasValue "blocked" ] ] ;
+        ]
+    ) ;
+    sh:severity sh:Violation ;
+    sh:message "CRITICAL: released relationships require non-null reviewer metadata and non-blocked license/export authorization." .
+
 pharm:PathConfidenceConstraintsShape
     a sh:NodeShape ;
     sh:targetClass pharm:RelationshipPath ;
-    sh:property [ sh:path pharm:hasPathConfidence ; sh:minCount 1 ; sh:datatype xsd:decimal ; sh:minInclusive 0.0 ; sh:maxInclusive 1.0 ] ;
-    sh:property [ sh:path pharm:pathConfidenceBand ; sh:minCount 1 ; sh:in ( "high" "medium" "low" "blocked" ) ] ;
+    sh:property [ sh:path pharm:hasPathConfidence ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:decimal ; sh:minInclusive 0.0 ; sh:maxInclusive 1.0 ] ;
+    sh:property [ sh:path pharm:pathConfidenceBand ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( "high" "medium" "low" "blocked" ) ] ;
     sh:or (
         [ sh:not [ sh:property [ sh:path pharm:pathContainsUnreviewedModelSuggestedEdge ; sh:hasValue true ] ] ]
         [ sh:not [ sh:property [ sh:path pharm:pathConfidenceBand ; sh:hasValue "high" ] ] ]
     ) ;
     sh:severity sh:Violation ;
     sh:message "CRITICAL: a path with an unreviewed model-suggested edge cannot be marked high confidence." .
+
+pharm:ReleasedPathEdgeDerivedRequirementsShape
+    a sh:NodeShape ;
+    sh:targetClass pharm:RelationshipPath ;
+    sh:sparql [
+        sh:message "CRITICAL: released or high-confidence paths must be bounded by edge-derived assertion type, review state, and weakest confidence." ;
+        sh:select """
+            PREFIX pharm: <https://w3id.org/pharmaops/ontology/core#>
+            SELECT $this WHERE {
+              $this pharm:relationshipPathEdge ?edge .
+              OPTIONAL { $this pharm:pathStatus ?pathStatus . }
+              OPTIONAL { $this pharm:pathConfidenceBand ?pathBand . }
+              OPTIONAL { ?edge pharm:assertionType ?edgeAssertionType . }
+              OPTIONAL { ?edge pharm:hasAssertionType ?edgeAssertionType2 . }
+              OPTIONAL { ?edge pharm:reviewStatus ?edgeReviewStatus . }
+              OPTIONAL { ?edge pharm:confidenceBand ?edgeConfidenceBand . }
+              FILTER (
+                (?pathStatus = "released" && (?edgeAssertionType = "model_suggested" || ?edgeAssertionType2 = "model_suggested")) ||
+                (?pathStatus = "released" && ?edgeReviewStatus NOT IN ("approved", "released")) ||
+                (?pathStatus = "released" && ?edgeConfidenceBand = "blocked") ||
+                (?pathBand = "high" && (?edgeAssertionType = "model_suggested" || ?edgeAssertionType2 = "model_suggested")) ||
+                (?pathBand = "high" && ?edgeReviewStatus NOT IN ("approved", "released")) ||
+                (?pathBand = "high" && ?edgeConfidenceBand != "high") ||
+                (?pathBand = "medium" && ?edgeConfidenceBand IN ("low", "blocked"))
+              )
+            }
+        """ ;
+    ] .
 
 pharm:WeakestLinkRequirementsShape
     a sh:NodeShape ;
@@ -462,7 +545,7 @@ pharm:ReleasedPathRequirementsShape
     sh:property [ sh:path pharm:relationshipPathStart ; sh:minCount 1 ; sh:nodeKind sh:IRI ] ;
     sh:property [ sh:path pharm:relationshipPathEnd ; sh:minCount 1 ; sh:nodeKind sh:IRI ] ;
     sh:property [ sh:path pharm:relationshipPathEdge ; sh:minCount 1 ; sh:class pharm:RelationshipAssertion ] ;
-    sh:property [ sh:path pharm:pathStatus ; sh:minCount 1 ; sh:in ( "draft" "proposed" "in_review" "approved" "released" "blocked" ) ] ;
+    sh:property [ sh:path pharm:pathStatus ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( "draft" "proposed" "in_review" "approved" "released" "blocked" ) ] ;
     sh:or (
         [ sh:not [ sh:property [ sh:path pharm:pathStatus ; sh:hasValue "released" ] ] ]
         [

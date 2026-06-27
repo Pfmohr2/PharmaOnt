@@ -111,13 +111,91 @@
         "properties": {
           "release_context": {
             "type": "object",
-            "required": ["release_id", "scope"],
+            "required": ["release_id", "scope", "included_in_release"],
             "properties": {
               "release_id": { "type": "string", "minLength": 1 },
-              "scope": { "const": "release" }
+              "scope": { "const": "release" },
+              "included_in_release": { "const": true }
             }
           },
-          "assertion_type": { "not": { "const": "model_suggested" } }
+          "assertion_type": { "not": { "const": "model_suggested" } },
+          "review_status": { "const": "released" },
+          "edges": {
+            "type": "array",
+            "items": {
+              "properties": {
+                "assertion_type": { "not": { "const": "model_suggested" } },
+                "review_status": { "enum": ["approved", "released"] }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "path_confidence": {
+            "type": "object",
+            "properties": { "confidence_band": { "const": "high" } },
+            "required": ["confidence_band"]
+          }
+        },
+        "required": ["path_confidence"]
+      },
+      "then": {
+        "properties": {
+          "edges": {
+            "type": "array",
+            "items": {
+              "properties": {
+                "assertion_type": { "not": { "const": "model_suggested" } },
+                "review_status": { "enum": ["approved", "released"] },
+                "confidence_band": { "const": "high" }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "path_confidence": {
+            "type": "object",
+            "properties": { "confidence_band": { "const": "medium" } },
+            "required": ["confidence_band"]
+          }
+        },
+        "required": ["path_confidence"]
+      },
+      "then": {
+        "properties": {
+          "edges": {
+            "type": "array",
+            "items": {
+              "properties": {
+                "confidence_band": { "enum": ["high", "medium"] }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "path_confidence": {
+            "type": "object",
+            "properties": { "weakest_link_adjusted": { "const": false } },
+            "required": ["weakest_link_adjusted"]
+          }
+        },
+        "required": ["path_confidence"]
+      },
+      "then": {
+        "properties": {
+          "warnings": { "minItems": 1 }
         }
       }
     }

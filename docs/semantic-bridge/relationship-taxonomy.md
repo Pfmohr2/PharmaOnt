@@ -6,23 +6,50 @@ This document defines the Phase A taxonomy for governed, evidence-backed, explai
 
 It is a design and schema contract for relationship assertions, relationship paths, API contracts, SHACL validation, and release governance. It does not implement service code.
 
+## Canonical Relationship Class Enum
+
+`relationship_class` is the literal Addendum section 5 / section 6.1 enum and must match `docs/semantic-bridge/contracts/`:
+
+```text
+identity
+vocabulary_crosswalk
+hierarchical
+mechanistic
+clinical
+safety
+regulatory
+commercial
+operational
+evidence_support
+inferred
+hypothesis
+blocked
+```
+
+Each relationship assertion has exactly one primary `relationship_class`. Epistemic and workflow state are separate fields:
+
+- `assertion_type`: `imported`, `human_curated`, `inferred`, `model_suggested`, `system_generated`, `deprecated`
+- `review_status`: `draft`, `proposed`, `in_review`, `approved`, `rejected`, `released`, `deprecated`, `superseded`
+- `confidence_band`: `high`, `medium`, `low`, `blocked`
+- `secondary_relationship_tags`: governance modifiers only: `causal_sensitive`, `restricted_evidence`, `patient_impacting`
+
 ## Non-Collapse Rule
 
 Semantic Bridge must never treat every connection as a generic graph edge.
 
 The following are distinct governed concepts:
 
-| Concept | Meaning | Governed object | Release implication |
-|---|---|---|---|
-| Identity | Two identifiers or labels represent the same real-world concept in a scoped context. | Identity assertion or mapping assertion, not a relationship assertion for biological relatedness. | May support canonical identity merge only after review and validation. |
-| Vocabulary crosswalk | A source term maps to a target vocabulary or internal standard. | Mapping assertion. | Requires source and target vocabulary versions and mapping predicate semantics. |
-| Evidence-backed relationship | A scientific, clinical, safety, regulatory, commercial, or operational relation between two governed concepts. | Relationship assertion. | May release only with evidence, provenance, confidence, review, license, and validation. |
-| Inference | A derived connection from rules, reasoner output, or approved path logic. | Relationship assertion or RelationshipPath with derivation metadata. | Not release eligible by itself; requires derivation evidence and review route. |
-| AI suggestion | A model-proposed edge or path. | Relationship assertion or BridgeHypothesis with `assertion_type=model_suggested`. | Never directly released. Must remain visually/API distinct and pass human governance before conversion. |
-| Hypothesis | A plausible bridge for investigation. | BridgeHypothesis, optionally converted later to a relationship proposal. | Not a released fact; can be accepted for investigation but not published as fact. |
-| Unsupported or blocked link | A rejected, contradictory, prohibited, or policy-blocked connection. | Blocked relationship assertion or blocked mapping assertion. | Not release eligible except as a negative control/suppression artifact with rationale. |
+| Concept | How it is represented | Non-collapse rule |
+|---|---|---|
+| Identity | `relationship_class=identity`, or MappingAssertion with `exactMatch` when the scoped claim is true identity. | Must not be treated as biological, clinical, safety, regulatory, commercial, or operational relatedness. |
+| Vocabulary crosswalk | `relationship_class=vocabulary_crosswalk` or MappingAssertion with source/target vocabulary versions. | Must not imply identity unless predicate and review explicitly support equivalence. |
+| Evidence-backed domain relationship | One of `hierarchical`, `mechanistic`, `clinical`, `safety`, `regulatory`, `commercial`, `operational`, or `evidence_support`. | Must carry evidence, provenance, confidence, review, license, and release context. |
+| Inference | `relationship_class=inferred` or `assertion_type=inferred`, depending whether the edge itself is an inferred relationship or a domain relationship produced by inference. | Must show rule/version, input edges, derivation path, and weakest input edge. |
+| AI suggestion | Any class with `assertion_type=model_suggested`. | Never directly released; must remain API/UI distinct until reviewed and converted. |
+| Hypothesis | `relationship_class=hypothesis` and/or BridgeHypothesis object. | Not a released fact; may be accepted for investigation without becoming an approved relationship. |
+| Unsupported or blocked link | `relationship_class=blocked`. | Not release eligible as positive fact; may be retained as negative/suppression metadata with rationale. |
 
-The class and predicate rules below are designed so Creed's taxonomy red team can verify that identity, mapping/crosswalk, and relationship intelligence cannot collapse into one ambiguous edge type.
+These rules are release-blocking where applicable. Creed's SB-A-RT-TAXONOMY review should fail any design that collapses identity, mapping/crosswalk, evidence relationships, inference, AI suggestions, hypotheses, or blocked links into one ambiguous edge type.
 
 ## Required Fields On Every Cross-Domain Connection
 
@@ -30,22 +57,24 @@ Every cross-domain connection must be represented as a governed assertion with:
 
 - `relationship_assertion_id` or `mapping_id`
 - `relationship_class`
-- `subject`
+- `source_entity_id`
+- `target_entity_id`
 - `predicate`
-- `object`
 - `assertion_type`
-- `confidence_score`
-- `confidence_band`
+- `confidence.confidence_score`
+- `confidence.confidence_band`
 - `evidence_refs`
+- `source_names`
+- `source_versions`
 - `provenance_id`
 - `review_status`
-- `license_status`
-- `release_id` or explicit unreleased state
-- `data_sensitivity`
+- `release_context`
+- `data_license`
 - `known_limitations`
+- `warnings`
 - `created_by`
 - `created_at`
-- `audit_event_id`
+- `provenance.audit_event_id`
 
 Every multi-hop path must include:
 
@@ -58,65 +87,83 @@ Every multi-hop path must include:
 
 ## Class Table
 
-Primary class values are stable contract values. Each relationship assertion must have exactly one primary class. Domain-specific detail should use secondary tags such as `mechanistic`, `clinical`, `safety`, `regulatory`, `commercial`, `operational`, or `evidence_support`.
-
-| Primary class | Contract value | Scope | Allowed predicate family | Evidence minimum | Review requirement | Release eligibility |
-|---|---|---|---|---|---|---|
-| Identity mapping | `identity` | Same entity across labels, aliases, IDs, or source systems. | Identity predicates only: `same_as`, `has_synonym`, `has_external_identifier`; mapping `exactMatch` only when represented as a mapping assertion. | Source identifier/label evidence, source version, provenance; evidence diversity required for canonical merge unless policy permits source-authoritative identity. | Domain or standards reviewer for merge-affecting identity; service imports may propose only. | Eligible only after review, validation, no license blocker, and no ambiguity. |
-| Vocabulary crosswalk | `vocabulary_crosswalk` | Controlled vocabulary or internal-standard mapping. | Mapping predicates: `exactMatch`, `closeMatch`, `broadMatch`, `narrowMatch`, `relatedMatch`, `replacedBy`, `hasDbXref`, `notMatch`, `uncertainMatch`, `requiresReview`; regulatory crosswalk predicate allowed for submission terminology. | Source and target vocabulary IDs and versions, mapping evidence or source record, confidence, license policy for both sides. | Standards/mapping reviewer; regulatory reviewer for submission or label terminology. | Only `exactMatch`, `closeMatch`, `broadMatch`, `narrowMatch`, `relatedMatch`, `replacedBy`, and `hasDbXref` may release after approval. `notMatch` may release only as negative/suppression record. `uncertainMatch` and `requiresReview` are not release eligible. |
-| Evidence-backed relationship | `evidence_backed_relationship` | A direct governed relationship between domain concepts. Secondary domain tags refine semantics. | Domain predicates: mechanistic, clinical, safety, regulatory, commercial, operational, and evidence-support predicates listed below. | Direct evidence object or source record, source version, provenance, evidence strength, confidence, known limitations, license/sensitivity metadata. | Domain reviewer for the affected domain; compliance review for safety, regulatory, patient-impacting, or causal claims. | Eligible after validation, review, evidence/license checks, and release packaging. |
-| Inferred relationship | `inferred_relationship` | Deterministically derived edge or path-derived relation. | `inferred_from_path`, `inferred_mechanistic_bridge`, `inferred_clinical_bridge`, `inferred_safety_context`, or the underlying domain predicate with derivation metadata. | Rule ID/version, input assertion IDs, input evidence/provenance, reasoner run ID, source release scope, confidence derivation. | Reviewer must approve inference rule and output when release-impacting. | Not eligible by inference alone; eligible only after conversion to reviewed relationship assertion or released path with derivation disclosure. |
-| AI-suggested relationship | `ai_suggested_relationship` | Model-proposed edge or path candidate. | `model_suggested`, or proposed domain predicate with `assertion_type=model_suggested`; may also create `hypothesis_bridge` candidate. | Model name/version, prompt/config or pipeline version, source spans, evidence pointers, confidence, rationale, safety/license flags. | Human reviewer required before conversion. AI confidence is never approval. | Never directly release eligible. Must become a reviewed governed proposal and pass all class-specific evidence/review gates. |
-| Hypothesis bridge | `hypothesis_bridge` | Plausible bridge accepted for investigation, not asserted as fact. | `hypothesis_bridge`, `is_hypothesis_about`, `may_relate_to_investigation`, `accepted_for_investigation`. | Rationale, supporting/contradicting evidence pointers if available, source limitations, hypothesis author, confidence band no higher than medium unless converted and reviewed. | Scientific/domain reviewer can accept for investigation; approval does not make it a released fact. | Not release eligible as a fact. Can be released only as a labeled hypothesis workspace artifact if policy permits; conversion requires new relationship proposal. |
-| Speculative/unreviewed | `speculative_unreviewed` | Unreviewed, low-evidence, uncertain, or exploratory connection. | `requiresReview`, `uncertainMatch`, `relatedMatch` as weak mapping, `possible_related_to`, `candidate_bridge`. | At least candidate provenance, generation method, and reason for speculation; evidence may be weak or missing but missing evidence must be explicit. | Must be routed to review or rejected; cannot be silently promoted. | Not release eligible. |
-| Unsupported/blocked | `unsupported_blocked` | Known invalid, contradictory, prohibited, license-blocked, unsafe, or rejected connection. | `blocked`, `unsupported`, `notMatch`, `contradicted_by_evidence`, `license_blocked`, `causal_claim_blocked`, `access_blocked`. | Rationale, blocker type, reviewer or policy source, evidence or policy reference, audit event. | Reviewer or policy owner required for persistent blocked records. | Not release eligible as positive fact. May release as negative/suppression metadata only if clearly labeled and policy-approved. |
+| Relationship class | Scope | Allowed predicate family | Evidence minimum | Review requirement | Release eligibility |
+|---|---|---|---|---|---|
+| `identity` | Same concept across labels, aliases, IDs, or source systems. | `same_as`, `has_synonym`, `has_external_identifier`, `identity_replaced_by`; MappingAssertion may use `exactMatch` only for scoped identity. | Identifier/alias source, source version, provenance, confidence. Canonical merge needs source-authoritative evidence or non-conflicting corroboration. | Standards/mapping reviewer for merge-affecting identity; domain reviewer when biomedical interpretation changes. | Eligible only when reviewed, validation-passing, license-valid, and unambiguous. |
+| `vocabulary_crosswalk` | Controlled vocabulary or internal-standard mapping. | `exactMatch`, `closeMatch`, `broadMatch`, `narrowMatch`, `relatedMatch`, `replacedBy`, `hasDbXref`, `notMatch`, `uncertainMatch`, `requiresReview`, `term_maps_to_standard`, `regulatory_crosswalk_to`. | Source and target vocabulary IDs and versions, mapping evidence or source record, confidence, license policy for both sides. | Standards/mapping reviewer; regulatory reviewer for submission or label terminology. | Eligible after approval except `uncertainMatch` and `requiresReview`. `notMatch` may release only as negative/suppression metadata. |
+| `hierarchical` | Broader/narrower, parent/child, partonomy, taxonomy, or class hierarchy. | `broader_than`, `narrower_than`, `parent_of`, `child_of`, `part_of`, `has_part`, `subclass_of`. | Hierarchy source, version, scope, directionality, and provenance. | Standards/domain reviewer when hierarchy affects release, mapping, or interpretation. | Eligible when direction and source scope are explicit. |
+| `mechanistic` | Biological or pharmacological mechanism. | `compound_has_target`, `target_associated_with_disease`, `mechanistically_related_to`, `inhibits`, `activates`, `binds_target`, `modulates_pathway`. | Direct source evidence, mechanism evidence type, source version, confidence, known limitations. | Scientific/domain reviewer; causal-sensitive claims require specialist/compliance review. | Eligible with evidence, review, validation, and no unsupported causal wording. |
+| `clinical` | Trial, endpoint, eligibility, intervention, outcome, cohort, or clinical context. | `trial_studies_condition`, `trial_uses_intervention`, `trial_has_endpoint`, `clinically_related_to`, `associated_with_outcome`, `biomarker_stratifies_response`. | Trial/source record, source version, clinical context, evidence type, limitations, confidence. | Clinical/domain reviewer for interpretive claims. | Eligible after review; must not imply efficacy, safety, or causality without separate evidence/review. |
+| `safety` | Product-event, signal context, adverse event coding, label safety, or pharmacovigilance context. | `product_has_adverse_event`, `safety_context_related_to`, `has_reported_event_context`, `label_mentions_safety_event`, `safety_signal_for_investigation`. | Safety source/version, evidence type, source limitations, non-causal disclaimer when based on spontaneous reports, license/sensitivity metadata. | Safety reviewer and compliance/specialist review for causal or patient-impacting claims. | Eligible only with limitation metadata and non-causal handling. FAERS/openFDA-like evidence alone cannot support causation or incidence. |
+| `regulatory` | Submission terminology, controlled term, label, codelist, or regulatory context. | `regulatory_crosswalk_to`, `uses_submission_term`, `label_contains_concept`, `submission_codelist_maps_to`, `controlled_term_for_context`. | Regulatory source/codelist version, submission or label context, evidence pointer, license policy. | Regulatory/standards reviewer. | Eligible with version pins, review, and export/license approval. |
+| `commercial` | Market, product, indication, population, outcome, payer, or portfolio concept. | `commercially_related_to`, `product_aligned_to_indication`, `market_segment_for_population`, `payer_concept_related_to`. | Business source/version, context, evidence, license/sensitivity, limitations. | Commercial/domain reviewer; clinical/safety spillover requires appropriate domain review. | Eligible only as commercial context, not as clinical efficacy or safety fact. |
+| `operational` | Source system, dataset, API consumer, workflow dependency, dashboard, or downstream process. | `operational_dependency_of`, `dataset_feeds_dashboard`, `api_consumer_uses_term`, `workflow_depends_on_source`, `downstream_uses_mapping`. | System/source metadata, dependency evidence, owner, source version or deployment version, audit context. | System owner or operations reviewer for release-impacting dependencies. | Eligible as operational metadata only; cannot create scientific or clinical claims. |
+| `evidence_support` | Assertion supported, contradicted, or contextualized by document, source record, dataset, validation report, or approval record. | `entity_supported_by_evidence`, `assertion_supported_by_evidence`, `evidence_supports_relationship`, `evidence_contradicts_relationship`, `evidence_context_for_relationship`. | Evidence object with source name/version, artifact or pointer, evidence role, source spans where available, license/sensitivity. | Evidence reviewer if evidence is required for release or contradicted. | Eligible as evidence linkage; must not itself be interpreted as a biomedical relationship. |
+| `inferred` | Derived relationship from rules, reasoner output, or path logic. | `inferred_from_path`, `inferred_mechanistic_bridge`, `inferred_clinical_bridge`, `inferred_safety_context`; may reference underlying domain predicate in derivation metadata. | Rule ID/version, input assertion IDs, input evidence/provenance, reasoner run, source release scope, weakest input edge. | Reviewer must approve inference policy and release-impacting output. | Not eligible by inference alone; eligible only after review or as disclosed released path component. |
+| `hypothesis` | Plausible bridge for investigation, not asserted as fact. | `hypothesis_bridge`, `is_hypothesis_about`, `may_relate_to_investigation`, `accepted_for_investigation`, `convertedToRelationshipAssertion`. | Hypothesis rationale, proposer/generator, supporting and contradicting evidence pointers where available, limitations, confidence no higher than policy allows. | Domain reviewer may accept for investigation or reject. | Not eligible as released fact. Conversion requires a new governed relationship proposal. |
+| `blocked` | Known invalid, contradictory, prohibited, license-blocked, unsafe, or rejected connection. | `blocked`, `unsupported`, `notMatch`, `contradicted_by_evidence`, `license_blocked`, `causal_claim_blocked`, `access_blocked`. | Block rationale, blocker category, policy or evidence ref, actor/reviewer, audit event. | Reviewer or policy owner required for persistent block. | Not eligible as positive fact; may release only as labeled negative/suppression artifact if policy-approved. |
 
 ## Predicate Matrix By Class
 
-Predicate values below are contract-level names. RDF/OWL implementations should expose them under the `pharmrel:` namespace unless Angela and Kevin choose a different local-name convention. Existing mapping predicates from `VOCABULARY_POLICY.md` remain camelCase (`exactMatch`, `closeMatch`, etc.) for mapping objects.
+Predicate values below are contract-level names. RDF/OWL implementations should expose relationship predicates under `pharmrel:` unless Angela and Kevin choose aliases. Existing mapping predicates from `VOCABULARY_POLICY.md` remain camelCase for mapping objects.
 
 | Class | Allowed predicates | Explicitly prohibited |
 |---|---|---|
-| `identity` | `same_as`, `has_synonym`, `has_external_identifier`, `identity_replaced_by`; mapping object may use `exactMatch` only when scope is true identity. | `relatedMatch`, `clinically_related_to`, `mechanistically_related_to`, `hypothesis_bridge`, `model_suggested` as released identity. |
-| `vocabulary_crosswalk` | `exactMatch`, `closeMatch`, `broadMatch`, `narrowMatch`, `relatedMatch`, `replacedBy`, `hasDbXref`, `notMatch`, `uncertainMatch`, `requiresReview`, `regulatory_crosswalk_to`, `term_maps_to_standard`. | Treating `closeMatch`, `relatedMatch`, `hasDbXref`, `uncertainMatch`, or `requiresReview` as identity/equivalence. |
-| `evidence_backed_relationship` with `mechanistic` tag | `compound_has_target`, `target_associated_with_disease`, `mechanistically_related_to`, `inhibits`, `activates`, `binds_target`, `modulates_pathway`. | Causal wording without mechanistic predicate, evidence support, and review. |
-| `evidence_backed_relationship` with `clinical` tag | `trial_studies_condition`, `trial_uses_intervention`, `trial_has_endpoint`, `biomarker_stratifies_response`, `clinically_related_to`, `associated_with_outcome`. | Safety/incidence claims from trial metadata alone. |
-| `evidence_backed_relationship` with `safety` tag | `product_has_adverse_event`, `safety_context_related_to`, `has_reported_event_context`, `label_mentions_safety_event`, `safety_signal_for_investigation`. | `causes`, `causal_for`, `incidence_rate_for`, or equivalent causal/incidence predicates unless evidence type and compliance review explicitly allow it. |
-| `evidence_backed_relationship` with `regulatory` tag | `regulatory_crosswalk_to`, `uses_submission_term`, `label_contains_concept`, `submission_codelist_maps_to`, `controlled_term_for_context`. | Identity merge unless represented separately as identity/crosswalk with version pins. |
-| `evidence_backed_relationship` with `commercial` tag | `commercially_related_to`, `product_aligned_to_indication`, `market_segment_for_population`, `payer_concept_related_to`. | Clinical efficacy or safety claims without clinical/safety relationship and evidence gates. |
-| `evidence_backed_relationship` with `operational` tag | `operational_dependency_of`, `dataset_feeds_dashboard`, `api_consumer_uses_term`, `workflow_depends_on_source`, `downstream_uses_mapping`. | Scientific or clinical claims from operational dependency edges. |
-| `evidence_backed_relationship` with `evidence_support` tag | `entity_supported_by_evidence`, `assertion_supported_by_evidence`, `evidence_supports_relationship`, `evidence_contradicts_relationship`, `evidence_context_for_relationship`. | Treating evidence support itself as a biomedical relationship. |
-| `inferred_relationship` | `inferred_from_path`, `inferred_mechanistic_bridge`, `inferred_clinical_bridge`, `inferred_safety_context`, plus underlying domain predicate with `derivation_metadata`. | Hiding input edges, weakest link, or source limitations. |
-| `ai_suggested_relationship` | `model_suggested`, `candidate_bridge`, proposed domain predicate only with `assertion_type=model_suggested`. | Any released graph target or approved/released status without conversion and review. |
-| `hypothesis_bridge` | `hypothesis_bridge`, `is_hypothesis_about`, `may_relate_to_investigation`, `accepted_for_investigation`, `convertedToRelationshipAssertion`. | Displaying as released fact or approved relationship. |
-| `speculative_unreviewed` | `candidate_bridge`, `possible_related_to`, `requiresReview`, `uncertainMatch`. | Release inclusion, high confidence, or unqualified factual language. |
-| `unsupported_blocked` | `unsupported`, `blocked`, `notMatch`, `contradicted_by_evidence`, `license_blocked`, `causal_claim_blocked`, `access_blocked`. | Any positive relationship wording unless the payload is explicitly a negative control. |
+| `identity` | `same_as`, `has_synonym`, `has_external_identifier`, `identity_replaced_by`; mapping object `exactMatch` only for scoped identity. | `relatedMatch`, domain relationship predicates, hypothesis predicates, or model-suggested content as released identity. |
+| `vocabulary_crosswalk` | `exactMatch`, `closeMatch`, `broadMatch`, `narrowMatch`, `relatedMatch`, `replacedBy`, `hasDbXref`, `notMatch`, `uncertainMatch`, `requiresReview`, `term_maps_to_standard`, `regulatory_crosswalk_to`. | Treating `closeMatch`, `relatedMatch`, `hasDbXref`, `uncertainMatch`, or `requiresReview` as identity/equivalence. |
+| `hierarchical` | `broader_than`, `narrower_than`, `parent_of`, `child_of`, `part_of`, `has_part`, `subclass_of`. | Undirected hierarchy without directionality. |
+| `mechanistic` | `compound_has_target`, `target_associated_with_disease`, `mechanistically_related_to`, `inhibits`, `activates`, `binds_target`, `modulates_pathway`. | Unsupported causal wording or clinical efficacy claims. |
+| `clinical` | `trial_studies_condition`, `trial_uses_intervention`, `trial_has_endpoint`, `clinically_related_to`, `associated_with_outcome`, `biomarker_stratifies_response`. | Safety/incidence or efficacy claims from trial metadata alone. |
+| `safety` | `product_has_adverse_event`, `safety_context_related_to`, `has_reported_event_context`, `label_mentions_safety_event`, `safety_signal_for_investigation`. | `causes`, `causal_for`, `incidence_rate_for`, or equivalent causal/incidence predicates unless evidence type and review explicitly allow it. |
+| `regulatory` | `regulatory_crosswalk_to`, `uses_submission_term`, `label_contains_concept`, `submission_codelist_maps_to`, `controlled_term_for_context`. | Identity merge unless separately represented as identity/crosswalk with version pins. |
+| `commercial` | `commercially_related_to`, `product_aligned_to_indication`, `market_segment_for_population`, `payer_concept_related_to`. | Clinical efficacy or safety claims without clinical/safety gates. |
+| `operational` | `operational_dependency_of`, `dataset_feeds_dashboard`, `api_consumer_uses_term`, `workflow_depends_on_source`, `downstream_uses_mapping`. | Scientific, clinical, or safety claims from operational dependencies. |
+| `evidence_support` | `entity_supported_by_evidence`, `assertion_supported_by_evidence`, `evidence_supports_relationship`, `evidence_contradicts_relationship`, `evidence_context_for_relationship`. | Treating evidence support itself as a biomedical relation. |
+| `inferred` | `inferred_from_path`, `inferred_mechanistic_bridge`, `inferred_clinical_bridge`, `inferred_safety_context`; underlying domain predicate only with derivation metadata. | Hiding input edges, weakest link, source limitations, or rule version. |
+| `hypothesis` | `hypothesis_bridge`, `is_hypothesis_about`, `may_relate_to_investigation`, `accepted_for_investigation`, `convertedToRelationshipAssertion`. | Display as released fact or approved relationship. |
+| `blocked` | `unsupported`, `blocked`, `notMatch`, `contradicted_by_evidence`, `license_blocked`, `causal_claim_blocked`, `access_blocked`. | Positive relationship wording unless explicitly labeled negative/suppression metadata. |
 
 ## Evidence, Review, And Release Matrix
 
 | Class | Evidence requirements | Review requirements | Release eligibility |
 |---|---|---|---|
-| `identity` | Identifier/alias source, source version, provenance, confidence. Canonical merge needs source-authoritative evidence or at least two non-conflicting sources unless policy permits otherwise. | Standards/mapping reviewer for merge-affecting identity; domain reviewer when identity changes biomedical interpretation. | Eligible only when reviewed and `confidence_band=high`; uncertain identity remains crosswalk/speculative. |
-| `vocabulary_crosswalk` | Source and target vocabulary, source and target versions, mapping predicate evidence, license policy for both sides, confidence and scope note for non-exact predicates. | Standards/mapping reviewer; regulatory reviewer for submission or controlled-label terms. | Eligible if approved, source/target versions present, license status valid, and predicate is not `uncertainMatch` or `requiresReview`. |
-| `evidence_backed_relationship` | Evidence object with source name/version, source record/artifact, source trust, evidence type, evidence strength, license/sensitivity, source limitations, provenance. | Domain reviewer. Safety, regulatory, patient-impacting, or causal claims require compliance/specialist review. | Eligible if approved, evidence complete, no critical validation findings, and release package binds validation and approval trace. |
-| `inferred_relationship` | Rule/version, input assertion IDs, input releases, input evidence/provenance, execution timestamp, derivation path, weakest input edge. | Reviewer must approve the inference policy and the release-impacting output. | Not eligible by itself. Eligible only after reviewed conversion or as disclosed released path component. |
-| `ai_suggested_relationship` | Model metadata, prompt/config/pipeline version, source spans, candidate evidence refs, rationale, confidence, duplicate/safety/license flags. | Human review mandatory before any conversion. | Never directly eligible. |
-| `hypothesis_bridge` | Hypothesis rationale, supporting and contradicting evidence pointers where available, known limitations, author/proposer, source constraints. | Domain reviewer may accept for investigation or reject. | Not eligible as released fact. May be exported only as clearly labeled hypothesis if policy allows. |
-| `speculative_unreviewed` | Candidate provenance, generation method, reason for speculation, evidence gap statement, confidence no higher than low/medium per policy. | Must route to review, rejection, or hypothesis workspace. | Not eligible. |
-| `unsupported_blocked` | Block rationale, blocker category, policy or evidence ref, contradiction or license/access reason, actor/reviewer, audit event. | Reviewer or policy owner for persistent block. | Not eligible as positive fact; may release only as negative/suppression artifact with explicit labeling. |
+| `identity` | Identifier/alias source, source version, provenance, confidence; corroboration for merge-affecting identity unless source-authoritative policy applies. | Standards/mapping reviewer; domain reviewer if semantic interpretation changes. | Eligible only when reviewed, high confidence, license-valid, and unambiguous. |
+| `vocabulary_crosswalk` | Source and target vocabulary, source/target versions, mapping evidence, license policy, confidence, scope note for non-exact predicates. | Standards/mapping reviewer; regulatory reviewer for submission/label terms. | Eligible if approved and predicate is not `uncertainMatch` or `requiresReview`; `notMatch` only as negative/suppression metadata. |
+| `hierarchical` | Hierarchy source/version, direction, scope, provenance. | Standards/domain reviewer when released. | Eligible with explicit direction and validated source scope. |
+| `mechanistic` | Direct evidence, mechanism evidence type, source version, provenance, confidence, limitations. | Scientific/domain reviewer; causal-sensitive claims require specialist/compliance review. | Eligible with evidence/review and no unsupported causal wording. |
+| `clinical` | Trial/clinical source record, source version, clinical context, evidence type, limitations. | Clinical/domain reviewer. | Eligible after review; no unreviewed efficacy/safety extrapolation. |
+| `safety` | Safety source/version, evidence type, limitations, disclaimers, license/sensitivity. | Safety reviewer; compliance/specialist for causal or patient-impacting claims. | Eligible only with non-causal limitations and required review. |
+| `regulatory` | Regulatory source/codelist version, submission/label context, evidence pointer, license policy. | Regulatory/standards reviewer. | Eligible with version pins, review, and export/license approval. |
+| `commercial` | Business source/version, context, evidence, license/sensitivity, limitations. | Commercial/domain reviewer. | Eligible as commercial context only. |
+| `operational` | System/source metadata, dependency proof, owner, version, audit context. | System owner or operations reviewer. | Eligible as operational metadata only. |
+| `evidence_support` | Evidence object with source/version, evidence role, source span or pointer, access policy. | Evidence reviewer if used for release or contradiction. | Eligible as evidence linkage only. |
+| `inferred` | Rule/version, input assertions, input evidence/provenance, execution timestamp, derivation path, weakest input edge. | Inference policy/output reviewer for release-impacting use. | Not eligible by inference alone; requires review/disclosure. |
+| `hypothesis` | Rationale, proposer/generator, support/contradiction pointers, limitations. | Domain reviewer may accept for investigation or reject. | Not eligible as released fact; conversion requires new relationship proposal. |
+| `blocked` | Block rationale, blocker category, policy/evidence ref, contradiction/license/access reason, actor/reviewer, audit event. | Reviewer or policy owner. | Not eligible as positive fact. |
+
+## Epistemic Axis Mapping
+
+Relationship class is not used for epistemic state.
+
+| Situation | Relationship fields |
+|---|---|
+| AI-suggested mechanistic candidate | `relationship_class=mechanistic`, `assertion_type=model_suggested`, `review_status=proposed`, unreleased working scope. |
+| AI-suggested hypothesis | `relationship_class=hypothesis`, `assertion_type=model_suggested`, `review_status=proposed`, BridgeHypothesis reference. |
+| Speculative/unreviewed clinical bridge | `relationship_class=clinical`, `review_status=draft` or `proposed`, `confidence_band=low`, warning `requires_human_review`. |
+| Deterministic inference path | `relationship_class=inferred` for an inferred edge, or domain class plus `assertion_type=inferred` when a reviewed domain relationship was produced by inference. |
+| Unsupported or prohibited candidate | `relationship_class=blocked`, `confidence_band=blocked`, `blocked_rationale` required. |
+| Evidence-backed relationship | Domain relationship class, evidence present, non-model assertion type, review status at least `approved` before release. |
 
 ## Assertion-Type Rules
 
-Relationship class and assertion type are separate fields.
-
 | Assertion type | Compatible classes | Release behavior |
 |---|---|---|
-| `imported` | `identity`, `vocabulary_crosswalk`, `evidence_backed_relationship`, `unsupported_blocked` | Requires review before release unless source-authoritative policy route allows mechanical staging. |
-| `human_curated` | All except raw `ai_suggested_relationship` | Release eligible only when class rules pass. |
-| `inferred` | `inferred_relationship`, reviewed inferred variants of `evidence_backed_relationship` | Requires derivation evidence and review. |
-| `model_suggested` | `ai_suggested_relationship`, `hypothesis_bridge`, `speculative_unreviewed` | Never directly release eligible. |
-| `deprecated` | Historical versions of any class | Retained for traceability; not active positive fact. |
-| `administrative` | `unsupported_blocked`, release/path metadata, operational dependencies | Cannot create positive biomedical claims without evidence. |
+| `imported` | Any class except release-as-fact hypotheses without review. | Requires class-specific review unless source-authoritative policy permits mechanical staging. |
+| `human_curated` | All classes. | Release eligible only when class rules pass. |
+| `inferred` | `inferred` or domain classes with derivation metadata. | Requires derivation evidence and review. |
+| `model_suggested` | Any class in working/proposed state, commonly `hypothesis`, `inferred`, or a domain class candidate. | Never directly release eligible. |
+| `system_generated` | Operational, evidence support, inferred, validation/path metadata, or policy-approved mechanical actions. | Not a domain judgment; release requires policy and review controls where applicable. |
+| `deprecated` | Historical versions of any class. | Retained for traceability; not active positive fact. |
 
 ## Review-State Rules
 
@@ -125,13 +172,11 @@ Relationship class and assertion type are separate fields.
 | `draft` | Work-in-progress assertion. | Not eligible. |
 | `proposed` | Submitted candidate. | Not eligible. |
 | `in_review` | Human/domain review active. | Not eligible. |
-| `accepted_for_investigation` | Hypothesis accepted for study. | Not eligible as fact. |
 | `approved` | Required review complete. | Eligible only if class-specific validation, license, evidence, and release gates pass. |
-| `rejected` | Rejected candidate. | Not eligible. May create blocked/suppression record. |
-| `staged` | Included in release candidate. | Candidate only. |
-| `released` | Immutable release artifact contains assertion. | Active released fact or labeled negative/hypothesis artifact depending class. |
-| `deprecated` | Historical but discouraged. | Historical release only; not new active assertion. |
-| `blocked` | Policy, access, evidence, safety, or contradiction block. | Not eligible as positive fact. |
+| `rejected` | Rejected candidate. | Not eligible; may create `blocked` or suppression record. |
+| `released` | Immutable release artifact contains assertion. | Active released fact, or labeled negative metadata when `relationship_class=blocked`. |
+| `deprecated` | Historical but discouraged. | Historical release only; future use requires successor or new proposal. |
+| `superseded` | Replaced by another governed assertion. | Historical only; successor link required. |
 
 ## Path Policy
 
@@ -167,7 +212,7 @@ The path contributes:
 | Band | Rules |
 |---|---|
 | `high` | All critical edges are reviewed, evidence-backed, authorized, and high or policy-accepted medium confidence; no unreviewed model-suggested edge; no blocked edge; no undisclosed restricted evidence; evidence diversity present unless policy allows identity exception. |
-| `medium` | Reviewed or reviewable path with at least one medium-confidence or broad/related/inferred edge; warnings required for weak links. |
+| `medium` | Reviewed or reviewable path with at least one medium-confidence, broad, related, inferred, or cross-domain edge; warnings required for weak links. |
 | `low` | Speculative, weakly supported, long, low-confidence, or unreviewed path; must recommend review action. |
 | `blocked` | Any blocked edge, unauthorized required edge, unresolvable restricted evidence when policy requires block, or safety/causal violation. |
 
@@ -175,9 +220,9 @@ The path contributes:
 
 Path payloads must include warnings when:
 
-- Any edge is inferred.
-- Any edge is model-suggested.
-- Any edge is a hypothesis.
+- Any edge has `assertion_type=inferred`.
+- Any edge has `assertion_type=model_suggested`.
+- Any edge has `relationship_class=hypothesis`.
 - Any evidence is restricted, redacted, stale, contradictory, or single-source.
 - Any edge uses `broadMatch`, `relatedMatch`, `hasDbXref`, `uncertainMatch`, or `requiresReview`.
 - The path crosses safety, regulatory, patient, or causal domains.
@@ -190,18 +235,18 @@ Kevin's SHACL work should include shapes equivalent to:
 
 | Shape | Applies to | Critical conditions |
 |---|---|---|
-| `RelationshipClassValidityShape` | RelationshipAssertion | Exactly one primary class; value in taxonomy; secondary tags valid for class. |
+| `RelationshipClassValidityShape` | RelationshipAssertion | Exactly one primary class; value is one of the canonical 13 enum values. |
 | `IdentityMappingSeparationShape` | RelationshipAssertion and MappingAssertion | Blocks use of identity/crosswalk predicates as generic relationship claims and blocks relationship predicates as mapping equivalence. |
 | `RelationshipEvidenceByClassShape` | RelationshipAssertion | Enforces class-specific evidence requirements. |
-| `RelationshipReviewByClassShape` | RelationshipAssertion | Enforces reviewer role and review status by class and domain tag. |
+| `RelationshipReviewByClassShape` | RelationshipAssertion | Enforces reviewer role and review status by class and governance tags. |
 | `RelationshipReleaseEligibilityShape` | RelationshipAssertion | Blocks release if review/evidence/provenance/license/release context is incomplete. |
 | `ModelSuggestedRelationshipReleaseShape` | RelationshipAssertion | Blocks any direct release/staging of `assertion_type=model_suggested`. |
-| `SafetyLimitationShape` | Safety-tagged relationships | Requires evidence type, limitation metadata, non-causal disclaimer, and stronger review for causal claims. |
-| `CausalClaimStatusShape` | Mechanistic/safety/clinical claims | Blocks causal wording unless predicate, evidence, and review permit it. |
-| `BlockedRelationshipRationaleShape` | `unsupported_blocked` | Requires blocker category, rationale, policy/evidence ref, actor/reviewer, audit event. |
+| `SafetyLimitationShape` | `relationship_class=safety` or `secondary_relationship_tags` contains `causal_sensitive` or `patient_impacting` | Requires evidence type, limitation metadata, non-causal disclaimer, and stronger review for causal claims. |
+| `CausalClaimStatusShape` | Mechanistic, safety, clinical, and causal-sensitive claims | Blocks causal wording unless predicate, evidence, and review permit it. |
+| `BlockedRelationshipRationaleShape` | `relationship_class=blocked` | Requires blocker category, rationale, policy/evidence ref, actor/reviewer, audit event. |
 | `RelationshipPathConfidenceShape` | RelationshipPath | Requires path confidence, weakest link, edge IDs, warnings, and access-filtering result. |
 | `RestrictedEvidencePathShape` | RelationshipPath | Blocks/redacts path output when caller lacks access to any required edge/evidence. |
-| `HypothesisLabelingShape` | BridgeHypothesis and hypothesis paths | Requires explicit hypothesis labels and blocks released-fact presentation. |
+| `HypothesisLabelingShape` | `relationship_class=hypothesis` and BridgeHypothesis | Requires explicit hypothesis labels and blocks released-fact presentation. |
 
 Critical release-blocking violations:
 
@@ -222,22 +267,11 @@ Critical release-blocking violations:
 
 ### For Angela / contracts
 
-Recommended JSON contract enum values:
+Canonical relationship class enum:
 
 ```text
 identity
 vocabulary_crosswalk
-evidence_backed_relationship
-inferred_relationship
-ai_suggested_relationship
-hypothesis_bridge
-speculative_unreviewed
-unsupported_blocked
-```
-
-Recommended secondary tag values:
-
-```text
 hierarchical
 mechanistic
 clinical
@@ -246,6 +280,14 @@ regulatory
 commercial
 operational
 evidence_support
+inferred
+hypothesis
+blocked
+```
+
+Secondary relationship tags are governance modifiers only:
+
+```text
 causal_sensitive
 restricted_evidence
 patient_impacting
@@ -266,12 +308,14 @@ uncertainMatch
 requiresReview
 ```
 
-Relationship predicate enum should be separate from mapping predicates. Proposed additional local names:
+Relationship predicate enum should remain separate from mapping predicates. Proposed additional local names:
 
 ```text
 same_as
 has_synonym
 has_external_identifier
+broader_than
+narrower_than
 mechanistically_related_to
 clinically_related_to
 safety_context_related_to
@@ -279,7 +323,6 @@ regulatory_crosswalk_to
 commercially_related_to
 operational_dependency_of
 inferred_from_path
-model_suggested
 hypothesis_bridge
 unsupported
 blocked
@@ -294,7 +337,7 @@ access_blocked
 Recommended RDF namespace:
 
 - Reuse `pharmrel:` for relationship predicates.
-- Keep mapping objects distinct from relationship assertions, even if both use `pharmrel:` local names.
+- Keep mapping objects distinct from relationship assertions, even when both use `pharmrel:` local names.
 - Add `pharm:hasRelationshipClass`, `pharm:hasAssertionType`, `pharm:hasPathConfidence`, `pharm:hasWeakestLink`, `pharm:hasEvidenceStrength`, `pharm:hasDomainBoundaryCrossing`, `pharm:hasRelationshipWarning`, `pharm:hasReviewRequirement`, `pharm:hasCausalClaimStatus`, `pharm:usesRestrictedEvidence`, `pharm:hasRedactionPolicy`, `pharm:isHypothesisAbout`, and `pharm:convertedToRelationshipAssertion` or equivalent properties from addendum section 11.2.
 
 Recommended class modeling:
@@ -311,4 +354,4 @@ Recommended class modeling:
 
 Open naming item for Angela/Kevin:
 
-- Existing mapping predicate local names are camelCase while addendum examples use snake_case. This taxonomy preserves the current mapping-contract camelCase values and uses snake_case for newly proposed Semantic Bridge relationship predicate local names. If ontology prefers one style globally, add aliases but do not merge mapping equivalence predicates with relationship predicates.
+- Existing mapping predicate local names are camelCase while addendum examples use snake_case. This taxonomy preserves current mapping-contract camelCase values and uses snake_case for newly proposed Semantic Bridge relationship predicate local names. If ontology prefers one style globally, add aliases but do not merge mapping equivalence predicates with relationship predicates.

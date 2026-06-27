@@ -30,7 +30,7 @@ Every relationship assertion and every path result that could be safety-sensitiv
 | `relationship_class` | One primary class from the Semantic Bridge taxonomy. |
 | `predicate` | The exact relationship predicate, not a generic "related" label when a stronger claim is implied. |
 | `claim_type` | `descriptive`, `associative`, `mechanistic`, `causal`, `safety_signal`, `regulatory`, `operational`, `hypothesis`, or `blocked`. |
-| `causal_claim_status` | `not_causal`, `causal_prohibited`, `causal_review_required`, `causal_review_approved`, or `blocked_overclaim`. |
+| `causal_claim_status` | Must be exactly one literal from the canonical enum below. |
 | `assertion_type` | `imported`, `human_curated`, `inferred`, `model_suggested`, `system_generated`, `deprecated`. |
 | `review_status` | `draft`, `proposed`, `in_review`, `approved`, `rejected`, `released`, `deprecated`, or `superseded`. |
 | `evidence_type` | Source-specific evidence category such as trial registry, publication, curated activity, spontaneous report, label, internal template, rule, model output. |
@@ -40,6 +40,32 @@ Every relationship assertion and every path result that could be safety-sensitiv
 | `confidence_source` | Calibration, reviewer, deterministic rule, source score, or blocked. |
 | `release_context` | `working`, `review`, or released ID. |
 | `data_license_class` | License class for every edge and evidence object. |
+
+## Canonical Causal Claim Status Enum
+
+The authoritative literal list for `causal_claim_status` is:
+
+```text
+not_causal
+causal_review_required
+causal_review_approved
+causal_prohibited
+blocked_overclaim
+```
+
+No other literals are valid in policy, JSON contracts, ontology/SHACL, fixtures, validation runners, APIs, exports, or release packages. Deprecated/drifted literals such as `causal_claim_reviewed`, `causal_claim_prohibited`, `causal_claim_unknown`, `hypothesis_only`, `association_only`, and `approved_causal_claim` must fail validation.
+
+| Status | Meaning | Release clearance |
+|---|---|---|
+| `not_causal` | The assertion/path makes no causal, incidence, prevalence, comparative-risk, attributable-risk, product-fault, or patient-impacting causal claim. It may still carry non-causal safety warnings such as FAERS/openFDA limitations. | Cleared for release only if all ordinary evidence, provenance, review, license, source-disclaimer, tenant, and release-context gates pass. |
+| `causal_review_required` | The assertion/path contains causal or mechanistic wording, or the relationship class/source context is causal-sensitive, but approved causal/domain review is not yet attached. | Blocks release and export-as-fact. Route to human causal/domain review. |
+| `causal_review_approved` | The assertion/path makes a causal or mechanistic claim, uses a class/source/evidence type eligible for that claim, and has approved causal/domain review with reviewer, timestamp, evidence, provenance, and limitations. | Cleared for release only if all ordinary evidence, provenance, reviewer, non-blocked license, source-disclaimer, tenant, and release-context gates pass. |
+| `causal_prohibited` | The assertion/path attempts or would require a causal interpretation from a prohibited class/source/evidence type, including FAERS/openFDA or FAERS-like spontaneous reports by themselves. | Blocks release. Must be rewritten to `not_causal` with warnings if the intended claim is non-causal, or rejected as unsupported if the causal claim remains. |
+| `blocked_overclaim` | The assertion/path overstates the evidence, upgrades association/speculation/inference into causation, hides a limitation, or conflicts with weakest-link constraints. | Blocks release. Must be remediated, downgraded, or rejected. |
+
+Runner and SHACL rule: release validation must gate every status except the cleared set `{ not_causal, causal_review_approved }`. `causal_review_approved` is not sufficient by itself; it is cleared only when the released assertion governance gate and all source/evidence/license gates also pass.
+
+Released assertion governance gate: any released `RelationshipAssertion` MUST have `review_status=released`, a non-null `reviewed_by`, a non-null `reviewed_at`, a non-null `release_id`, immutable evidence/provenance bindings, and a non-blocked license decision. There are no exceptions for system-generated, imported, inferred, AI-suggested, or manually curated assertions. Blocked, unknown, expired, pending-legal, unauthorized, PHI/PII-without-policy, or non-release-eligible license states block release.
 
 ## Prohibited Claim Matrix
 

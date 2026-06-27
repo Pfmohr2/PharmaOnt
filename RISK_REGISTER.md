@@ -392,3 +392,131 @@ Reference read: `pharmaops_semantic_bridge_addendum_prompt.md` sections 3-12, Ad
 | SB-A-RT-WATCH-004 | P0 watch | RelationshipAssertion, RelationshipPath, BridgeHypothesis, or PathQuery contracts omit governed fields needed to block unprovenanced, unlicensed, unauthorized, or weak-link-hidden relationships. | Angela; Kevin; Jim | Every relationship assertion must include relationship class, evidence, provenance, confidence, assertion type, review status, data license status, and release context. Every path must include path confidence, weakest link, access filtering, warnings, and path status. | Holding for Phase A deliverables |
 | SB-A-RT-WATCH-005 | P0 watch | Multi-hop path confidence becomes a naive average or can exceed the weakest critical edge, hiding broadMatch/relatedMatch/model-suggested/safety/restricted weak links. | Angela; Jim; Andy | Path contracts and policies must cap confidence by weakest critical edge, block paths with blocked edges, prevent high confidence for unreviewed model-suggested edges, and require weakest-link explanation. | Holding for Phase A deliverables |
 | SB-A-RT-WATCH-006 | P0 watch | Path-level filtering leaks restricted evidence, hidden edge existence, source snippets, confidence notes, warnings, facets, or export metadata across tenant/license/release boundaries. | Angela; Kevin; Andy | Contracts must define edge-level and path-level authorization/redaction semantics; path is viewable/exportable only if every edge/evidence object is authorized, or policy-defined redaction is non-enumerating. | Holding for Phase A deliverables |
+
+## Semantic Bridge Phase A Red Team Review (2026-06-27)
+
+GO/NO-GO: NO-GO for starting Phase B. The four Phase A design deliverables are directionally aligned with the addendum, and the existing targeted tests pass, but adversarial probes found P0 contract/SHACL/policy inconsistencies that would let Phase B build on ambiguous or unsafe semantics.
+
+Verification run:
+- Targeted Phase A stack: `node --test packages/contracts/test/contracts.test.mjs tests/ontology/semantic-spine.test.mjs tests/unit/semantic-store.test.mjs` = 35 pass, 0 fail.
+- Custom probe 1: modified `valid-semantic-bridge.ttl` so a RelationshipAssertion used `relationship_class=evidence_support` with `relationshipPredicate pharmrel:exactMatch`; `validateSemanticTurtle()` returned `{ valid: true, errors: [] }`.
+- Custom probe 2: modified `valid-semantic-bridge.ttl` so a safety relationship used contract-style `hasCausalClaimStatus "causal_claim_reviewed"` without SHACL's `approved_causal_claim` literal; `validateSemanticTurtle()` returned `{ valid: true, errors: [] }`.
+- Custom probe 3: a JSON RelationshipPath with `path_status=released`, `path_confidence.confidence_band=high`, `weakest_link_adjusted=false`, no warnings, and an edge with `assertion_type=model_suggested` / `review_status=proposed` is valid under `docs/semantic-bridge/contracts/relationship-path.schema.json`.
+- Custom probe 4: a JSON RelationshipAssertion with `review_status=released`, `data_license.license_status=blocked`, blocked license classification, and `reviewed_by/reviewed_at=null` is valid under `docs/semantic-bridge/contracts/relationship-assertion.schema.json`.
+
+| Finding ID | Severity | Risk | Owner | Mitigation | Status |
+|---|---|---|---|---|---|
+| SB-A-RT-001 | P0 | Non-collapse is not enforced across contract/SHACL. An identity/crosswalk predicate can be smuggled into a generic relationship assertion: `relationship_class=evidence_support` with `relationshipPredicate pharmrel:exactMatch` passes the current SHACL runner. This violates addendum s4.1, s5, s6.1, and the Phase A attack surface. | Kevin; Angela; Jim | Add class/predicate matrix enforcement in JSON contracts and SHACL/runner. RelationshipAssertion predicates must be constrained by `relationship_class`; mapping/crosswalk predicates (`exactMatch`, `closeMatch`, `broadMatch`, etc.) must not validate as generic `evidence_support`, mechanistic, clinical, safety, or other domain relationship classes. | Open - blocks Phase B |
+| SB-A-RT-002 | P0 | Path integrity is not enforced in the JSON contract. A released, high-confidence path can contain a proposed `model_suggested` edge, no warning, and `weakest_link_adjusted=false` while remaining schema-valid. SHACL catches one RDF fixture only when a derived boolean flag is supplied, but the JSON contract does not enforce the edge-level rule. This violates addendum s7 and s19. | Angela; Kevin | RelationshipPath schema must block released paths containing `model_suggested`/hypothesis/unreviewed edges, block `high` confidence when any edge is model-suggested/low-confidence/blocked, require warnings tied to edge content, and require `weakest_link_adjusted=true` for scored paths. SHACL should derive or require equivalent edge facts, not trust optional summary booleans. | Open - blocks Phase B |
+| SB-A-RT-003 | P0 | Causal claim status literals drift across deliverables, creating a safety bypass. Policy uses `not_causal`, `causal_prohibited`, `causal_review_required`, `causal_review_approved`, `blocked_overclaim`; the RelationshipAssertion contract uses `not_causal`, `causal_claim_reviewed`, `causal_claim_prohibited`, `causal_claim_unknown`; SHACL uses `not_causal`, `hypothesis_only`, `association_only`, `approved_causal_claim`; the runner only triggers causal review for `approved_causal_claim`. A contract-style causal-reviewed status passes without triggering the causal-review gate. | Andy; Angela; Kevin | Choose one canonical `causal_claim_status` enum and use it verbatim in policy, JSON contracts, ontology predicates, SHACL shapes, runner checks, fixtures, and tests. The causal-review gate must trigger on every causal-approved/reviewed literal and block all prohibited/unknown/required-review overclaims. | Open - blocks Phase B |
+| SB-A-RT-004 | P0 | The RelationshipAssertion JSON contract does not enforce released relationship reviewer and license blockers. A released relationship with `license_status=blocked`, `license_classification=blocked_pending_legal_review`, and null `reviewed_by/reviewed_at` validates. This violates addendum s6.1, s6.3 inherited governance, s11 release-blocking requirements, and s19. | Angela; Kevin | RelationshipAssertion schema must require non-null `reviewed_by`/`reviewed_at`, non-blocked/non-pending license status, valid permitted uses, release ID, validation report, evidence, provenance, and release context for released assertions. Mirror these checks in SHACL and fixtures. | Open - blocks Phase B |
+
+## Semantic Bridge Phase A Fix Re-Red-Team (2026-06-27)
+
+GO/NO-GO: NO-GO for Phase B. The four original P0 fixtures now fail closed in `validateSemanticTurtle()`, and the requested targeted test stack is green, but residual multi-value Turtle bypasses remain in the SHACL runner parser around the same Phase A enforcement surfaces.
+
+Verification run:
+- Requested stack: `node --test tests/unit/semantic-store.test.mjs tests/ontology/semantic-spine.test.mjs` = 29 pass, 0 fail.
+- Baseline valid fixture: `valid-semantic-bridge.ttl` returns `{ valid: true, errors: [] }`.
+- P0-001 fixture: `invalid-sb-p0-001-class-predicate-matrix.ttl` returns `relationship_class evidence_support cannot use predicate exactMatch`.
+- P0-002 fixture: `invalid-sb-p0-002-released-path-model-edge.ttl` returns `high confidence path cannot include model_suggested edge`, `released path cannot include model_suggested edge`, and review-state edge errors.
+- P0-003 fixture: `invalid-sb-p0-003-causal-status-drift.ttl` returns `pharm:hasCausalClaimStatus has unapproved value causal_claim_reviewed`.
+- P0-004 fixture: `invalid-sb-p0-004-released-blocked-license-null-reviewer.ttl` returns `requires non-empty pharm:reviewedBy`, `released relationship cannot use release-blocking license blocked_pending_legal_review`, and `released relationship cannot have blocked export authorization`.
+
+| Finding ID | Severity | Risk | Owner | Mitigation | Status |
+|---|---|---|---|---|---|
+| SB-A-RT-005 | P0 | `validateSemanticTurtle()` checks only the first literal for several governed fields, so valid Turtle object lists can hide a blocking second value. Repros that returned `{ valid: true, errors: [] }`: `hasRelationshipClass "identity", "evidence_support"` with `relationshipPredicate pharmrel:exactMatch`; `hasCausalClaimStatus "not_causal", "causal_claim_reviewed"` on an approved safety assertion; released assertion with `dataLicenseClass "open_materializable", "blocked_pending_legal_review"`; released/high-confidence path edge with `assertionType "human_curated", "model_suggested"` and `hasAssertionType "human_curated", "model_suggested"`. This leaves the original four P0 surfaces bypassable by multi-valued RDF syntax even though the canned fixtures are blocked. | Kevin | Make the runner evaluate every value for enum, class/predicate, causal, assertion type, license, review, export, and path-edge fields; reject duplicate/multi-valued primary governance fields where the alignment doc says exactly one; add regression fixtures for object-list smuggling. | Open - blocks Phase B |
+
+## Semantic Bridge Phase A Fix Re-Red-Team Round 2 (2026-06-27)
+
+GO/NO-GO: NO-GO for Phase B. Kevin's same-line object-list fixtures for SB-A-RT-005 now fail closed, the original four P0 fixtures still fail, and the valid baseline still passes. However, equivalent valid Turtle object lists split across lines bypass `validateSemanticTurtle()` because `getObjectValues()` captures predicate objects only to the end of the current line.
+
+Verification run:
+- Requested stack: `node --test tests/unit/semantic-store.test.mjs tests/ontology/semantic-spine.test.mjs` = 30 pass, 0 fail.
+- Baseline valid fixture: `valid-semantic-bridge.ttl` returns `{ valid: true, errors: [] }`.
+- Original P0 fixtures still fail with the expected class/predicate, path model edge, causal-status, and released blocked-license/reviewer errors.
+- Same-line SB-A-RT-005 fixtures now fail with both content and `single-cardinality governance metadata but has 2 values` errors where applicable.
+
+| Finding ID | Severity | Risk | Owner | Mitigation | Status |
+|---|---|---|---|---|---|
+| SB-A-RT-006 | P0 | Cross-line Turtle object lists still smuggle illegal second values because `getObjectValues()` uses a line-bounded object regex. Repros returning `{ valid: true, errors: [] }`: `pharm:hasRelationshipClass "identity",` newline `"evidence_support"` with `relationshipPredicate pharmrel:exactMatch`; `pharm:hasCausalClaimStatus "not_causal",` newline `"causal_claim_reviewed"` on an approved safety assertion; released assertion with `pharm:dataLicenseClass "open_materializable",` newline `"blocked_pending_legal_review"`; released/high-confidence path edge with `pharm:assertionType "human_curated",` newline `"model_suggested"` and same for `hasAssertionType`. This is valid Turtle syntax and leaves SB-A-RT-005 bypassable after the patch. | Kevin | Parse Turtle statements structurally or make `getObjectValues()` capture predicate object lists through the terminating semicolon/period, not newline. Add cross-line object-list regression fixtures for all four Phase A surfaces. | Open - blocks Phase B |
+
+## Semantic Bridge Phase A Fix Re-Red-Team Round 3 (2026-06-27)
+
+GO/NO-GO: NO-GO for Phase B. The round-3 structural object capture fixes same-line and cross-line object-list smuggling fixtures, and the requested test stack is green. However, RDF graph-merge semantics remain unmodeled: repeated statements for the same subject are validated as separate blocks instead of one merged subject, so illegal governance triples can be placed in a separate statement that lacks its own `a pharm:RelationshipAssertion` and is ignored by relationship validation.
+
+Verification run:
+- Requested stack: `node --test tests/unit/semantic-store.test.mjs tests/ontology/semantic-spine.test.mjs` = 31 pass, 0 fail.
+- Baseline valid fixture: `valid-semantic-bridge.ttl` returns `{ valid: true, errors: [] }`.
+- Original P0, same-line RT-005, and cross-line RT-006 fixtures all fail with expected content and single-cardinality errors.
+
+| Finding ID | Severity | Risk | Owner | Mitigation | Status |
+|---|---|---|---|---|---|
+| SB-A-RT-007 | P0 | `validateSemanticTurtle()` validates statement blocks independently and does not merge repeated statements for the same RDF subject. Valid Turtle graphs can therefore hide extra governance triples in a separate statement. Repros returning `{ valid: true, errors: [] }`: (1) P0-001 class/predicate: main typed block uses `hasRelationshipClass "identity"` with `relationshipPredicate pharmrel:exactMatch`; later statement for the same subject adds `pharm:hasRelationshipClass "evidence_support"`. (2) P0-003 causal drift: main typed safety block uses `hasCausalClaimStatus "not_causal"`; separate statement for the same subject adds `pharm:hasCausalClaimStatus "causal_claim_reviewed"`. (3) P0-004 released license: main typed released assertion uses `dataLicenseClass "open_materializable"` with valid reviewer/export; separate statement for the same subject adds `pharm:dataLicenseClass "blocked_pending_legal_review"`. These are one RDF graph after parsing and should trigger the same per-value and single-cardinality guards. | Kevin | Merge triples by subject before validation, or use a real Turtle/RDF parser and validate against the merged graph. Single-cardinality and enum/policy checks must evaluate the complete subject graph, including repeated statements before or after the typed block. Add split-subject regression fixtures for class, causal status, and license governance fields. | Open - blocks Phase B |
+
+## Semantic Bridge Phase A Fix Final Re-Red-Team (2026-06-27)
+
+GO/NO-GO: NO-GO for Phase B. The merged-subject fix blocks prior split-subject fixtures when the repeated statements use the same lexical subject token. Original P0, RT-005, RT-006, and same-token RT-007 fixtures all fail closed, and the requested test stack is green. However, equivalent subjects written once as a prefixed name and once as a full IRI are still keyed as different subjects, so the same RDF subject is not merged.
+
+Verification run:
+- Requested stack: `node --test tests/unit/semantic-store.test.mjs tests/ontology/semantic-spine.test.mjs` = 32 pass, 0 fail.
+- Baseline valid fixture: `valid-semantic-bridge.ttl` returns `{ valid: true, errors: [] }`.
+- Original P0, RT-005 same-line lists, RT-006 cross-line lists, and RT-007 same-token split-subject fixtures all fail with expected content and single-cardinality errors.
+- Same-token split-subject path-edge model-suggested probe fails closed with assertion-type single-cardinality and released/high-confidence path model-edge blockers.
+
+| Finding ID | Severity | Risk | Owner | Mitigation | Status |
+|---|---|---|---|---|---|
+| SB-A-RT-008 | P0 | Subject merge keys are lexical, not RDF-normalized. A typed `pharmrelobj:*` subject and a separate `<https://example.pharmaops.local/tenant/acme/relationship/*>` statement for the same expanded IRI do not merge, so illegal governance triples can still be ignored. Repros returning `{ valid: true, errors: [] }`: (1) class/predicate: typed `pharmrelobj:rt007-p0-001...` block uses `identity` + `exactMatch`; full-IRI statement for the same subject adds `hasRelationshipClass "evidence_support"`. (2) causal: typed prefixed safety assertion uses `not_causal`; full-IRI statement adds `hasCausalClaimStatus "causal_claim_reviewed"`. (3) released license: typed prefixed released assertion uses `open_materializable`; full-IRI statement adds `dataLicenseClass "blocked_pending_legal_review"`. (4) path edge: typed prefixed edge is `human_curated`; full-IRI statement for the same edge adds `assertionType "model_suggested"` and `hasAssertionType "model_suggested"`, allowing the released/high-confidence path to pass. | Kevin | Resolve prefixes/base IRIs and canonicalize subject identifiers before merging statements, or use a real Turtle/RDF parser and validate the merged RDF graph. Add prefixed-name vs full-IRI split-subject fixtures for class, causal status, license, and path-edge assertion type. | Open - blocks Phase B |
+
+## Semantic Bridge Phase A Fix Confirmation Re-Red-Team (2026-06-27)
+
+GO/NO-GO: NO-GO for Phase B. SB-A-RT-008 fixed fixed-scope prefixed-name/full-IRI subject merging across class, causal, license, and path-edge surfaces. All original P0 and RT-005/006/007/008 fixtures fail closed, and the requested stack is green. A remaining keying bypass exists for legal mid-file prefix redeclaration: `parseTurtleDeclarations()` builds one final prefix map for the whole file, so earlier statements are canonicalized with a later prefix binding rather than the binding in scope at that statement.
+
+Verification run:
+- Requested stack: `node --test tests/unit/semantic-store.test.mjs tests/ontology/semantic-spine.test.mjs` = 33 pass, 0 fail.
+- Baseline valid fixture: `valid-semantic-bridge.ttl` returns `{ valid: true, errors: [] }`.
+- Original P0, RT-005, RT-006, same-token RT-007, and fixed-scope RT-008 fixtures all fail with expected semantic and single-cardinality errors.
+- Additional fixed-scope keying probes pass closed: inverse full-IRI typed block plus prefixed smuggled triple; default prefix `:x` vs explicit prefix; base-relative `<x>` vs absolute/prefixed subject; interleaved different-subject statements.
+
+| Finding ID | Severity | Risk | Owner | Mitigation | Status |
+|---|---|---|---|---|---|
+| SB-A-RT-009 | P0 | Mid-file prefix redeclaration can still prevent same-subject merge. Repro returning `{ valid: true, errors: [] }`: start with `@prefix pharmrelobj: <https://example.pharmaops.local/tenant/acme/relationship/> .`; create typed `pharmrelobj:redeclared-subject` with `hasRelationshipClass "identity"` and `relationshipPredicate pharmrel:exactMatch`; later redeclare `@prefix pharmrelobj: <https://example.pharmaops.local/tenant/acme/other-relationship/> .`; then add `<https://example.pharmaops.local/tenant/acme/relationship/redeclared-subject> pharm:hasRelationshipClass "evidence_support" .`. In Turtle, the first prefixed subject expands using the first declaration, but the runner canonicalizes all prefixed subjects with the final declaration, so the full-IRI smuggled triple is not merged and the class/predicate violation is missed. | Kevin; God | This is another distinct RDF keying case in the hand-rolled parser. Either process declarations in document order with statement-local prefix/base scope, or escalate to a real RDF/Turtle parser dependency decision as requested by loop governance. Add a mid-file prefix redeclaration regression fixture if keeping the hand-rolled parser. | Open - blocks Phase B |
+
+## Semantic Bridge Phase A N3 Structural Re-Red-Team (2026-06-27)
+
+GO/NO-GO: NO-GO for Phase B. The N3-backed validator closes the prior text-parser keying/smuggling class: original P0, RT-005, RT-006, RT-007, RT-008, and RT-009 fixtures all fail closed, and the requested Phase A stack is green. A new parsed-graph object-type gap remains: primary governance fields that must be enum literals can point to RDF collections or blank nodes. The rule layer sees the predicate as present and single-cardinality but `getLiteralValues()` returns no values, so enum, matrix, causal, model-suggested, and license blockers can be skipped.
+
+Verification run:
+- Requested stack: `node --test tests/unit/semantic-store.test.mjs tests/ontology/semantic-spine.test.mjs` = 34 pass, 0 fail.
+- Baseline valid fixture: `valid-semantic-bridge.ttl` returns `{ valid: true, errors: [] }`.
+- All existing invalid fixtures through `invalid-sb-rt-009-*` fail closed with expected semantic and/or single-cardinality errors.
+- Datatyped/language-tagged `"model_suggested"` still blocks as expected.
+
+| Finding ID | Severity | Risk | Owner | Mitigation | Status |
+|---|---|---|---|---|---|
+| SB-A-RT-010 | P0 | N3 parsed graph validation does not reject non-literal objects for literal-only governance fields. Repros returning `{ valid: true, errors: [] }`: (1) class/predicate: replace `pharm:hasRelationshipClass "evidence_support"` with `pharm:hasRelationshipClass ( "identity" "evidence_support" )` while keeping `relationshipPredicate pharmrel:exactMatch`; (2) class/predicate blank node: `pharm:hasRelationshipClass [ rdf:value "evidence_support" ]`; (3) path edge: set edge `pharm:assertionType ( "human_curated" "model_suggested" )` and `pharm:hasAssertionType ( "human_curated" "model_suggested" )`, with the edge otherwise approved, allowing the released/high-confidence path to pass; (4) safety causal: `pharm:hasCausalClaimStatus [ rdf:value "causal_claim_reviewed" ]`; (5) released license: `pharm:dataLicenseClass ( "open_materializable" "blocked_pending_legal_review" )` with valid reviewer/export. These are invalid for the intended contract/SHACL shape but pass the rule layer because blank-node/collection objects are neither literal enum values nor counted as multiple literal values. | Kevin | For every literal-only governance predicate, reject any non-literal object term outright and require exactly one literal value where single-cardinality applies. This includes relationship class, relationship predicate where appropriate, assertion type, causal status, license class, review status, confidence band, path status, export status, and release context fields. Add collection and blank-node object regression fixtures across class, path-edge assertion type, causal status, and license surfaces. | Open - blocks Phase B |
+
+## Semantic Bridge Phase A RT-010 Closing Re-Red-Team (2026-06-27)
+
+GO/NO-GO: NO-GO for Phase B. Kevin's RT-010 literal node-kind guard blocks the requested non-literal object fixtures and the prior P0/RT-005/006/007/008/009 fixtures still fail closed. `valid-semantic-bridge.ttl` still passes. A residual predicate-term gap remains: `relationshipPredicate` can be supplied as a literal string, causing the class/predicate matrix to skip enforcement and allowing an otherwise disallowed relationship class/predicate combination to validate.
+
+Verification run:
+- Requested stack: `node --test tests/unit/semantic-store.test.mjs tests/ontology/semantic-spine.test.mjs` = 35 pass, 0 fail.
+- Direct fixture matrix: `valid-semantic-bridge.ttl` returns `valid:true`; all original `invalid-sb-p0-*`, RT-005, RT-006, RT-007, RT-008, RT-009, and RT-010 fixtures return `valid:false`.
+- RT-010 object-type probes return `valid:false` with literal node-kind errors for NamedNode, empty collection, mixed collection, blank node, and collection objects on sampled literal-only governance fields.
+- Residual probe: modify `valid-semantic-bridge.ttl` so the relationship assertion has `pharm:hasRelationshipClass "evidence_support"` and `pharm:relationshipPredicate "exactMatch"` instead of an IRI object. `validateSemanticTurtle()` returns `valid:true, errors:[]`.
+
+| Finding ID | Severity | Risk | Owner | Mitigation | Status |
+|---|---|---|---|---|---|
+| SB-A-RT-011 | P0 | `relationshipPredicate` accepts a literal object and then drops out of relationship class/predicate matrix enforcement. Repro returning `{ valid: true, errors: [] }`: in `valid-semantic-bridge.ttl`, set `pharm:hasRelationshipClass "evidence_support"` and replace `pharm:relationshipPredicate pharmrel:compound_has_target` with `pharm:relationshipPredicate "exactMatch"`. Because `getTermValues(... "pharm:relationshipPredicate")` does not produce a normalized predicate for the literal term, `requireRelationshipPredicateMatrix()` returns early when `relationshipPredicates.length === 0`. This reopens the SB-A-RT-001 non-collapse surface through a term-shape mismatch rather than a non-literal governance object. | Kevin | Enforce node kind for `pharm:relationshipPredicate` as a required IRI/NamedNode governance term, or explicitly reject literal/blank-node/collection predicate objects before matrix checks. Matrix validation should not return success when a required predicate object has an unsupported term shape. Add regression fixtures for literal, blank-node, collection, and malformed predicate objects combined with disallowed relationship classes. | Closed - RT-011 final re-RT GO |
+
+## Semantic Bridge Phase A Final Enforcement Re-Red-Team (2026-06-27)
+
+GO/NO-GO: GO for Phase B. RT-010 literal-only node-kind guards and RT-011 IRI-only node-kind guards now close the term-shape class across the audited Phase A enforcement surfaces. Prior P0/RT-005/006/007/008/009/010/011 fixtures fail closed, `valid-semantic-bridge.ttl` passes, and a genuine IRI illegal class/predicate pair still triggers the relationship matrix.
+
+Verification run:
+- Requested stack: `node --test tests/unit/semantic-store.test.mjs tests/ontology/semantic-spine.test.mjs` = 36 pass, 0 fail.
+- Full suite: `npm test` = 284 tests, 273 pass, 0 fail, 11 skipped.
+- Direct validation matrix: `valid-semantic-bridge.ttl` passes; 29 `invalid-sb-p0-*` and `invalid-sb-rt-*` fixtures fail closed; 45 adversarial term-shape and semantic probes fail closed.
+- IRI-only field probes: RelationshipAssertion `relationshipSubject`, `relationshipPredicate`, `relationshipObject`, `hasEvidence`, `hasRelationshipWarning`; RelationshipPath `relationshipPathStart`, `relationshipPathEnd`, `relationshipPathEdge`, `hasWeakestLink`, `hasRelationshipWarning`; MappingAssertion `sourceEntity`, `targetEntity`, and `hasEvidence` all reject literal, blank-node, and collection objects.
+- Re-confirmed `relationshipPredicate` datatyped and language-tagged literals fail closed, RT-010 literal guard still fails closed, RT-007/RT-009 keying fixtures still fail closed, and `evidence_support` plus IRI `pharmrel:exactMatch` still fires `relationship_class evidence_support cannot use predicate exactMatch`.

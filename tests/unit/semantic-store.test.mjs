@@ -96,6 +96,325 @@ test("Semantic Bridge SHACL runner rejects high confidence paths with unreviewed
   );
 });
 
+test("Semantic Bridge SHACL runner rejects Creed P0 taxonomy counterexamples", () => {
+  const cases = [
+    {
+      fixtureName: "invalid-sb-p0-001-class-predicate-matrix.ttl",
+      expected: "relationship_class evidence_support cannot use predicate exactMatch"
+    },
+    {
+      fixtureName: "invalid-sb-p0-002-released-path-model-edge.ttl",
+      expected: "released path cannot include model_suggested edge"
+    },
+    {
+      fixtureName: "invalid-sb-p0-003-causal-status-drift.ttl",
+      expected: "pharm:hasCausalClaimStatus has unapproved value causal_claim_reviewed"
+    },
+    {
+      fixtureName: "invalid-sb-p0-004-released-blocked-license-null-reviewer.ttl",
+      expected: "released relationship cannot use release-blocking license blocked_pending_legal_review"
+    },
+    {
+      fixtureName: "invalid-sb-p0-004-released-blocked-license-null-reviewer.ttl",
+      expected: "requires non-empty pharm:reviewedBy"
+    }
+  ];
+
+  for (const { fixtureName, expected } of cases) {
+    const result = validateSemanticTurtle(readFixture(fixtureName), fixtureName);
+
+    assert.equal(result.valid, false, `${fixtureName} should fail validation`);
+    assert.ok(
+      result.errors.some((error) => error.includes(expected)),
+      `expected ${expected} in ${fixtureName}, got ${result.errors.join("; ")}`
+    );
+  }
+});
+
+test("Semantic Bridge SHACL runner rejects RT-005 object-list smuggling counterexamples", () => {
+  const cases = [
+    {
+      fixtureName: "invalid-sb-rt-005-p0-001-class-list-smuggling.ttl",
+      expected: "relationship_class evidence_support cannot use predicate exactMatch"
+    },
+    {
+      fixtureName: "invalid-sb-rt-005-p0-001-class-list-smuggling.ttl",
+      expected: "pharm:hasRelationshipClass is single-cardinality governance metadata but has 2 values"
+    },
+    {
+      fixtureName: "invalid-sb-rt-005-p0-002-path-edge-assertion-type-list-smuggling.ttl",
+      expected: "released path cannot include model_suggested edge"
+    },
+    {
+      fixtureName: "invalid-sb-rt-005-p0-002-path-edge-assertion-type-list-smuggling.ttl",
+      expected: "pharm:assertionType is single-cardinality governance metadata but has 2 values"
+    },
+    {
+      fixtureName: "invalid-sb-rt-005-p0-003-causal-status-list-smuggling.ttl",
+      expected: "pharm:hasCausalClaimStatus has unapproved value causal_claim_reviewed"
+    },
+    {
+      fixtureName: "invalid-sb-rt-005-p0-003-causal-status-list-smuggling.ttl",
+      expected: "pharm:hasCausalClaimStatus is single-cardinality governance metadata but has 2 values"
+    },
+    {
+      fixtureName: "invalid-sb-rt-005-p0-004-license-list-smuggling.ttl",
+      expected: "released relationship cannot use release-blocking license blocked_pending_legal_review"
+    },
+    {
+      fixtureName: "invalid-sb-rt-005-p0-004-license-list-smuggling.ttl",
+      expected: "pharm:dataLicenseClass is single-cardinality governance metadata but has 2 values"
+    }
+  ];
+
+  for (const { fixtureName, expected } of cases) {
+    const result = validateSemanticTurtle(readFixture(fixtureName), fixtureName);
+
+    assert.equal(result.valid, false, `${fixtureName} should fail validation`);
+    assert.ok(
+      result.errors.some((error) => error.includes(expected)),
+      `expected ${expected} in ${fixtureName}, got ${result.errors.join("; ")}`
+    );
+  }
+});
+
+test("Semantic Bridge SHACL runner rejects RT-006 cross-line object-list smuggling counterexamples", () => {
+  const cases = [
+    {
+      fixtureName: "invalid-sb-rt-006-p0-001-cross-line-class-list-smuggling.ttl",
+      expected: "relationship_class evidence_support cannot use predicate exactMatch"
+    },
+    {
+      fixtureName: "invalid-sb-rt-006-p0-001-cross-line-class-list-smuggling.ttl",
+      expected: "pharm:hasRelationshipClass is single-cardinality governance metadata but has 2 values"
+    },
+    {
+      fixtureName: "invalid-sb-rt-006-p0-002-cross-line-path-edge-assertion-type-smuggling.ttl",
+      expected: "released path cannot include model_suggested edge"
+    },
+    {
+      fixtureName: "invalid-sb-rt-006-p0-002-cross-line-path-edge-assertion-type-smuggling.ttl",
+      expected: "pharm:assertionType is single-cardinality governance metadata but has 2 values"
+    },
+    {
+      fixtureName: "invalid-sb-rt-006-p0-002-cross-line-path-edge-assertion-type-smuggling.ttl",
+      expected: "pharm:hasAssertionType is single-cardinality governance metadata but has 2 values"
+    },
+    {
+      fixtureName: "invalid-sb-rt-006-p0-003-cross-line-causal-status-smuggling.ttl",
+      expected: "pharm:hasCausalClaimStatus has unapproved value causal_claim_reviewed"
+    },
+    {
+      fixtureName: "invalid-sb-rt-006-p0-003-cross-line-causal-status-smuggling.ttl",
+      expected: "pharm:hasCausalClaimStatus is single-cardinality governance metadata but has 2 values"
+    },
+    {
+      fixtureName: "invalid-sb-rt-006-p0-004-cross-line-license-smuggling.ttl",
+      expected: "released relationship cannot use release-blocking license blocked_pending_legal_review"
+    },
+    {
+      fixtureName: "invalid-sb-rt-006-p0-004-cross-line-license-smuggling.ttl",
+      expected: "pharm:dataLicenseClass is single-cardinality governance metadata but has 2 values"
+    }
+  ];
+
+  for (const { fixtureName, expected } of cases) {
+    const result = validateSemanticTurtle(readFixture(fixtureName), fixtureName);
+
+    assert.equal(result.valid, false, `${fixtureName} should fail validation`);
+    assert.ok(
+      result.errors.some((error) => error.includes(expected)),
+      `expected ${expected} in ${fixtureName}, got ${result.errors.join("; ")}`
+    );
+  }
+});
+
+test("Semantic Bridge SHACL runner rejects RT-007 split-subject graph smuggling counterexamples", () => {
+  const cases = [
+    {
+      fixtureName: "invalid-sb-rt-007-p0-001-split-subject-class-smuggling.ttl",
+      expected: "relationship_class evidence_support cannot use predicate exactMatch"
+    },
+    {
+      fixtureName: "invalid-sb-rt-007-p0-001-split-subject-class-smuggling.ttl",
+      expected: "pharm:hasRelationshipClass is single-cardinality governance metadata but has 2 values"
+    },
+    {
+      fixtureName: "invalid-sb-rt-007-p0-003-split-subject-causal-status-smuggling.ttl",
+      expected: "pharm:hasCausalClaimStatus has unapproved value causal_claim_reviewed"
+    },
+    {
+      fixtureName: "invalid-sb-rt-007-p0-003-split-subject-causal-status-smuggling.ttl",
+      expected: "pharm:hasCausalClaimStatus is single-cardinality governance metadata but has 2 values"
+    },
+    {
+      fixtureName: "invalid-sb-rt-007-p0-004-split-subject-license-smuggling.ttl",
+      expected: "released relationship cannot use release-blocking license blocked_pending_legal_review"
+    },
+    {
+      fixtureName: "invalid-sb-rt-007-p0-004-split-subject-license-smuggling.ttl",
+      expected: "pharm:dataLicenseClass is single-cardinality governance metadata but has 2 values"
+    }
+  ];
+
+  for (const { fixtureName, expected } of cases) {
+    const result = validateSemanticTurtle(readFixture(fixtureName), fixtureName);
+
+    assert.equal(result.valid, false, `${fixtureName} should fail validation`);
+    assert.ok(
+      result.errors.some((error) => error.includes(expected)),
+      `expected ${expected} in ${fixtureName}, got ${result.errors.join("; ")}`
+    );
+  }
+});
+
+test("Semantic Bridge SHACL runner rejects RT-008 prefixed-vs-IRI subject smuggling counterexamples", () => {
+  const cases = [
+    {
+      fixtureName: "invalid-sb-rt-008-p0-001-prefixed-iri-class-smuggling.ttl",
+      expected: "relationship_class evidence_support cannot use predicate exactMatch"
+    },
+    {
+      fixtureName: "invalid-sb-rt-008-p0-001-prefixed-iri-class-smuggling.ttl",
+      expected: "pharm:hasRelationshipClass is single-cardinality governance metadata but has 2 values"
+    },
+    {
+      fixtureName: "invalid-sb-rt-008-p0-002-prefixed-iri-path-edge-assertion-type-smuggling.ttl",
+      expected: "released path cannot include model_suggested edge"
+    },
+    {
+      fixtureName: "invalid-sb-rt-008-p0-002-prefixed-iri-path-edge-assertion-type-smuggling.ttl",
+      expected: "pharm:assertionType is single-cardinality governance metadata but has 2 values"
+    },
+    {
+      fixtureName: "invalid-sb-rt-008-p0-002-prefixed-iri-path-edge-assertion-type-smuggling.ttl",
+      expected: "pharm:hasAssertionType is single-cardinality governance metadata but has 2 values"
+    },
+    {
+      fixtureName: "invalid-sb-rt-008-p0-003-prefixed-iri-causal-status-smuggling.ttl",
+      expected: "pharm:hasCausalClaimStatus has unapproved value causal_claim_reviewed"
+    },
+    {
+      fixtureName: "invalid-sb-rt-008-p0-003-prefixed-iri-causal-status-smuggling.ttl",
+      expected: "pharm:hasCausalClaimStatus is single-cardinality governance metadata but has 2 values"
+    },
+    {
+      fixtureName: "invalid-sb-rt-008-p0-004-prefixed-iri-license-smuggling.ttl",
+      expected: "released relationship cannot use release-blocking license blocked_pending_legal_review"
+    },
+    {
+      fixtureName: "invalid-sb-rt-008-p0-004-prefixed-iri-license-smuggling.ttl",
+      expected: "pharm:dataLicenseClass is single-cardinality governance metadata but has 2 values"
+    }
+  ];
+
+  for (const { fixtureName, expected } of cases) {
+    const result = validateSemanticTurtle(readFixture(fixtureName), fixtureName);
+
+    assert.equal(result.valid, false, `${fixtureName} should fail validation`);
+    assert.ok(
+      result.errors.some((error) => error.includes(expected)),
+      `expected ${expected} in ${fixtureName}, got ${result.errors.join("; ")}`
+    );
+  }
+});
+
+test("Semantic Bridge SHACL runner rejects RT-009 mid-file prefix redeclaration smuggling", () => {
+  const fixtureName = "invalid-sb-rt-009-p0-001-prefix-redeclaration-class-smuggling.ttl";
+  const cases = [
+    "relationship_class evidence_support cannot use predicate exactMatch",
+    "pharm:hasRelationshipClass is single-cardinality governance metadata but has 2 values"
+  ];
+
+  const result = validateSemanticTurtle(readFixture(fixtureName), fixtureName);
+
+  assert.equal(result.valid, false, `${fixtureName} should fail validation`);
+  for (const expected of cases) {
+    assert.ok(
+      result.errors.some((error) => error.includes(expected)),
+      `expected ${expected} in ${fixtureName}, got ${result.errors.join("; ")}`
+    );
+  }
+});
+
+test("Semantic Bridge SHACL runner rejects RT-010 non-literal governance objects", () => {
+  const cases = [
+    {
+      fixtureName: "invalid-sb-rt-010-p0-001-class-collection-smuggling.ttl",
+      expected: "pharm:hasRelationshipClass requires literal object but found BlankNode"
+    },
+    {
+      fixtureName: "invalid-sb-rt-010-p0-001-class-blank-node-smuggling.ttl",
+      expected: "pharm:hasRelationshipClass requires literal object but found BlankNode"
+    },
+    {
+      fixtureName: "invalid-sb-rt-010-p0-002-path-edge-assertion-type-collection-smuggling.ttl",
+      expected: "pharm:assertionType requires literal object but found BlankNode"
+    },
+    {
+      fixtureName: "invalid-sb-rt-010-p0-002-path-edge-assertion-type-collection-smuggling.ttl",
+      expected: "pharm:hasAssertionType requires literal object but found BlankNode"
+    },
+    {
+      fixtureName: "invalid-sb-rt-010-p0-003-causal-status-blank-node-smuggling.ttl",
+      expected: "pharm:hasCausalClaimStatus requires literal object but found BlankNode"
+    },
+    {
+      fixtureName: "invalid-sb-rt-010-p0-004-license-collection-smuggling.ttl",
+      expected: "pharm:dataLicenseClass requires literal object but found BlankNode"
+    }
+  ];
+
+  for (const { fixtureName, expected } of cases) {
+    const result = validateSemanticTurtle(readFixture(fixtureName), fixtureName);
+
+    assert.equal(result.valid, false, `${fixtureName} should fail validation`);
+    assert.ok(
+      result.errors.some((error) => error.includes(expected)),
+      `expected ${expected} in ${fixtureName}, got ${result.errors.join("; ")}`
+    );
+  }
+});
+
+test("Semantic Bridge SHACL runner rejects RT-011 non-IRI governance objects", () => {
+  const cases = [
+    {
+      fixtureName: "invalid-sb-rt-011-p0-001-relationship-predicate-literal.ttl",
+      expected: "pharm:relationshipPredicate requires IRI object but found Literal"
+    },
+    {
+      fixtureName: "invalid-sb-rt-011-p0-001-relationship-predicate-literal.ttl",
+      expected: "pharm:relationshipPredicate requires IRI object for relationship predicate matrix"
+    },
+    {
+      fixtureName: "invalid-sb-rt-011-p0-001-relationship-predicate-blank-node.ttl",
+      expected: "pharm:relationshipPredicate requires IRI object but found BlankNode"
+    },
+    {
+      fixtureName: "invalid-sb-rt-011-p0-001-relationship-predicate-collection.ttl",
+      expected: "pharm:relationshipPredicate requires IRI object but found BlankNode"
+    },
+    {
+      fixtureName: "invalid-sb-rt-011-relationship-subject-literal.ttl",
+      expected: "pharm:relationshipSubject requires IRI object but found Literal"
+    },
+    {
+      fixtureName: "invalid-sb-p0-001-class-predicate-matrix.ttl",
+      expected: "relationship_class evidence_support cannot use predicate exactMatch"
+    }
+  ];
+
+  for (const { fixtureName, expected } of cases) {
+    const result = validateSemanticTurtle(readFixture(fixtureName), fixtureName);
+
+    assert.equal(result.valid, false, `${fixtureName} should fail validation`);
+    assert.ok(
+      result.errors.some((error) => error.includes(expected)),
+      `expected ${expected} in ${fixtureName}, got ${result.errors.join("; ")}`
+    );
+  }
+});
+
 test("release snapshot skeleton copies validated working graph and emits ADR-0002 record", async () => {
   const workingGraph = tenantWorkingGraph("acme", "data:canonical");
   const releaseGraph = tenantReleaseGraph("acme", "2026.0.0-test", "canonical");
