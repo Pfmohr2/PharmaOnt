@@ -10,7 +10,8 @@
     "test:ingestion": "node --test \"tests/integration/ingestion*.test.mjs\"",
     "test:ontology": "node --test \"tests/ontology/**/*.test.mjs\"",
     "test:security": "node --test \"tests/security/**/*.test.mjs\"",
-    "provision:pilot:staging": "node scripts/provision-pilot-staging.mjs"
+    "provision:pilot:staging": "node scripts/provision-pilot-staging.mjs",
+    "onboard:pilot:staging": "node scripts/onboard-pilot-staging.mjs"
   },
   "engines": {
     "node": ">=22"

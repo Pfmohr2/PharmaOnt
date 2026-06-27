@@ -23,3 +23,18 @@ export {
   rollbackAntiplateletStagingProvisioningPlan,
   verifyAntiplateletStagingProvisioningPlan
 } from "./pilot-provisioning.js";
+
+export {
+  PILOT_DAY1_SEARCHES,
+  PILOT_ONBOARDING_CORRELATION_ID,
+  PILOT_ONBOARDING_ROSTER_SCHEMA,
+  PILOT_ONBOARDING_STATE_SCHEMA,
+  PILOT_TRAINING_SESSIONS,
+  applyPilotOnboarding,
+  buildPilotOnboardingPlan,
+  dryRunPilotOnboarding,
+  loadPilotOnboardingRoster,
+  readPilotProvisioningState,
+  verifyPilotOnboarding,
+  verifyPilotOnboardingState
+} from "./pilot-onboarding.js";

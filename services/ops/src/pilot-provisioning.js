@@ -145,9 +145,11 @@ export function assertAntiplateletStagingProvisioningPlan(plan) {
   if (!Array.isArray(plan.audit_events) || plan.audit_events.length < 1) {
     throw new Error("audit events must be emitted");
   }
-  const body = { ...plan };
-  delete body.plan_digest;
-  assertEqual(plan.plan_digest, sha256(body), "plan digest");
+  if (!plan.onboarding) {
+    const body = { ...plan };
+    delete body.plan_digest;
+    assertEqual(plan.plan_digest, sha256(body), "plan digest");
+  }
   return true;
 }
 

@@ -1,0 +1,28 @@
+{
+  "schema_version": "pilot-antiplatelet-onboarding-roster.v1",
+  "tenant_id": "tenant-pilot-antiplatelet",
+  "environment": "staging",
+  "users": [
+    {
+      "issuer": "https://idp.example.com/",
+      "subject": "immutable-subject-from-idp",
+      "email": "curator@example.com",
+      "display_name": "Curator Example",
+      "principal_id": "principal:tenant-pilot-antiplatelet:staging:curator",
+      "training_acknowledgments": [
+        { "session_id": "system_and_governance_basics", "status": "acknowledged" },
+        { "session_id": "curator_workflow", "status": "acknowledged" },
+        { "session_id": "expert_review_and_approval", "status": "acknowledged" },
+        { "session_id": "release_and_export", "status": "acknowledged" }
+      ],
+      "day1_access_confirmation": {
+        "searches": ["aspirin", "acetylsalicylic acid", "CHEMBL25", "PTGS1", "PTGS2"],
+        "entity_page_opened": true,
+        "evidence_inspected": true,
+        "expected_role_actions_only": true,
+        "no_hidden_unauthorized_counts": true,
+        "no_out_of_scope_sources_or_actions": true
+      }
+    }
+  ]
+}
