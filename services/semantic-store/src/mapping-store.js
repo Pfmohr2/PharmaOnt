@@ -1,18 +1,31 @@
 import { validateMappingObjectShape } from "../../../packages/contracts/src/index.js";
-import { assertGraphTenant, assertWritableWorkingGraph, tenantWorkingGraph } from "./named-graphs.js";
+import { createGraphWriteGateway } from "./graph-write-gateway.js";
+import { assertGraphWritePolicy, tenantWorkingGraph } from "./named-graphs.js";
 
 const PREFIXES = `@prefix pharm: <https://w3id.org/pharmaops/ontology/core#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .`;
 
 export class MappingStore {
-  constructor({ fusekiClient, shaclRunner }) {
-    this.fuseki = fusekiClient;
+  constructor({ fusekiClient, shaclRunner, auditStore = null, clock = () => new Date(), idFactory = defaultIdFactory }) {
+    this.fuseki = createGraphWriteGateway({ fusekiClient, actor: "mapping_store" });
     this.shaclRunner = shaclRunner;
+    this.auditStore = auditStore;
+    this.clock = clock;
+    this.idFactory = idFactory;
   }
 
   async createMapping({ tenantId, mapping, graphName = tenantWorkingGraph(tenantId, "mappings") }) {
-    assertWritableWorkingGraph(graphName);
-    assertGraphTenant(graphName, tenantId);
+    try {
+      assertGraphWritePolicy({
+        tenantId,
+        graphName,
+        operation: "mapping create",
+        kind: "working"
+      });
+    } catch (error) {
+      await this.appendDeniedAudit({ tenantId, graphName, mapping, error });
+      throw error;
+    }
     const schemaValidation = validateMappingObjectShape(mapping);
     if (!schemaValidation.valid) {
       throw new Error(`mapping failed contract validation: ${schemaValidation.errors.join("; ")}`);
@@ -36,6 +49,25 @@ export class MappingStore {
       schemaValidation,
       shaclValidation
     };
+  }
+
+  async appendDeniedAudit({ tenantId, graphName, mapping, error }) {
+    if (!this.auditStore || typeof this.auditStore.append !== "function") {
+      return;
+    }
+    await this.auditStore.append({
+      audit_event_id: `audit:mapping-store:${this.idFactory()}`,
+      event_type: "mapping_store.graph_write_denied",
+      tenant_id: tenantId,
+      environment: mapping?.environment ?? "unknown",
+      object_type: "mapping",
+      object_id: mapping?.mapping_id ?? "unknown",
+      graph_name: graphName,
+      actor: mapping?.created_by ?? "mapping_store",
+      decision: "denied",
+      errors: [error.message],
+      occurred_at: this.clock().toISOString()
+    });
   }
 }
 
@@ -95,4 +127,8 @@ function iriForEvidence(tenantId, value) {
 
 function escapeLiteral(value) {
   return String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+function defaultIdFactory() {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }

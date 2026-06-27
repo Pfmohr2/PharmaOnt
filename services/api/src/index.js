@@ -11,3 +11,10 @@ export {
   Phase6AiCurationApi,
   createPhase6AiCurationApi
 } from "./ai-curation.js";
+export {
+  PHASEB_RELATIONSHIP_ASSERTION_API_VERSION,
+  PhaseBRelationshipAssertionApi,
+  RelationshipAssertionApiError,
+  createPhaseBRelationshipAssertionApi,
+  createRelationshipAssertionRouteAdapters
+} from "./relationship-assertions.js";

@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { createGraphWriteGateway } from "./graph-write-gateway.js";
 import { assertWritableWorkingGraph, tenantWorkingGraph } from "./named-graphs.js";
 
 const PREFIXES = `@prefix pharm: <https://w3id.org/pharmaops/ontology/core#> .
@@ -7,7 +8,7 @@ const PREFIXES = `@prefix pharm: <https://w3id.org/pharmaops/ontology/core#> .
 
 export class EntityStore {
   constructor({ fusekiClient, shaclRunner }) {
-    this.fuseki = fusekiClient;
+    this.fuseki = createGraphWriteGateway({ fusekiClient, actor: "entity_store" });
     this.shaclRunner = shaclRunner;
   }
 

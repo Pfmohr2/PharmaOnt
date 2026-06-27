@@ -1,0 +1,164 @@
+{
+  "contractInvalidCases": [
+    {
+      "name": "model_suggested direct release attempt",
+      "overrides": {
+        "assertion_type": "model_suggested",
+        "review_status": "released",
+        "release_context": {
+          "release_id": "b10-release",
+          "scope": "release",
+          "included_in_release": true,
+          "release_candidate_id": "rc:b10"
+        },
+        "validation_report_ids": ["validation:b10"]
+      },
+      "expected": "/assertion_type"
+    },
+    {
+      "name": "safety assertion missing causal status",
+      "overrides": {
+        "relationship_class": "safety",
+        "predicate": "product_has_adverse_event"
+      },
+      "removes": ["causal_claim_status"],
+      "expected": "causal_claim_status"
+    },
+    {
+      "name": "class predicate matrix violation",
+      "overrides": {
+        "relationship_class": "evidence_support",
+        "predicate": "pharmrel:exactMatch"
+      },
+      "expected": "/predicate"
+    },
+    {
+      "name": "missing evidence",
+      "overrides": {
+        "evidence_refs": []
+      },
+      "expected": "/evidence_refs"
+    },
+    {
+      "name": "blocked assertion without rationale",
+      "overrides": {
+        "relationship_class": "blocked",
+        "predicate": "blocked",
+        "confidence": {
+          "confidence_band": "blocked"
+        }
+      },
+      "removes": ["blocked_rationale"],
+      "expected": "blocked_rationale"
+    },
+    {
+      "name": "released assertion with blocked license",
+      "overrides": {
+        "review_status": "released",
+        "release_context": {
+          "release_id": "b10-release",
+          "scope": "release",
+          "included_in_release": true,
+          "release_candidate_id": "rc:b10"
+        },
+        "validation_report_ids": ["validation:b10"],
+        "data_license": {
+          "license_status": "blocked"
+        }
+      },
+      "expected": "/data_license/license_status"
+    },
+    {
+      "name": "released assertion with pending license",
+      "overrides": {
+        "review_status": "released",
+        "release_context": {
+          "release_id": "b10-release",
+          "scope": "release",
+          "included_in_release": true,
+          "release_candidate_id": "rc:b10"
+        },
+        "validation_report_ids": ["validation:b10"],
+        "data_license": {
+          "license_status": "pending_review"
+        }
+      },
+      "expected": "/data_license/license_status"
+    },
+    {
+      "name": "released assertion missing reviewer",
+      "overrides": {
+        "review_status": "released",
+        "reviewed_by": null,
+        "release_context": {
+          "release_id": "b10-release",
+          "scope": "release",
+          "included_in_release": true,
+          "release_candidate_id": "rc:b10"
+        },
+        "validation_report_ids": ["validation:b10"]
+      },
+      "expected": "/reviewed_by"
+    },
+    {
+      "name": "released assertion missing release ID",
+      "overrides": {
+        "review_status": "released",
+        "release_context": {
+          "release_id": null,
+          "scope": "release",
+          "included_in_release": true,
+          "release_candidate_id": "rc:b10"
+        },
+        "validation_report_ids": ["validation:b10"]
+      },
+      "expected": "/release_context/release_id"
+    },
+    {
+      "name": "released assertion missing source version",
+      "overrides": {
+        "review_status": "released",
+        "source_versions": [],
+        "release_context": {
+          "release_id": "b10-release",
+          "scope": "release",
+          "included_in_release": true,
+          "release_candidate_id": "rc:b10"
+        },
+        "validation_report_ids": ["validation:b10"]
+      },
+      "expected": "/source_versions"
+    }
+  ],
+  "releaseInvalidCases": [
+    {
+      "name": "released assertion missing export authorization",
+      "overrides": {
+        "data_license": {
+          "export_restrictions": ["contains_phi_or_pii"]
+        }
+      },
+      "expected": "export authorization"
+    },
+    {
+      "name": "released assertion missing validation report ID",
+      "overrides": {},
+      "validationReportIds": [],
+      "expected": "validation_report_ids"
+    }
+  ],
+  "semanticTurtleInvalidCases": [
+    {
+      "fixtureName": "invalid-sb-rt-011-p0-001-relationship-predicate-literal.ttl",
+      "expected": "pharm:relationshipPredicate requires IRI object"
+    },
+    {
+      "fixtureName": "invalid-sb-rt-011-p0-001-relationship-predicate-blank-node.ttl",
+      "expected": "pharm:relationshipPredicate requires IRI object"
+    },
+    {
+      "fixtureName": "invalid-sb-rt-011-p0-001-relationship-predicate-collection.ttl",
+      "expected": "pharm:relationshipPredicate requires IRI object"
+    }
+  ]
+}

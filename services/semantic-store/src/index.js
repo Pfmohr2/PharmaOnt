@@ -1,11 +1,23 @@
 export { EntityStore, entityTurtle } from "./entity-store.js";
-export { SemanticGraphWriter } from "./graph-writer.js";
+export { SemanticGraphWriter, SemanticGraphWriterConflictError } from "./graph-writer.js";
 export { MappingStore, mappingTurtle } from "./mapping-store.js";
 export {
+  MemoryRelationshipAssertionAuditStore,
+  RelationshipAssertionConflictError,
+  RelationshipAssertionTransitionError,
+  RelationshipAssertionStore,
+  relationshipAssertionTurtle,
+  validateRelationshipAssertionObjectShape
+} from "./relationship-assertion-store.js";
+export {
   GRAPH_FAMILIES,
+  GraphWritePolicyError,
+  assertGraphWritePolicy,
   assertGraphTenant,
   assertReleaseGraph,
   assertWritableWorkingGraph,
+  classifyNamedGraph,
+  createGovernedRelationshipAssertionStore,
   isTenantScopedGraph,
   tenantAiSuggestionsGraph,
   tenantIdFromGraph,
