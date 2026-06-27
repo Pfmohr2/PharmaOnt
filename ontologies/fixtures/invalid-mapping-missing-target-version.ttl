@@ -1,0 +1,125 @@
+﻿@prefix pharm: <https://w3id.org/pharmaops/ontology/core#> .
+@prefix pharment: <https://example.pharmaops.local/tenant/acme/entity/> .
+@prefix pharmmap: <https://example.pharmaops.local/tenant/acme/mapping/> .
+@prefix pharmev: <https://example.pharmaops.local/tenant/acme/evidence/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+pharmev:bad-map-evidence-000001
+    a pharm:DocumentEvidenceSource ;
+    pharm:canonicalId "pharmev:bad-map-evidence-000001" ;
+    pharm:entityType "DocumentEvidenceSource" ;
+    pharm:preferredLabel "Bad mapping fixture evidence" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:evidenceId "pharmev:bad-map-evidence-000001" ;
+    pharm:evidenceType "source_record" ;
+    pharm:evidenceSourceName "Fixture source" ;
+    pharm:evidenceSourceVersion "2026-06-27" ;
+    pharm:sourceRecordId "bad-map-evidence-000001" ;
+    pharm:sourceRetrievedAt "2026-06-27T01:35:00Z"^^xsd:dateTime ;
+    pharm:confidenceType "source_asserted" ;
+    pharm:provenanceId "pharmprov:bad-map-evidence-000001" ;
+    pharm:licenseClassification "open_materializable" ;
+    pharm:disclaimerId "none" ;
+    pharm:tenantId "acme" ;
+    pharm:visibility "tenant" ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:invalid-mapping-missing-target-version-1" ;
+        pharm:activityType "import" ;
+        pharm:activityId "activity:invalid-mapping-missing-target-version-1" ;
+        pharm:methodType "connector_transform" ;
+        pharm:confidenceType "source_asserted" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:invalid-mapping-missing-target-version-1" ;
+        pharm:actor "connector:fixture" ;
+        pharm:sourceName "Bad mapping fixture" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T01:28:00Z"^^xsd:dateTime
+    ] .
+
+pharment:source-term-000001
+    a pharm:VocabularyTerm ;
+    pharm:canonicalId "pharment:source-term-000001" ;
+    pharm:entityType "VocabularyTerm" ;
+    pharm:preferredLabel "Fixture source term" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:hasEvidence pharmev:bad-map-evidence-000001 ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:invalid-mapping-missing-target-version-2" ;
+        pharm:activityType "import" ;
+        pharm:activityId "activity:invalid-mapping-missing-target-version-2" ;
+        pharm:methodType "connector_transform" ;
+        pharm:confidenceType "source_asserted" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:invalid-mapping-missing-target-version-2" ;
+        pharm:actor "connector:fixture" ;
+        pharm:sourceName "Source vocab fixture" ;
+        pharm:sourceVersion "2026" ;
+        pharm:generatedAtTime "2026-06-27T01:29:00Z"^^xsd:dateTime
+    ] .
+
+pharment:target-term-000001
+    a pharm:VocabularyTerm ;
+    pharm:canonicalId "pharment:target-term-000001" ;
+    pharm:entityType "VocabularyTerm" ;
+    pharm:preferredLabel "Fixture target term" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:hasEvidence pharmev:bad-map-evidence-000001 ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:invalid-mapping-missing-target-version-3" ;
+        pharm:activityType "import" ;
+        pharm:activityId "activity:invalid-mapping-missing-target-version-3" ;
+        pharm:methodType "connector_transform" ;
+        pharm:confidenceType "source_asserted" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:invalid-mapping-missing-target-version-3" ;
+        pharm:actor "connector:fixture" ;
+        pharm:sourceName "Target vocab fixture" ;
+        pharm:sourceVersion "2026" ;
+        pharm:generatedAtTime "2026-06-27T01:30:00Z"^^xsd:dateTime
+    ] .
+
+pharmmap:bad-map-000001
+    a pharm:MappingAssertion ;
+    pharm:canonicalId "pharmmap:bad-map-000001" ;
+    pharm:entityType "MappingAssertion" ;
+    pharm:preferredLabel "Invalid mapping missing target vocabulary version" ;
+    pharm:lifecycleStatus "proposed" ;
+    pharm:reviewStatus "proposed" ;
+    pharm:releaseMembership "graph:tenant:acme:mappings:working" ;
+    pharm:sourceEntity pharment:source-term-000001 ;
+    pharm:targetEntity pharment:target-term-000001 ;
+    pharm:mappingPredicate "exactMatch" ;
+    pharm:sourceVocabulary "SourceFixture" ;
+    pharm:sourceVocabularyVersion "2026" ;
+    pharm:targetVocabulary "TargetFixture" ;
+    pharm:confidenceScore 0.91 ;
+    pharm:hasEvidence pharmev:bad-map-evidence-000001 ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:invalid-mapping-missing-target-version-4" ;
+        pharm:activityType "import" ;
+        pharm:activityId "activity:invalid-mapping-missing-target-version-4" ;
+        pharm:methodType "connector_transform" ;
+        pharm:confidenceType "source_asserted" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:invalid-mapping-missing-target-version-4" ;
+        pharm:actor "connector:fixture" ;
+        pharm:sourceName "bad mapping fixture" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T01:31:00Z"^^xsd:dateTime
+    ] .
+

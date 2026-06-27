@@ -1,0 +1,24 @@
+{
+  "next_cursor": "fixture-page-1-complete",
+  "records": [
+    {
+      "source_record_id": "fixture-compound-001",
+      "source_record_uri": "https://example.pharmaops.local/fixture/compound/001",
+      "label": "Fixture aspirin",
+      "entity_class": "compound",
+      "identifiers": ["chembl:CHEMBL25"],
+      "synonyms": ["acetylsalicylic acid"],
+      "disclaimer_ids": ["fixture_terms:v1"]
+    },
+    {
+      "source_record_id": "fixture-target-001",
+      "source_record_uri": "https://example.pharmaops.local/fixture/target/001",
+      "label": "Fixture EGFR",
+      "entity_class": "target",
+      "identifiers": ["uniprot:P00533"],
+      "synonyms": ["ERBB1"],
+      "warnings": ["fixture_warning:review_label"],
+      "disclaimer_ids": ["fixture_terms:v1"]
+    }
+  ]
+}

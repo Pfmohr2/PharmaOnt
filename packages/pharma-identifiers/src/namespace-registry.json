@@ -1,0 +1,109 @@
+{
+  "pharm": {
+    "name": "PharmaOps core ontology terms",
+    "iriPrefix": "https://w3id.org/pharmaops/ontology/core#",
+    "preferred": true
+  },
+  "pharmrel": {
+    "name": "PharmaOps relationship and mapping predicates",
+    "iriPrefix": "https://w3id.org/pharmaops/ontology/relationship#",
+    "preferred": true
+  },
+  "pharment": {
+    "name": "PharmaOps tenant-scoped governed entities",
+    "iriPrefix": "https://pharmaops.example/id/entity/",
+    "preferred": true
+  },
+  "pharmmap": {
+    "name": "PharmaOps governed mapping objects",
+    "iriPrefix": "https://pharmaops.example/id/mapping/",
+    "preferred": true
+  },
+  "pharmev": {
+    "name": "PharmaOps evidence records and source spans",
+    "iriPrefix": "https://pharmaops.example/id/evidence/",
+    "preferred": true
+  },
+  "pharmsrc": {
+    "name": "PharmaOps source systems and source records",
+    "iriPrefix": "https://pharmaops.example/id/source/",
+    "preferred": true
+  },
+  "pharmrelset": {
+    "name": "PharmaOps immutable semantic releases",
+    "iriPrefix": "https://pharmaops.example/id/release/",
+    "preferred": true
+  },
+  "pharmwf": {
+    "name": "PharmaOps workflow tasks, approvals, and audit-linked actions",
+    "iriPrefix": "https://pharmaops.example/id/workflow/",
+    "preferred": true
+  },
+  "chembl": {
+    "name": "ChEMBL identifiers",
+    "iriPrefix": "https://www.ebi.ac.uk/chembl/compound_report_card/",
+    "preferred": true
+  },
+  "pubchem": {
+    "name": "PubChem compound identifiers",
+    "iriPrefix": "https://pubchem.ncbi.nlm.nih.gov/compound/",
+    "preferred": true
+  },
+  "uniprot": {
+    "name": "UniProt accessions",
+    "iriPrefix": "https://identifiers.org/uniprot:",
+    "preferred": true
+  },
+  "mesh": {
+    "name": "MeSH descriptors",
+    "iriPrefix": "https://id.nlm.nih.gov/mesh/",
+    "preferred": true
+  },
+  "mondo": {
+    "name": "MONDO disease ontology terms",
+    "iriPrefix": "http://purl.obolibrary.org/obo/MONDO_",
+    "preferred": true
+  },
+  "snomed": {
+    "name": "SNOMED CT concepts, licensed use only",
+    "iriPrefix": "http://snomed.info/id/",
+    "preferred": true,
+    "licenseRestricted": true
+  },
+  "rxnorm": {
+    "name": "RxNorm clinical drug concepts",
+    "iriPrefix": "https://rxnav.nlm.nih.gov/REST/rxcui/",
+    "preferred": true
+  },
+  "meddra": {
+    "name": "MedDRA terms, licensed use only",
+    "iriPrefix": "https://pharmaops.example/id/restricted/meddra/",
+    "preferred": true,
+    "licenseRestricted": true
+  },
+  "cdisc": {
+    "name": "CDISC controlled terminology and codelists",
+    "iriPrefix": "https://evs.nci.nih.gov/ftp1/CDISC/",
+    "preferred": true
+  },
+  "nct": {
+    "name": "ClinicalTrials.gov records",
+    "iriPrefix": "https://clinicaltrials.gov/study/",
+    "preferred": true
+  },
+  "pmid": {
+    "name": "PubMed identifiers",
+    "iriPrefix": "https://pubmed.ncbi.nlm.nih.gov/",
+    "preferred": true
+  },
+  "pmcid": {
+    "name": "PubMed Central identifiers",
+    "iriPrefix": "https://www.ncbi.nlm.nih.gov/pmc/articles/",
+    "preferred": true
+  },
+  "doi": {
+    "name": "Digital Object Identifiers",
+    "iriPrefix": "https://doi.org/",
+    "preferred": true
+  }
+}

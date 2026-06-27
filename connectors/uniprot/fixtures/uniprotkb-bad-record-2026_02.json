@@ -1,0 +1,24 @@
+{
+  "release": "2026_02",
+  "query": "bad-record-fixture",
+  "results": [
+    {
+      "entryType": "UniProtKB reviewed (Swiss-Prot)",
+      "uniProtkbId": "BROKEN_FIXTURE_RECORD",
+      "proteinDescription": {
+        "recommendedName": {
+          "fullName": {
+            "value": "Broken record without accession"
+          }
+        }
+      },
+      "organism": {
+        "scientificName": "Homo sapiens",
+        "taxonId": 9606
+      },
+      "entryAudit": {
+        "lastAnnotationUpdateDate": "2026-02-18"
+      }
+    }
+  ]
+}

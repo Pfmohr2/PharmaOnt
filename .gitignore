@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# Generated provisioning / runtime artifacts
+.generated/
+
+# Agent orchestration scaffold + shared semantic memory (not PharmaOps product code)
+hive/
+palace/
+
+# MemPalace per-project files (issue #185)
+mempalace.yaml
+entities.json

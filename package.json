@@ -1,0 +1,17 @@
+{
+  "name": "pharmaops",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "PharmaOps regulated semantic control plane monorepo.",
+  "scripts": {
+    "test": "node --test \"tests/**/*.test.mjs\" \"packages/*/test/**/*.test.mjs\"",
+    "test:unit": "node --test \"tests/unit/**/*.test.mjs\" \"packages/*/test/**/*.test.mjs\"",
+    "test:ingestion": "node --test \"tests/integration/ingestion*.test.mjs\"",
+    "test:ontology": "node --test \"tests/ontology/**/*.test.mjs\"",
+    "test:security": "node --test \"tests/security/**/*.test.mjs\""
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

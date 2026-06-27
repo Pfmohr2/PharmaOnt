@@ -1,0 +1,11 @@
+{
+  "name": "@pharmaops/pharma-identifiers",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "PharmaOps namespace registry and CURIE/IRI helper functions.",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "scripts": {
+    "test": "node --test"
+  }
+}

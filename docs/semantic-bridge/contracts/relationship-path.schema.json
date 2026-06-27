@@ -1,0 +1,335 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pharmaops.example/schemas/semantic-bridge/relationship-path.schema.json",
+  "title": "PharmaOps Semantic Bridge RelationshipPath",
+  "description": "Ordered, access-filtered multi-hop relationship path with path confidence, weakest-link explanation, evidence summary, warnings, provenance, license status, and release context.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "relationship_path_id",
+    "tenant_id",
+    "environment",
+    "query_id",
+    "start_entity_id",
+    "end_entity_id",
+    "intermediate_entity_ids",
+    "edge_ids",
+    "edges",
+    "path_length",
+    "path_summary",
+    "plain_language_explanation",
+    "path_confidence",
+    "weakest_link",
+    "evidence_summary",
+    "path_status",
+    "assertion_type",
+    "review_status",
+    "relationship_classes",
+    "release_context",
+    "data_license",
+    "permissions",
+    "warnings",
+    "created_at",
+    "provenance_id",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": { "const": "semantic-bridge.relationship-path.v1" },
+    "relationship_path_id": { "type": "string", "minLength": 1 },
+    "tenant_id": { "type": "string", "minLength": 1 },
+    "environment": { "type": "string", "minLength": 1 },
+    "query_id": { "type": "string", "minLength": 1 },
+    "start_entity_id": { "type": "string", "minLength": 1 },
+    "end_entity_id": { "type": "string", "minLength": 1 },
+    "intermediate_entity_ids": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "edge_ids": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "edges": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/pathEdge" },
+      "minItems": 1
+    },
+    "path_length": { "type": "integer", "minimum": 1 },
+    "path_summary": { "type": "string", "minLength": 1 },
+    "plain_language_explanation": { "type": "string", "minLength": 1 },
+    "path_confidence": { "$ref": "#/$defs/pathConfidence" },
+    "weakest_link": { "$ref": "#/$defs/weakestLink" },
+    "evidence_summary": { "$ref": "#/$defs/evidenceSummary" },
+    "path_status": {
+      "type": "string",
+      "enum": ["released", "reviewable_candidate", "model_suggested", "inferred", "hypothesis", "blocked"]
+    },
+    "assertion_type": { "$ref": "#/$defs/assertionType" },
+    "review_status": { "$ref": "#/$defs/reviewStatus" },
+    "relationship_classes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/relationshipClass" },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "secondary_relationship_tags": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/secondaryRelationshipTag" },
+      "uniqueItems": true
+    },
+    "release_context": { "$ref": "#/$defs/releaseContext" },
+    "data_license": { "$ref": "#/$defs/dataLicense" },
+    "permissions": { "$ref": "#/$defs/pathPermissions" },
+    "warnings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/pathWarning" },
+      "uniqueItems": true
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "provenance_id": { "type": "string", "minLength": 1 },
+    "provenance": { "$ref": "#/$defs/provenance" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "path_status": { "const": "blocked" } }, "required": ["path_status"] },
+      "then": {
+        "properties": {
+          "path_confidence": {
+            "type": "object",
+            "required": ["confidence_band"],
+            "properties": { "confidence_band": { "const": "blocked" } }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "path_status": { "const": "released" } }, "required": ["path_status"] },
+      "then": {
+        "properties": {
+          "release_context": {
+            "type": "object",
+            "required": ["release_id", "scope"],
+            "properties": {
+              "release_id": { "type": "string", "minLength": 1 },
+              "scope": { "const": "release" }
+            }
+          },
+          "assertion_type": { "not": { "const": "model_suggested" } }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "relationshipClass": {
+      "type": "string",
+      "enum": [
+        "identity",
+        "vocabulary_crosswalk",
+        "hierarchical",
+        "mechanistic",
+        "clinical",
+        "safety",
+        "regulatory",
+        "commercial",
+        "operational",
+        "evidence_support",
+        "inferred",
+        "hypothesis",
+        "blocked"
+      ]
+    },
+    "secondaryRelationshipTag": {
+      "type": "string",
+      "enum": ["causal_sensitive", "restricted_evidence", "patient_impacting"]
+    },
+    "assertionType": {
+      "type": "string",
+      "enum": ["imported", "human_curated", "inferred", "model_suggested", "system_generated", "deprecated", "mixed"]
+    },
+    "reviewStatus": {
+      "type": "string",
+      "enum": ["draft", "proposed", "in_review", "approved", "rejected", "released", "deprecated", "superseded", "mixed"]
+    },
+    "pathEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["position", "relationship_assertion_id", "source_entity_id", "target_entity_id", "predicate", "relationship_class", "assertion_type", "review_status", "confidence_band", "evidence_refs"],
+      "properties": {
+        "position": { "type": "integer", "minimum": 1 },
+        "relationship_assertion_id": { "type": "string", "minLength": 1 },
+        "source_entity_id": { "type": "string", "minLength": 1 },
+        "target_entity_id": { "type": "string", "minLength": 1 },
+        "predicate": { "type": "string", "minLength": 1 },
+        "relationship_class": { "$ref": "#/$defs/relationshipClass" },
+        "secondary_relationship_tags": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/secondaryRelationshipTag" },
+          "uniqueItems": true
+        },
+        "assertion_type": { "$ref": "#/$defs/assertionType" },
+        "review_status": { "$ref": "#/$defs/reviewStatus" },
+        "confidence_band": { "type": "string", "enum": ["high", "medium", "low", "blocked"] },
+        "evidence_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/evidenceRef" },
+          "minItems": 1
+        }
+      }
+    },
+    "pathConfidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["confidence_score", "confidence_band", "scoring_method", "weakest_link_adjusted", "fabricated"],
+      "properties": {
+        "confidence_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "confidence_band": { "type": "string", "enum": ["high", "medium", "low", "blocked"] },
+        "scoring_method": { "type": "string", "minLength": 1 },
+        "weakest_link_adjusted": { "type": "boolean" },
+        "fabricated": { "const": false },
+        "confidence_rationale": { "type": "string", "minLength": 1 }
+      }
+    },
+    "weakestLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["relationship_assertion_id", "reason", "confidence_score", "recommended_review_action"],
+      "properties": {
+        "relationship_assertion_id": { "type": "string", "minLength": 1 },
+        "reason": { "type": "string", "minLength": 1 },
+        "confidence_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "recommended_review_action": { "type": "string", "minLength": 1 }
+      }
+    },
+    "evidenceSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_count", "source_count", "source_diversity_score", "human_reviewed_edge_count", "model_suggested_edge_count", "inferred_edge_count", "restricted_evidence_count", "conflicting_evidence_count"],
+      "properties": {
+        "evidence_count": { "type": "integer", "minimum": 0 },
+        "source_count": { "type": "integer", "minimum": 0 },
+        "source_diversity_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "human_reviewed_edge_count": { "type": "integer", "minimum": 0 },
+        "model_suggested_edge_count": { "type": "integer", "minimum": 0 },
+        "inferred_edge_count": { "type": "integer", "minimum": 0 },
+        "restricted_evidence_count": { "type": "integer", "minimum": 0 },
+        "conflicting_evidence_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "evidenceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_id", "evidence_role", "source_name", "source_version", "source_span_ids"],
+      "properties": {
+        "evidence_id": { "type": "string", "minLength": 1 },
+        "evidence_role": { "type": "string", "enum": ["supports", "contradicts", "context", "source_only", "validation_evidence", "approval_evidence"] },
+        "source_name": { "type": "string", "minLength": 1 },
+        "source_version": { "type": "string", "minLength": 1 },
+        "source_span_ids": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "releaseContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["release_id", "scope", "included_in_release"],
+      "properties": {
+        "release_id": { "type": ["string", "null"] },
+        "scope": { "type": "string", "enum": ["working", "release", "release_candidate"] },
+        "included_in_release": { "type": "boolean" },
+        "release_candidate_id": { "type": ["string", "null"] }
+      }
+    },
+    "dataLicense": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path_license_status", "license_classifications", "permitted_uses", "export_restrictions", "data_sensitivity"],
+      "properties": {
+        "path_license_status": { "type": "string", "enum": ["valid", "restricted", "blocked", "pending_review", "mixed"] },
+        "license_classifications": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "open_materializable",
+              "open_with_attribution",
+              "licensed_federated",
+              "licensed_materializable_with_restrictions",
+              "internal_confidential",
+              "contains_phi_or_pii",
+              "blocked_pending_legal_review"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "permitted_uses": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "export_restrictions": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "data_sensitivity": { "type": "string", "enum": ["public", "restricted_public", "licensed", "internal_confidential", "phi_pii", "mixed", "unknown"] }
+      }
+    },
+    "pathPermissions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["viewable", "exportable", "redacted", "redaction_reason", "access_filter_applied"],
+      "properties": {
+        "viewable": { "type": "boolean" },
+        "exportable": { "type": "boolean" },
+        "redacted": { "type": "boolean" },
+        "redaction_reason": { "type": ["string", "null"] },
+        "access_filter_applied": { "type": "boolean" }
+      }
+    },
+    "pathWarning": {
+      "type": "string",
+      "enum": [
+        "contains_model_suggested_edge",
+        "contains_inferred_edge",
+        "contains_hypothesis_edge",
+        "contains_restricted_evidence",
+        "contains_redacted_evidence",
+        "contains_safety_non_causal_limitation",
+        "contains_broad_or_related_match",
+        "contains_conflicting_evidence",
+        "crosses_multiple_domain_boundaries",
+        "not_in_released_context",
+        "blocked_by_policy"
+      ]
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["actor", "activity", "method", "source", "time", "audit_event_id"],
+      "properties": {
+        "actor": { "type": "string", "minLength": 1 },
+        "activity": { "type": "string", "minLength": 1 },
+        "method": { "type": "string", "minLength": 1 },
+        "source": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["source_name", "source_version"],
+          "properties": {
+            "source_name": { "type": "string", "minLength": 1 },
+            "source_version": { "type": "string", "minLength": 1 }
+          }
+        },
+        "time": { "type": "string", "format": "date-time" },
+        "audit_event_id": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

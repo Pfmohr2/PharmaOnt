@@ -1,0 +1,113 @@
+{
+  "release": "2026_02",
+  "query": "accession:P00533 OR accession:P01308",
+  "results": [
+    {
+      "entryType": "UniProtKB reviewed (Swiss-Prot)",
+      "primaryAccession": "P00533",
+      "uniProtkbId": "EGFR_HUMAN",
+      "proteinDescription": {
+        "recommendedName": {
+          "fullName": {
+            "value": "Epidermal growth factor receptor"
+          }
+        }
+      },
+      "genes": [
+        {
+          "geneName": {
+            "value": "EGFR"
+          },
+          "synonyms": [
+            {
+              "value": "ERBB"
+            },
+            {
+              "value": "ERBB1"
+            }
+          ]
+        }
+      ],
+      "organism": {
+        "scientificName": "Homo sapiens",
+        "taxonId": 9606
+      },
+      "sequence": {
+        "value": "MRPSGTAGAALLALLAALCPASRALEEKKVCQGTSNKLTQLGTFEDHFLSLQRMFNNCEVVLGNLEITYVQRNYDLSFLKTIQEVAGYVLIALNTVERIPLENLQIIRGNMYYENSYALAVLSNYDANKTGLKELPMRNLQEILHGAVRFSNNPALCNVESIQWRDIVSSDFLSNMSMDFQNHLGSCQKCDPSCPNGSCWGAGEENCQKLTKIICAQQCSGRCRGKSPSDCCHNQCAAGCTGPGLEGCPTNGPKIPSIATGMVGALLLLLVVALGIGLFMRRRHIVRKRTLRRLLQERELVEPLTPSGEAPNQALLRILKETEFKKIKVLGSGAFGTVYKGLWIPEGEKVKIPVAIKELREATSPKANKEILDEAYVMASVDNPHVCRLLGICLTSTVQLITQLMPFGCLLDYVREHKDNIGSQYLLNWCVQIAKGMNYLEDRRLVHRDLAARNVLVKTPQHVKITDFGLAKLLGAEEKEYHAEGGKVPIKWMALESILHRIYTHQSDVWSYGVTVWELMTFGSKPYDGIPASEISSILEKGERLPQPPICTIDVYMIMVKCWMIDADSRPKFRELIIEFSKMARDPQRYLVIQGDERMHLPSPTDSNFYRALMDEEDMDDVVDADEYLIPQQG",
+        "length": 1210,
+        "molWeight": 134277,
+        "checksum": "A180D4F3D6F1F55A"
+      },
+      "uniProtKBCrossReferences": [
+        {
+          "database": "Ensembl",
+          "id": "ENSG00000146648",
+          "properties": [
+            {
+              "key": "ProteinId",
+              "value": "ENSP00000275493"
+            }
+          ]
+        },
+        {
+          "database": "PDB",
+          "id": "1IVO",
+          "properties": []
+        }
+      ],
+      "entryAudit": {
+        "firstPublicDate": "1986-07-21",
+        "lastAnnotationUpdateDate": "2026-02-18",
+        "entryVersion": 305,
+        "sequenceVersion": 2
+      }
+    },
+    {
+      "entryType": "UniProtKB reviewed (Swiss-Prot)",
+      "primaryAccession": "P01308",
+      "uniProtkbId": "INS_HUMAN",
+      "proteinDescription": {
+        "recommendedName": {
+          "fullName": {
+            "value": "Insulin"
+          }
+        }
+      },
+      "genes": [
+        {
+          "geneName": {
+            "value": "INS"
+          }
+        }
+      ],
+      "organism": {
+        "scientificName": "Homo sapiens",
+        "taxonId": 9606
+      },
+      "sequence": {
+        "value": "MALWMRLLPLLALLALWGPDPAAAFVNQHLCGSHLVEALYLVCGERGFFYTPKTRREAEDLQVGQVELGGGPGAGSLQPLALEGSLQKRGIVEQCCTSICSLYQLENYCN",
+        "length": 110,
+        "molWeight": 11981,
+        "checksum": "6D3F7FEC8A9F1AC2"
+      },
+      "uniProtKBCrossReferences": [
+        {
+          "database": "Ensembl",
+          "id": "ENSG00000254647",
+          "properties": [
+            {
+              "key": "ProteinId",
+              "value": "ENSP00000380432"
+            }
+          ]
+        }
+      ],
+      "entryAudit": {
+        "firstPublicDate": "1986-07-21",
+        "lastAnnotationUpdateDate": "2026-02-18",
+        "entryVersion": 267,
+        "sequenceVersion": 1
+      }
+    }
+  ]
+}

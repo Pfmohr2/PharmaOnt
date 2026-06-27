@@ -1,0 +1,196 @@
+{
+  "molecule_response": {
+    "page_meta": {
+      "limit": 2,
+      "next": null,
+      "offset": 0,
+      "previous": null,
+      "total_count": 2
+    },
+    "molecules": [
+      {
+        "atc_classifications": ["N02BA01", "B01AC06"],
+        "availability_type": 1,
+        "biotherapeutic": null,
+        "black_box_warning": 0,
+        "chebi_par_id": 15365,
+        "chirality": 2,
+        "cross_references": [
+          {
+            "xref_id": "Aspirin",
+            "xref_name": "Aspirin",
+            "xref_src": "Wikipedia"
+          }
+        ],
+        "dosed_ingredient": true,
+        "first_approval": 1950,
+        "first_in_class": 0,
+        "helm_notation": null,
+        "indication_class": "Analgesic; Anti-Inflammatory; Antipyretic",
+        "inorganic_flag": 0,
+        "max_phase": 4,
+        "molecule_chembl_id": "CHEMBL25",
+        "molecule_hierarchy": {
+          "active_chembl_id": "CHEMBL25",
+          "molecule_chembl_id": "CHEMBL25",
+          "parent_chembl_id": "CHEMBL25"
+        },
+        "molecule_properties": {
+          "alogp": "1.31",
+          "aromatic_rings": 1,
+          "full_molformula": "C9H8O4",
+          "full_mwt": "180.16",
+          "hba": 4,
+          "hbd": 1,
+          "psa": "63.60",
+          "qed_weighted": "0.55",
+          "ro3_pass": "N",
+          "rtb": 2
+        },
+        "molecule_structures": {
+          "canonical_smiles": "CC(=O)Oc1ccccc1C(=O)O",
+          "molfile": null,
+          "standard_inchi": "InChI=1S/C9H8O4/c1-6(10)13-8-5-3-2-4-7(8)9(11)12/h2-5H,1H3,(H,11,12)",
+          "standard_inchi_key": "BSYNRYMUTXBXSQ-UHFFFAOYSA-N"
+        },
+        "molecule_synonyms": [
+          {
+            "molecule_synonym": "ASPIRIN",
+            "syn_type": "OTHER",
+            "synonyms": "ASPIRIN"
+          },
+          {
+            "molecule_synonym": "Acetylsalicylic acid",
+            "syn_type": "OTHER",
+            "synonyms": "Acetylsalicylic acid"
+          }
+        ],
+        "molecule_type": "Small molecule",
+        "natural_product": 0,
+        "oral": true,
+        "parenteral": false,
+        "polymer_flag": 0,
+        "pref_name": "ASPIRIN",
+        "prodrug": 0,
+        "structure_type": "MOL",
+        "therapeutic_flag": true,
+        "topical": false,
+        "usan_stem": null,
+        "usan_stem_definition": null,
+        "usan_substem": null,
+        "usan_year": null,
+        "withdrawn_flag": false
+      },
+      {
+        "atc_classifications": [],
+        "availability_type": -1,
+        "biotherapeutic": null,
+        "black_box_warning": 0,
+        "chebi_par_id": null,
+        "chirality": 2,
+        "cross_references": [],
+        "dosed_ingredient": false,
+        "first_approval": null,
+        "first_in_class": 0,
+        "helm_notation": null,
+        "indication_class": null,
+        "inorganic_flag": 0,
+        "max_phase": 0,
+        "molecule_chembl_id": "CHEMBL1201585",
+        "molecule_hierarchy": {
+          "active_chembl_id": "CHEMBL1201585",
+          "molecule_chembl_id": "CHEMBL1201585",
+          "parent_chembl_id": "CHEMBL1201585"
+        },
+        "molecule_properties": {
+          "alogp": "2.15",
+          "aromatic_rings": 1,
+          "full_molformula": "C8H9NO2",
+          "full_mwt": "151.17",
+          "hba": 3,
+          "hbd": 1,
+          "psa": "49.33",
+          "qed_weighted": "0.61",
+          "ro3_pass": "N",
+          "rtb": 2
+        },
+        "molecule_structures": {
+          "canonical_smiles": "CC(=O)Nc1ccc(O)cc1",
+          "molfile": null,
+          "standard_inchi": "InChI=1S/C8H9NO2/c1-6(10)9-7-2-4-8(11)5-3-7/h2-5,11H,1H3,(H,9,10)",
+          "standard_inchi_key": "RZVAJINKPMORJF-UHFFFAOYSA-N"
+        },
+        "molecule_synonyms": [
+          {
+            "molecule_synonym": "Paracetamol",
+            "syn_type": "OTHER",
+            "synonyms": "Paracetamol"
+          },
+          {
+            "molecule_synonym": "Acetaminophen",
+            "syn_type": "OTHER",
+            "synonyms": "Acetaminophen"
+          }
+        ],
+        "molecule_type": "Small molecule",
+        "natural_product": 0,
+        "oral": true,
+        "parenteral": false,
+        "polymer_flag": 0,
+        "pref_name": "PARACETAMOL",
+        "prodrug": 0,
+        "structure_type": "MOL",
+        "therapeutic_flag": true,
+        "topical": false,
+        "usan_stem": null,
+        "usan_stem_definition": null,
+        "usan_substem": null,
+        "usan_year": null,
+        "withdrawn_flag": false
+      }
+    ]
+  },
+  "activity_response": {
+    "page_meta": {
+      "limit": 2,
+      "next": null,
+      "offset": 0,
+      "previous": null,
+      "total_count": 2
+    },
+    "activities": [
+      {
+        "activity_id": 31863,
+        "assay_chembl_id": "CHEMBL763",
+        "bao_label": "single protein format",
+        "document_chembl_id": "CHEMBL1137940",
+        "molecule_chembl_id": "CHEMBL25",
+        "pchembl_value": "6.30",
+        "standard_flag": 1,
+        "standard_relation": "=",
+        "standard_type": "IC50",
+        "standard_units": "nM",
+        "standard_value": "500.0",
+        "target_chembl_id": "CHEMBL221",
+        "target_organism": "Homo sapiens",
+        "target_pref_name": "Cyclooxygenase-1"
+      },
+      {
+        "activity_id": 1048221,
+        "assay_chembl_id": "CHEMBL615117",
+        "bao_label": "single protein format",
+        "document_chembl_id": "CHEMBL1137772",
+        "molecule_chembl_id": "CHEMBL1201585",
+        "pchembl_value": "4.70",
+        "standard_flag": 1,
+        "standard_relation": "=",
+        "standard_type": "Ki",
+        "standard_units": "nM",
+        "standard_value": "20000.0",
+        "target_chembl_id": "CHEMBL230",
+        "target_organism": "Homo sapiens",
+        "target_pref_name": "Cyclooxygenase-2"
+      }
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "source_name": "ChEMBL",
+  "source_version": "CHEMBL_34",
+  "source_record_id": "SOURCE-SYN-001",
+  "source_record_uri": "https://example.test/source/SOURCE-SYN-001",
+  "source_retrieved_at": "2026-06-27T02:55:00.000Z",
+  "license_classification": "open_with_attribution",
+  "materialization_policy": "materialize",
+  "sensitivity_classification": "public",
+  "retention_class": "public_source_snapshot",
+  "permitted_uses": ["ingest", "normalize", "curate", "search", "evidence", "export", "release"],
+  "export_restrictions": ["attribution_required"],
+  "disclaimer_ids": ["source_terms:chembl"],
+  "normalized_record": {
+    "source_id": "SOURCE-SYN-001",
+    "label": "Acetylsalicylic acid",
+    "entity_class": "compound",
+    "identifiers": [],
+    "synonyms": ["ASA"],
+    "source_version": "CHEMBL_34"
+  }
+}

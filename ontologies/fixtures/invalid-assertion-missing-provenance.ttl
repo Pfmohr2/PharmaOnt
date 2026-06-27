@@ -1,0 +1,107 @@
+﻿@prefix pharm: <https://w3id.org/pharmaops/ontology/core#> .
+@prefix pharmrel: <https://w3id.org/pharmaops/ontology/relationship#> .
+@prefix pharment: <https://example.pharmaops.local/tenant/acme/entity/> .
+@prefix pharmrelobj: <https://example.pharmaops.local/tenant/acme/relationship/> .
+@prefix pharmev: <https://example.pharmaops.local/tenant/acme/evidence/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+pharmev:missing-prov-evidence-000001
+    a pharm:DocumentEvidenceSource ;
+    pharm:canonicalId "pharmev:missing-prov-evidence-000001" ;
+    pharm:entityType "DocumentEvidenceSource" ;
+    pharm:preferredLabel "Missing provenance fixture evidence" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:evidenceId "pharmev:missing-prov-evidence-000001" ;
+    pharm:evidenceType "source_record" ;
+    pharm:evidenceSourceName "Fixture source" ;
+    pharm:evidenceSourceVersion "2026-06-27" ;
+    pharm:sourceRecordId "missing-prov-evidence-000001" ;
+    pharm:sourceRetrievedAt "2026-06-27T01:35:00Z"^^xsd:dateTime ;
+    pharm:confidenceType "source_asserted" ;
+    pharm:provenanceId "pharmprov:missing-prov-evidence-000001" ;
+    pharm:licenseClassification "open_materializable" ;
+    pharm:disclaimerId "none" ;
+    pharm:tenantId "acme" ;
+    pharm:visibility "tenant" ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:invalid-assertion-missing-provenance-1" ;
+        pharm:activityType "import" ;
+        pharm:activityId "activity:invalid-assertion-missing-provenance-1" ;
+        pharm:methodType "connector_transform" ;
+        pharm:confidenceType "source_asserted" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:invalid-assertion-missing-provenance-1" ;
+        pharm:actor "connector:literature-fixture" ;
+        pharm:sourceName "Literature fixture" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T01:42:00Z"^^xsd:dateTime
+    ] .
+
+pharment:target-missing-prov
+    a pharm:Protein ;
+    pharm:canonicalId "pharment:target-missing-prov" ;
+    pharm:entityType "Protein" ;
+    pharm:preferredLabel "Target fixture for missing provenance test" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:hasEvidence pharmev:missing-prov-evidence-000001 ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:invalid-assertion-missing-provenance-2" ;
+        pharm:activityType "import" ;
+        pharm:activityId "activity:invalid-assertion-missing-provenance-2" ;
+        pharm:methodType "connector_transform" ;
+        pharm:confidenceType "source_asserted" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:invalid-assertion-missing-provenance-2" ;
+        pharm:actor "connector:uniprot-fixture" ;
+        pharm:sourceName "UniProt fixture" ;
+        pharm:sourceVersion "2026_02" ;
+        pharm:generatedAtTime "2026-06-27T01:43:00Z"^^xsd:dateTime
+    ] .
+
+pharment:disease-missing-prov
+    a pharm:DiseaseCondition ;
+    pharm:canonicalId "pharment:disease-missing-prov" ;
+    pharm:entityType "DiseaseCondition" ;
+    pharm:preferredLabel "Disease fixture for missing provenance test" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:hasEvidence pharmev:missing-prov-evidence-000001 ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:invalid-assertion-missing-provenance-3" ;
+        pharm:activityType "import" ;
+        pharm:activityId "activity:invalid-assertion-missing-provenance-3" ;
+        pharm:methodType "connector_transform" ;
+        pharm:confidenceType "source_asserted" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:invalid-assertion-missing-provenance-3" ;
+        pharm:actor "connector:mesh-fixture" ;
+        pharm:sourceName "MeSH fixture" ;
+        pharm:sourceVersion "2026" ;
+        pharm:generatedAtTime "2026-06-27T01:44:00Z"^^xsd:dateTime
+    ] .
+
+pharmrelobj:rel-missing-provenance
+    a pharm:RelationshipAssertion ;
+    pharm:canonicalId "pharmrelobj:rel-missing-provenance" ;
+    pharm:entityType "RelationshipAssertion" ;
+    pharm:preferredLabel "Invalid target disease association missing provenance" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:assertionType "human_curated" ;
+    pharm:confidenceScore 0.85 ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:relationshipSubject pharment:target-missing-prov ;
+    pharm:relationshipPredicate pharmrel:target_associated_with_disease ;
+    pharm:relationshipObject pharment:disease-missing-prov ;
+    pharm:hasEvidence pharmev:missing-prov-evidence-000001 .
+

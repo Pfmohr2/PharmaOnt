@@ -1,0 +1,42 @@
+{
+  "schema_version": "phase7.release-risk-waiver.v1",
+  "waiver_id": "waiver:release-risk:mvp-2026-06-27-rc1:live-infra-skips",
+  "artifact_created_at": "2026-06-27T11:06:00Z",
+  "artifact_created_by": "andy-mqvn41pb",
+  "artifact_purpose": "Accepted-risk attestation for local live-infrastructure and Docker-backed operational-security test skips in the Phase 7 MVP validation package.",
+  "signed_content_hash_algorithm": "sha256-stable-json",
+  "signed_content_hash": "sha256:c13b7dc2e0baf671cf52c700d85165d85ad5d614d9f79043f3d5f9203433f7b1",
+  "signed_content": {
+    "release_id": "mvp-2026-06-27-rc1",
+    "release_candidate_id": "rc:mvp-2026-06-27",
+    "signed_at": "2026-06-27T11:03:00Z",
+    "signer_email": "ferry.andrew86@gmail.com",
+    "waiver_statement": "We acknowledge these tests were not run against staging/live infrastructure and accept the release risk.",
+    "waived_scope": [
+      "live DB/Fuseki-backed tests skipped locally",
+      "Docker-backed operational-security tests skipped locally",
+      "6 targeted Phase 7 EXIT-suite Docker-backed skips",
+      "11 full-suite expected local skips"
+    ],
+    "residual_risk_refs": [
+      "P7-RISK-001",
+      "P7-P2-001"
+    ]
+  },
+  "accepted_risk": "Release/pilot gate may proceed with the named local infrastructure-backed test classes unexecuted against staging/live infrastructure; this is accepted as a P2 residual human-infra gate and not treated as a code defect.",
+  "validation_package": {
+    "package_id": "pharmaops-mvp-validation-package-2026-06-27",
+    "path": "docs/validation/mvp-validation-package",
+    "report_digest": "sha256:11381669bdf6c36a4be171422fd128dd056641459895c0281b7c7e2e23fea0f3"
+  },
+  "release_manifest": {
+    "path": "docs/releases/mvp-2026-06-27-rc1/mvp-2026-06-27-rc1.rc_mvp-2026-06-27.manifest.json",
+    "digest": "sha256:68fd2ad5cab1fde056aa9a352950ac2433cbf419233b017cdb1fa37671113684"
+  },
+  "cross_references": [
+    "docs/validation/mvp-validation-package/README.md",
+    "docs/validation/mvp-validation-package/evidence-matrix.md",
+    "RISK_REGISTER.md"
+  ],
+  "manifest_note": "This waiver is additive governance evidence and does not alter the existing validation package report digest or release manifest digest."
+}

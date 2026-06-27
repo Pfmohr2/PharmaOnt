@@ -1,0 +1,469 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "PharmaOps Phase 6 AI Curation API",
+    "version": "phase6.curation-api.v1",
+    "description": "API contract for AI-assisted curation suggestions and human feedback. Suggestions are model_suggested candidates only, never approved or released, and feedback routes into Phyllis recordSuggestionFeedback workflow hooks."
+  },
+  "paths": {
+    "/api/curation/suggestions": {
+      "post": {
+        "operationId": "fetchAiSuggestions",
+        "summary": "Fetch authorized AI suggestions for a document, entity, or queue",
+        "description": "Returns only server-authorized ai-suggestion-candidate.v1 model_suggested proposals with provenance, evidence, model/prompt versioning, score, and source spans.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SuggestionFetchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authorized AI suggestion candidates",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuggestionFetchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/curation/suggestions/{suggestionId}/feedback": {
+      "post": {
+        "operationId": "submitAiSuggestionFeedback",
+        "summary": "Submit human feedback on an AI suggestion",
+        "description": "Accept, reject, or revise a model_suggested candidate. Feedback is authorized, no-auto-release gated, and routed to the governed recordSuggestionFeedback workflow hook.",
+        "parameters": [
+          {
+            "name": "suggestionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedbackRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Feedback captured and routed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedbackResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SuggestionFetchRequest": {
+        "type": "object",
+        "required": ["scope"],
+        "properties": {
+          "scope": {
+            "$ref": "#/components/schemas/SuggestionScope"
+          }
+        }
+      },
+      "SuggestionScope": {
+        "type": "object",
+        "required": ["type"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["document", "entity", "queue"]
+          },
+          "document_id": {
+            "type": ["string", "null"]
+          },
+          "entity_id": {
+            "type": ["string", "null"]
+          },
+          "queue_id": {
+            "type": ["string", "null"]
+          },
+          "suggestion_types": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["document_entity_extraction", "entity_linking", "synonym", "relationship", "duplicate"]
+            }
+          }
+        }
+      },
+      "AiSuggestion": {
+        "type": "object",
+        "required": [
+          "id",
+          "candidate_id",
+          "suggestion_id",
+          "tenant_id",
+          "environment",
+          "suggestion_type",
+          "proposal_type",
+          "assertion_type",
+          "lifecycle_status",
+          "review_status",
+          "release_id",
+          "model_version",
+          "score",
+          "confidence_score",
+          "confidence_source",
+          "evidence_refs",
+          "source_spans",
+          "provenance_id",
+          "duplicate_status",
+          "workflow",
+          "actions"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "schema_version": {
+            "type": ["string", "null"],
+            "description": "Andy engine candidates use ai-suggestion-candidate.v1."
+          },
+          "candidate_id": {
+            "type": "string"
+          },
+          "suggestion_id": {
+            "type": "string"
+          },
+          "tenant_id": {
+            "type": "string"
+          },
+          "environment": {
+            "type": "string"
+          },
+          "suggestion_type": {
+            "type": "string",
+            "enum": ["document_entity_extraction", "entity_linking", "synonym", "relationship", "duplicate"]
+          },
+          "proposal_type": {
+            "type": "string",
+            "enum": ["synonym", "mapping", "relationship", "evidence-link"]
+          },
+          "assertion_type": {
+            "const": "model_suggested"
+          },
+          "lifecycle_status": {
+            "const": "proposed"
+          },
+          "review_status": {
+            "const": "proposed"
+          },
+          "release_id": {
+            "type": "null"
+          },
+          "model_version": {
+            "type": "string"
+          },
+          "prompt_version": {
+            "type": ["string", "null"]
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "confidence_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "confidence_band": {
+            "type": ["string", "null"],
+            "enum": ["high", "medium", "low", "blocked", null]
+          },
+          "confidence_source": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": ["object", "null"],
+            "additionalProperties": true
+          },
+          "calibration": {
+            "type": ["object", "null"],
+            "additionalProperties": true
+          },
+          "candidate_payload": {
+            "type": ["object", "null"],
+            "additionalProperties": true
+          },
+          "payload": {
+            "type": ["object", "null"],
+            "additionalProperties": true
+          },
+          "evidence_refs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            }
+          },
+          "source_spans": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/SourceSpan"
+            }
+          },
+          "provenance_id": {
+            "type": "string"
+          },
+          "duplicate_status": {
+            "type": "string"
+          },
+          "governance": {
+            "type": ["object", "null"],
+            "additionalProperties": true
+          },
+          "safety": {
+            "type": ["object", "null"],
+            "additionalProperties": true
+          },
+          "rationale": {
+            "type": ["string", "null"]
+          },
+          "workflow": {
+            "$ref": "#/components/schemas/SuggestionWorkflow"
+          },
+          "actions": {
+            "$ref": "#/components/schemas/SuggestionActions"
+          }
+        },
+        "additionalProperties": true
+      },
+      "EvidenceRef": {
+        "type": "object",
+        "required": ["evidence_id", "evidence_role"],
+        "properties": {
+          "evidence_id": {
+            "type": "string"
+          },
+          "evidence_role": {
+            "type": "string"
+          },
+          "required_for_release": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": true
+      },
+      "SourceSpan": {
+        "type": "object",
+        "required": ["start_offset", "end_offset"],
+        "properties": {
+          "source_id": {
+            "type": ["string", "null"]
+          },
+          "document_id": {
+            "type": ["string", "null"]
+          },
+          "evidence_id": {
+            "type": ["string", "null"]
+          },
+          "start_offset": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "end_offset": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "text": {
+            "type": ["string", "null"]
+          }
+        },
+        "additionalProperties": true
+      },
+      "SuggestionWorkflow": {
+        "type": "object",
+        "required": ["queue", "low_confidence", "review_required"],
+        "properties": {
+          "queue": {
+            "type": "string",
+            "enum": ["curation_review", "expert_review"]
+          },
+          "low_confidence": {
+            "type": "boolean"
+          },
+          "review_required": {
+            "const": true
+          }
+        }
+      },
+      "SuggestionActions": {
+        "type": "object",
+        "required": ["can_accept", "can_reject", "can_revise"],
+        "properties": {
+          "can_accept": {
+            "type": "boolean"
+          },
+          "can_reject": {
+            "type": "boolean"
+          },
+          "can_revise": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SuggestionFetchResponse": {
+        "type": "object",
+        "required": ["schema_version", "tenant_id", "environment", "scope", "suggestions", "visible_count", "authorization_filtered", "policy_notice"],
+        "properties": {
+          "schema_version": {
+            "const": "phase6.curation-api.v1"
+          },
+          "generated_at": {
+            "type": "string"
+          },
+          "tenant_id": {
+            "type": "string"
+          },
+          "environment": {
+            "type": "string"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/SuggestionScope"
+          },
+          "suggestions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AiSuggestion"
+            }
+          },
+          "visible_count": {
+            "type": "integer"
+          },
+          "authorization_filtered": {
+            "const": true
+          },
+          "policy_notice": {
+            "type": "string"
+          }
+        }
+      },
+      "FeedbackRequest": {
+        "type": "object",
+        "required": ["suggestion_id", "action", "rationale", "candidate"],
+        "properties": {
+          "suggestion_id": {
+            "type": "string"
+          },
+          "feedback_id": {
+            "type": "string"
+          },
+          "correlation_id": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": ["accept", "reject", "revise"]
+          },
+          "rationale": {
+            "type": "string"
+          },
+          "candidate": {
+            "$ref": "#/components/schemas/AiSuggestion"
+          },
+          "revision": {
+            "type": ["object", "null"],
+            "additionalProperties": true
+          }
+        }
+      },
+      "FeedbackResponse": {
+        "type": "object",
+        "required": ["schema_version", "tenant_id", "environment", "authorization_filtered", "feedback", "workflow", "policy_notice"],
+        "properties": {
+          "schema_version": {
+            "const": "phase6.curation-api.v1"
+          },
+          "tenant_id": {
+            "type": "string"
+          },
+          "environment": {
+            "type": "string"
+          },
+          "authorization_filtered": {
+            "const": true
+          },
+          "feedback": {
+            "type": "object",
+            "required": ["feedback_id", "suggestion_id", "action", "decision", "rationale", "reviewer_user_id", "reviewer_role_key", "correlation_id", "occurred_at", "candidate"],
+            "properties": {
+              "feedback_id": {
+                "type": "string"
+              },
+              "suggestion_id": {
+                "type": "string"
+              },
+              "action": {
+                "type": "string",
+                "enum": ["accept", "reject", "revise"]
+              },
+              "decision": {
+                "type": "string",
+                "enum": ["accept", "reject", "revise"]
+              },
+              "rationale": {
+                "type": "string"
+              },
+              "reviewer_user_id": {
+                "type": ["string", "null"]
+              },
+              "reviewer_role_key": {
+                "type": "string"
+              },
+              "correlation_id": {
+                "type": "string"
+              },
+              "occurred_at": {
+                "type": "string"
+              },
+              "revision": {
+                "type": ["object", "null"],
+                "additionalProperties": true
+              },
+              "candidate": {
+                "$ref": "#/components/schemas/AiSuggestion"
+              }
+            },
+            "additionalProperties": true
+          },
+          "workflow": {
+            "type": "object",
+            "required": ["routed"],
+            "additionalProperties": true
+          },
+          "policy_notice": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

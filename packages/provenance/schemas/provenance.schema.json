@@ -1,0 +1,319 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pharmaops.local/schemas/provenance.schema.json",
+  "title": "PharmaOps Provenance Object",
+  "description": "PROV-style provenance object covering actor, activity, source, time, method, confidence, environment, and release dimensions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "provenance_id",
+    "object_id",
+    "object_type",
+    "actor",
+    "activity",
+    "source",
+    "time",
+    "method",
+    "confidence",
+    "environment",
+    "release",
+    "audit_event_ids"
+  ],
+  "properties": {
+    "provenance_id": {
+      "type": "string",
+      "pattern": "^pharmprov:[A-Za-z0-9._~:/#-]+$"
+    },
+    "object_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "object_type": {
+      "type": "string",
+      "enum": [
+        "canonical_entity",
+        "vocabulary_term",
+        "mapping_assertion",
+        "relationship_assertion",
+        "evidence_object",
+        "source_record",
+        "ai_suggestion",
+        "workflow_action",
+        "release_artifact",
+        "export_artifact",
+        "validation_report"
+      ]
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actor_type", "actor_id"],
+      "properties": {
+        "actor_type": {
+          "type": "string",
+          "enum": ["human_user", "service_account", "connector_job", "model", "system"]
+        },
+        "actor_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actor_role": {
+          "type": ["string", "null"]
+        },
+        "display_name": {
+          "type": ["string", "null"]
+        },
+        "service_account_owner": {
+          "type": ["string", "null"]
+        },
+        "connector_run_id": {
+          "type": ["string", "null"]
+        },
+        "model_name": {
+          "type": ["string", "null"]
+        },
+        "model_version": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "activity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["activity_type", "activity_id"],
+      "properties": {
+        "activity_type": {
+          "type": "string",
+          "enum": [
+            "import",
+            "normalize",
+            "suggest",
+            "validate",
+            "submit",
+            "approve",
+            "reject",
+            "revise",
+            "stage",
+            "release",
+            "rollback",
+            "export",
+            "deprecate",
+            "supersede",
+            "audit",
+            "redact",
+            "infer"
+          ]
+        },
+        "activity_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workflow_state_before": {
+          "type": ["string", "null"]
+        },
+        "workflow_state_after": {
+          "type": ["string", "null"]
+        },
+        "rationale": {
+          "type": ["string", "null"]
+        },
+        "policy_id": {
+          "type": ["string", "null"]
+        },
+        "validation_report_id": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_name", "source_version_strategy"],
+      "properties": {
+        "source_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_type": {
+          "type": ["string", "null"],
+          "enum": ["public_api", "public_bulk", "licensed_api", "internal_api", "file", "stream", null]
+        },
+        "source_version": {
+          "type": ["string", "null"]
+        },
+        "source_version_strategy": {
+          "type": "string",
+          "enum": ["version", "release", "retrieval_timestamp", "snapshot_hash", "customer_schema_version"]
+        },
+        "source_record_id": {
+          "type": ["string", "null"]
+        },
+        "source_record_uri": {
+          "type": ["string", "null"]
+        },
+        "raw_artifact_uri": {
+          "type": ["string", "null"]
+        },
+        "record_hash": {
+          "type": ["string", "null"],
+          "pattern": "^(sha256:)?[A-Fa-f0-9]{64}$"
+        },
+        "license_classification": {
+          "type": ["string", "null"],
+          "enum": [
+            "open_materializable",
+            "open_with_attribution",
+            "licensed_federated",
+            "licensed_materializable_with_restrictions",
+            "internal_confidential",
+            "contains_phi_or_pii",
+            "blocked_pending_legal_review",
+            null
+          ]
+        },
+        "license_policy_id": {
+          "type": ["string", "null"]
+        },
+        "data_sensitivity": {
+          "type": ["string", "null"],
+          "enum": ["public", "restricted_public", "licensed", "internal_confidential", "phi_pii", "unknown", null]
+        },
+        "disclaimer_ids": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        }
+      }
+    },
+    "time": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["occurred_at"],
+      "properties": {
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ingested_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "reviewed_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "released_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "method": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method_type"],
+      "properties": {
+        "method_type": {
+          "type": "string",
+          "enum": ["rule", "model", "manual_edit", "connector_transform", "inference_rule", "reviewer_decision", "release_process"]
+        },
+        "method_id": {
+          "type": ["string", "null"]
+        },
+        "method_version": {
+          "type": ["string", "null"]
+        },
+        "rule_id": {
+          "type": ["string", "null"]
+        },
+        "prompt_or_policy_version": {
+          "type": ["string", "null"]
+        },
+        "input_provenance_ids": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        }
+      }
+    },
+    "confidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["confidence_type"],
+      "properties": {
+        "confidence_type": {
+          "type": "string",
+          "enum": ["model_score", "rule_score", "reviewer_decision", "corroboration_count", "not_applicable"]
+        },
+        "confidence_score": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "confidence_band": {
+          "type": ["string", "null"],
+          "enum": ["high", "medium", "low", "blocked", "not_applicable", null]
+        },
+        "corroboration_count": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "reviewer_decision": {
+          "type": ["string", "null"],
+          "enum": ["approved", "rejected", "revision_requested", "escalated", "not_applicable", null]
+        }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["environment", "tenant_id"],
+      "properties": {
+        "environment": {
+          "type": "string",
+          "enum": ["local", "dev", "test", "staging", "release_candidate", "production"]
+        },
+        "tenant_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "graph_id": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["release_status"],
+      "properties": {
+        "release_status": {
+          "type": "string",
+          "enum": ["not_released", "release_candidate", "released", "deprecated", "superseded", "rolled_back"]
+        },
+        "release_id": {
+          "type": ["string", "null"]
+        },
+        "release_candidate_id": {
+          "type": ["string", "null"]
+        },
+        "snapshot_hash": {
+          "type": ["string", "null"],
+          "pattern": "^(sha256:)?[A-Fa-f0-9]{64}$"
+        },
+        "artifact_uri": {
+          "type": ["string", "null"]
+        },
+        "rollback_target_release_id": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "audit_event_ids": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    }
+  }
+}
+

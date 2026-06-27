@@ -1,0 +1,34 @@
+{
+  "next_cursor": "round-b-fixture-page-complete",
+  "records": [
+    {
+      "source_record_id": "qa-compound-001",
+      "source_record_uri": "https://fixtures.pharmaops.local/chembl/CHEMBL25",
+      "label": "Acetylsalicylic acid",
+      "entity_class": "compound",
+      "identifiers": ["chembl:CHEMBL25"],
+      "synonyms": ["Aspirin"],
+      "disclaimer_ids": ["source_terms:chembl"],
+      "skip_when_checkpointed": true
+    },
+    {
+      "source_record_id": "qa-target-001",
+      "source_record_uri": "https://fixtures.pharmaops.local/uniprot/P23219",
+      "label": "Prostaglandin G/H synthase 1",
+      "entity_class": "target",
+      "identifiers": ["uniprot:P23219"],
+      "synonyms": ["PTGS1", "COX-1"],
+      "warnings": ["fixture_warning:review_target_synonym"],
+      "disclaimer_ids": ["source_terms:uniprot"],
+      "resume_after_id": "qa-compound-001"
+    },
+    {
+      "source_record_id": "qa-trial-001",
+      "source_record_uri": "https://fixtures.pharmaops.local/ctgov/NCT00000001",
+      "label": "Aspirin pharmacodynamic fixture trial",
+      "entity_class": "clinical_trial",
+      "identifiers": ["ctgov:NCT00000001"],
+      "disclaimer_ids": ["source_limit:clinicaltrials_registry_context"]
+    }
+  ]
+}

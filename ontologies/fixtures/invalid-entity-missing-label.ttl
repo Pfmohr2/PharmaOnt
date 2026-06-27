@@ -1,0 +1,65 @@
+﻿@prefix pharm: <https://w3id.org/pharmaops/ontology/core#> .
+@prefix pharment: <https://example.pharmaops.local/tenant/acme/entity/> .
+@prefix pharmev: <https://example.pharmaops.local/tenant/acme/evidence/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+pharmev:entity-label-evidence-000001
+    a pharm:DocumentEvidenceSource ;
+    pharm:canonicalId "pharmev:entity-label-evidence-000001" ;
+    pharm:entityType "DocumentEvidenceSource" ;
+    pharm:preferredLabel "Entity label fixture evidence" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:evidenceId "pharmev:entity-label-evidence-000001" ;
+    pharm:evidenceType "source_record" ;
+    pharm:evidenceSourceName "Fixture source" ;
+    pharm:evidenceSourceVersion "2026-06-27" ;
+    pharm:sourceRecordId "entity-label-evidence-000001" ;
+    pharm:sourceRetrievedAt "2026-06-27T01:35:00Z"^^xsd:dateTime ;
+    pharm:confidenceType "source_asserted" ;
+    pharm:provenanceId "pharmprov:entity-label-evidence-000001" ;
+    pharm:licenseClassification "open_materializable" ;
+    pharm:disclaimerId "none" ;
+    pharm:tenantId "acme" ;
+    pharm:visibility "tenant" ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:invalid-entity-missing-label-1" ;
+        pharm:activityType "import" ;
+        pharm:activityId "activity:invalid-entity-missing-label-1" ;
+        pharm:methodType "connector_transform" ;
+        pharm:confidenceType "source_asserted" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:invalid-entity-missing-label-1" ;
+        pharm:actor "connector:fixture" ;
+        pharm:sourceName "Entity label fixture" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T01:40:00Z"^^xsd:dateTime
+    ] .
+
+pharment:disease-missing-label
+    a pharm:DiseaseCondition ;
+    pharm:canonicalId "pharment:disease-missing-label" ;
+    pharm:entityType "DiseaseCondition" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:hasEvidence pharmev:entity-label-evidence-000001 ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:invalid-entity-missing-label-2" ;
+        pharm:activityType "import" ;
+        pharm:activityId "activity:invalid-entity-missing-label-2" ;
+        pharm:methodType "connector_transform" ;
+        pharm:confidenceType "source_asserted" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:invalid-entity-missing-label-2" ;
+        pharm:actor "curator:fixture" ;
+        pharm:sourceName "manual fixture curation" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T01:41:00Z"^^xsd:dateTime
+    ] .
+

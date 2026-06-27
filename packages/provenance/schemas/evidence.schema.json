@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pharmaops.local/schemas/evidence.schema.json",
+  "title": "PharmaOps Evidence Object",
+  "description": "Evidence object model for source records, documents, text spans, snippets, source versions, confidence, access restrictions, and source limitations.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evidence_id",
+    "evidence_type",
+    "document_id",
+    "source_record_id",
+    "source_name",
+    "source_version",
+    "source_retrieved_at",
+    "confidence",
+    "provenance_id",
+    "disclaimer_ids",
+    "access_control"
+  ],
+  "properties": {
+    "evidence_id": {
+      "type": "string",
+      "pattern": "^pharmev:[A-Za-z0-9._~:/#-]+$"
+    },
+    "evidence_type": {
+      "type": "string",
+      "enum": ["source_record", "document", "text_span", "structured_field", "artifact", "citation", "validation_report", "approval_record"]
+    },
+    "document_id": {
+      "type": ["string", "null"]
+    },
+    "source_record_id": {
+      "type": ["string", "null"]
+    },
+    "source_record_uri": {
+      "type": ["string", "null"]
+    },
+    "source_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_retrieved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "raw_artifact_uri": {
+      "type": ["string", "null"]
+    },
+    "record_hash": {
+      "type": ["string", "null"],
+      "pattern": "^(sha256:)?[A-Fa-f0-9]{64}$"
+    },
+    "text_spans": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["span_id", "start_offset", "end_offset"],
+        "properties": {
+          "span_id": { "type": "string" },
+          "field_path": { "type": ["string", "null"] },
+          "page": { "type": ["integer", "null"], "minimum": 1 },
+          "section": { "type": ["string", "null"] },
+          "start_offset": { "type": "integer", "minimum": 0 },
+          "end_offset": { "type": "integer", "minimum": 0 },
+          "quote_hash": {
+            "type": ["string", "null"],
+            "pattern": "^(sha256:)?[A-Fa-f0-9]{64}$"
+          }
+        }
+      }
+    },
+    "snippet": {
+      "type": ["string", "null"],
+      "maxLength": 2000
+    },
+    "structured_fields": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "evidence_role": {
+      "type": "string",
+      "enum": ["supports", "contradicts", "context", "source_only", "validation_evidence", "approval_evidence"]
+    },
+    "confidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["confidence_type"],
+      "properties": {
+        "confidence_type": {
+          "type": "string",
+          "enum": ["source_asserted", "model_score", "rule_score", "reviewer_decision", "not_applicable"]
+        },
+        "confidence_score": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "confidence_band": {
+          "type": ["string", "null"],
+          "enum": ["high", "medium", "low", "blocked", "not_applicable", null]
+        }
+      }
+    },
+    "provenance_id": {
+      "type": "string"
+    },
+    "license_classification": {
+      "type": ["string", "null"],
+      "enum": [
+        "open_materializable",
+        "open_with_attribution",
+        "licensed_federated",
+        "licensed_materializable_with_restrictions",
+        "internal_confidential",
+        "contains_phi_or_pii",
+        "blocked_pending_legal_review",
+        null
+      ]
+    },
+    "data_sensitivity": {
+      "type": ["string", "null"],
+      "enum": ["public", "restricted_public", "licensed", "internal_confidential", "phi_pii", "unknown", null]
+    },
+    "materialization_policy": {
+      "type": ["string", "null"],
+      "enum": ["materialize", "federate", "stream", "redact_then_materialize", "block", null]
+    },
+    "disclaimer_ids": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "source_limitations": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "access_control": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tenant_id", "visibility"],
+      "properties": {
+        "tenant_id": { "type": "string" },
+        "visibility": {
+          "type": "string",
+          "enum": ["public", "tenant", "restricted", "privileged", "blocked"]
+        },
+        "required_roles": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        },
+        "export_allowed": { "type": "boolean" },
+        "ai_use_policy": {
+          "type": ["string", "null"],
+          "enum": ["allowed", "allowed_with_attribution", "deidentified_only", "private_approved_only", "prohibited", null]
+        }
+      }
+    },
+    "release_id": {
+      "type": ["string", "null"]
+    }
+  }
+}
+

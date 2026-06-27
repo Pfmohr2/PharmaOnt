@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pharmaops.local/schemas/assertion-evidence-link.schema.json",
+  "title": "PharmaOps Assertion Evidence Link",
+  "description": "Contract linking governed assertions to minimum evidence and provenance requirements.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "assertion_id",
+    "assertion_kind",
+    "assertion_type",
+    "subject_id",
+    "evidence_refs",
+    "provenance_id",
+    "minimum_evidence_rule",
+    "validation_status"
+  ],
+  "properties": {
+    "assertion_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "assertion_kind": {
+      "type": "string",
+      "enum": ["mapping_assertion", "relationship_assertion", "synonym_assertion", "definition_assertion", "external_identifier_assertion", "release_membership_assertion", "lifecycle_assertion"]
+    },
+    "assertion_type": {
+      "type": "string",
+      "enum": ["asserted", "inferred", "imported", "human_curated", "model_suggested", "deprecated"]
+    },
+    "subject_id": {
+      "type": "string"
+    },
+    "predicate": {
+      "type": ["string", "null"]
+    },
+    "object_id": {
+      "type": ["string", "null"]
+    },
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["evidence_id", "evidence_role"],
+        "properties": {
+          "evidence_id": { "type": "string" },
+          "evidence_role": {
+            "type": "string",
+            "enum": ["supports", "contradicts", "context", "source_only", "validation_evidence", "approval_evidence"]
+          },
+          "required_for_release": { "type": "boolean" }
+        }
+      }
+    },
+    "provenance_id": {
+      "type": "string"
+    },
+    "minimum_evidence_rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rule_id", "rule_result"],
+      "properties": {
+        "rule_id": {
+          "type": "string",
+          "enum": [
+            "imported_requires_source_record",
+            "inferred_requires_rule_and_inputs",
+            "human_curated_requires_reviewer_rationale",
+            "model_suggested_requires_model_and_span",
+            "deprecated_requires_deprecation_reason",
+            "safety_requires_non_causal_disclaimer",
+            "mapping_requires_source_target_versions"
+          ]
+        },
+        "rule_result": {
+          "type": "string",
+          "enum": ["pass", "fail", "warning", "not_applicable"]
+        },
+        "policy_exception_id": {
+          "type": ["string", "null"]
+        },
+        "rationale": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "confidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "confidence_score": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "confidence_band": {
+          "type": ["string", "null"],
+          "enum": ["high", "medium", "low", "blocked", "not_applicable", null]
+        }
+      }
+    },
+    "release_id": {
+      "type": ["string", "null"]
+    },
+    "validation_status": {
+      "type": "string",
+      "enum": ["not_validated", "passed", "warning", "failed", "blocked"]
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    }
+  }
+}
+

@@ -1,0 +1,143 @@
+@prefix pharm: <https://w3id.org/pharmaops/ontology/core#> .
+@prefix pharmrel: <https://w3id.org/pharmaops/ontology/relationship#> .
+@prefix pharment: <https://example.pharmaops.local/tenant/acme/entity/> .
+@prefix pharmrelobj: <https://example.pharmaops.local/tenant/acme/relationship/> .
+@prefix pharmev: <https://example.pharmaops.local/tenant/acme/evidence/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+pharmev:model-release-evidence-000001
+    a pharm:DocumentEvidenceSource ;
+    pharm:canonicalId "pharmev:model-release-evidence-000001" ;
+    pharm:entityType "DocumentEvidenceSource" ;
+    pharm:preferredLabel "Model suggestion release blocker evidence" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:evidenceId "pharmev:model-release-evidence-000001" ;
+    pharm:evidenceType "text_span" ;
+    pharm:evidenceSourceName "Model suggestion fixture" ;
+    pharm:evidenceSourceVersion "2026-06-27" ;
+    pharm:sourceRecordId "model-release-evidence-000001" ;
+    pharm:sourceRetrievedAt "2026-06-27T01:46:00Z"^^xsd:dateTime ;
+    pharm:confidenceType "model_score" ;
+    pharm:provenanceId "pharmprov:model-release-evidence-000001" ;
+    pharm:licenseClassification "open_materializable" ;
+    pharm:disclaimerId "none" ;
+    pharm:tenantId "acme" ;
+    pharm:visibility "tenant" ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:invalid-model-release-evidence-1" ;
+        pharm:activityType "suggest" ;
+        pharm:activityId "activity:invalid-model-release-evidence-1" ;
+        pharm:methodType "model" ;
+        pharm:confidenceType "model_score" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:invalid-model-release-evidence-1" ;
+        pharm:actor "model:fixture-linker" ;
+        pharm:sourceName "AI curation fixture" ;
+        pharm:sourceVersion "model-v0" ;
+        pharm:generatedAtTime "2026-06-27T01:46:00Z"^^xsd:dateTime
+    ] .
+
+pharment:model-target
+    a pharm:Protein ;
+    pharm:canonicalId "pharment:model-target" ;
+    pharm:entityType "Protein" ;
+    pharm:preferredLabel "Model fixture target" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:hasEvidence pharmev:model-release-evidence-000001 ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:invalid-model-release-target-1" ;
+        pharm:activityType "import" ;
+        pharm:activityId "activity:invalid-model-release-target-1" ;
+        pharm:methodType "connector_transform" ;
+        pharm:confidenceType "source_asserted" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:invalid-model-release-target-1" ;
+        pharm:actor "connector:uniprot-fixture" ;
+        pharm:sourceName "UniProt fixture" ;
+        pharm:sourceVersion "2026_02" ;
+        pharm:generatedAtTime "2026-06-27T01:47:00Z"^^xsd:dateTime
+    ] .
+
+pharment:model-disease
+    a pharm:DiseaseCondition ;
+    pharm:canonicalId "pharment:model-disease" ;
+    pharm:entityType "DiseaseCondition" ;
+    pharm:preferredLabel "Model fixture disease" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:hasEvidence pharmev:model-release-evidence-000001 ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:invalid-model-release-disease-1" ;
+        pharm:activityType "import" ;
+        pharm:activityId "activity:invalid-model-release-disease-1" ;
+        pharm:methodType "connector_transform" ;
+        pharm:confidenceType "source_asserted" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:invalid-model-release-disease-1" ;
+        pharm:actor "connector:mesh-fixture" ;
+        pharm:sourceName "MeSH fixture" ;
+        pharm:sourceVersion "2026" ;
+        pharm:generatedAtTime "2026-06-27T01:48:00Z"^^xsd:dateTime
+    ] .
+
+pharmrelobj:rel-model-suggested-release
+    a pharm:RelationshipAssertion ;
+    pharm:canonicalId "pharmrelobj:rel-model-suggested-release" ;
+    pharm:entityType "RelationshipAssertion" ;
+    pharm:preferredLabel "Invalid model suggested relationship in release graph" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:assertionType "model_suggested" ;
+    pharm:hasAssertionType "model_suggested" ;
+    pharm:hasRelationshipClass "clinical" ;
+    pharm:relationshipDirectionality "directed" ;
+    pharm:relationshipPolarity "positive" ;
+    pharm:modelName "fixture-linker" ;
+    pharm:modelVersion "0.0.1" ;
+    pharm:modelRationale "Fixture intentionally violates no AI auto-publication rule." ;
+    pharm:confidenceScore 0.93 ;
+    pharm:confidenceBand "high" ;
+    pharm:hasEvidenceStrength "moderate" ;
+    pharm:reviewStatus "approved" ;
+    pharm:reviewedBy "curator:fixture" ;
+    pharm:reviewedAt "2026-06-27T01:50:00Z"^^xsd:dateTime ;
+    pharm:dataLicenseClass "open_materializable" ;
+    pharm:releaseId "2026.0" ;
+    pharm:validationReportId "validation:model-release-fixture" ;
+    pharm:createdBy "model:fixture-linker" ;
+    pharm:createdAt "2026-06-27T01:49:00Z"^^xsd:dateTime ;
+    pharm:updatedAt "2026-06-27T01:50:00Z"^^xsd:dateTime ;
+    pharm:hasCausalClaimStatus "association_only" ;
+    pharm:usesRestrictedEvidence false ;
+    pharm:exportAuthorizationStatus "authorized" ;
+    pharm:releaseMembership "graph:tenant:acme:release:2026.0:canonical" ;
+    pharm:relationshipSubject pharment:model-target ;
+    pharm:relationshipPredicate pharmrel:target_associated_with_disease ;
+    pharm:relationshipObject pharment:model-disease ;
+    pharm:hasEvidence pharmev:model-release-evidence-000001 ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:invalid-model-release-rel-1" ;
+        pharm:activityType "suggest" ;
+        pharm:activityId "activity:invalid-model-release-rel-1" ;
+        pharm:methodType "model" ;
+        pharm:confidenceType "model_score" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "release_candidate" ;
+        pharm:auditEventId "audit:invalid-model-release-rel-1" ;
+        pharm:actor "model:fixture-linker" ;
+        pharm:sourceName "AI curation fixture" ;
+        pharm:sourceVersion "model-v0" ;
+        pharm:generatedAtTime "2026-06-27T01:49:00Z"^^xsd:dateTime
+    ] .

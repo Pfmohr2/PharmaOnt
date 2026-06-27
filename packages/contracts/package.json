@@ -1,0 +1,11 @@
+{
+  "name": "@pharmaops/contracts",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Shared PharmaOps JSON Schema contracts.",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "scripts": {
+    "test": "node --test"
+  }
+}

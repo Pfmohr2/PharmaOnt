@@ -1,0 +1,645 @@
+@prefix pharm: <https://w3id.org/pharmaops/ontology/core#> .
+@prefix pharmrel: <https://w3id.org/pharmaops/ontology/relationship#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://w3id.org/pharmaops/ontology/core>
+    a owl:Ontology ;
+    rdfs:label "PharmaOps core ontology" ;
+    owl:versionInfo "0.1.0-phase1" ;
+    rdfs:comment "Minimum Phase 1 semantic spine for governed PharmaOps working-graph data. Released graph publication remains out of scope for this module." .
+
+pharm:GovernedObject a owl:Class ;
+    rdfs:label "Governed object" ;
+    rdfs:comment "Base class for canonical semantic objects, governed assertions, and release artifacts." .
+
+pharm:CanonicalEntity a owl:Class ;
+    rdfs:subClassOf pharm:GovernedObject ;
+    rdfs:label "Canonical entity" .
+
+pharm:ReferenceOnlyEntity a owl:Class ;
+    rdfs:subClassOf pharm:CanonicalEntity ;
+    rdfs:label "Reference-only entity" ;
+    rdfs:comment "P1 concept visible only as a reference in the MVP unless explicitly scoped later." .
+
+pharm:Compound a owl:Class ;
+    rdfs:subClassOf pharm:CanonicalEntity ;
+    rdfs:label "Compound" .
+
+pharm:Target a owl:Class ;
+    rdfs:subClassOf pharm:CanonicalEntity ;
+    rdfs:label "Target / gene / protein" .
+
+pharm:Gene a owl:Class ;
+    rdfs:subClassOf pharm:Target ;
+    rdfs:label "Gene" ;
+    rdfs:comment "Narrow subtype for identifier handling; not a separate MVP workspace." .
+
+pharm:Protein a owl:Class ;
+    rdfs:subClassOf pharm:Target ;
+    rdfs:label "Protein" ;
+    rdfs:comment "Narrow subtype for identifier handling; not a separate MVP workspace." .
+
+pharm:DiseaseCondition a owl:Class ;
+    rdfs:subClassOf pharm:CanonicalEntity ;
+    rdfs:label "Disease / condition" .
+
+pharm:Trial a owl:Class ;
+    rdfs:subClassOf pharm:CanonicalEntity ;
+    rdfs:label "Trial" .
+
+pharm:ProductDrug a owl:Class ;
+    rdfs:subClassOf pharm:CanonicalEntity ;
+    rdfs:label "Product / drug" .
+
+pharm:AdverseEvent a owl:Class ;
+    rdfs:subClassOf pharm:CanonicalEntity ;
+    rdfs:label "Adverse event" .
+
+pharm:Biomarker a owl:Class ;
+    rdfs:subClassOf pharm:ReferenceOnlyEntity ;
+    rdfs:label "Biomarker" .
+
+pharm:Endpoint a owl:Class ;
+    rdfs:subClassOf pharm:ReferenceOnlyEntity ;
+    rdfs:label "Endpoint" .
+
+pharm:OrganizationSponsor a owl:Class ;
+    rdfs:subClassOf pharm:ReferenceOnlyEntity ;
+    rdfs:label "Organization / sponsor" .
+
+pharm:DocumentEvidenceSource a owl:Class ;
+    rdfs:subClassOf pharm:GovernedObject ;
+    rdfs:label "Document / evidence source" .
+
+pharm:VocabularyTerm a owl:Class ;
+    rdfs:subClassOf pharm:GovernedObject ;
+    rdfs:label "Vocabulary term" .
+
+pharm:MappingAssertion a owl:Class ;
+    rdfs:subClassOf pharm:GovernedObject ;
+    rdfs:label "Mapping assertion" ;
+    rdfs:comment "Governed mapping object, not a canonical biomedical entity class." .
+
+pharm:RelationshipAssertion a owl:Class ;
+    rdfs:subClassOf pharm:GovernedObject ;
+    rdfs:label "Relationship assertion" ;
+    rdfs:comment "Governed relationship object, not a bare RDF edge." .
+
+pharm:RelationshipPath a owl:Class ;
+    rdfs:subClassOf pharm:GovernedObject ;
+    rdfs:label "Relationship path" ;
+    rdfs:comment "Governed multi-hop relationship path with path confidence, weakest link, access filtering, and warnings." .
+
+pharm:BridgeHypothesis a owl:Class ;
+    rdfs:subClassOf pharm:GovernedObject ;
+    rdfs:label "Bridge hypothesis" ;
+    rdfs:comment "Speculative cross-domain bridge that must remain labeled as a hypothesis until reviewed and converted." .
+
+pharm:PathQuery a owl:Class ;
+    rdfs:subClassOf pharm:GovernedObject ;
+    rdfs:label "Path query" ;
+    rdfs:comment "Governed query request for cross-domain relationship path discovery." .
+
+pharm:PathEvaluation a owl:Class ;
+    rdfs:subClassOf pharm:GovernedObject ;
+    rdfs:label "Path evaluation" ;
+    rdfs:comment "Governed evaluation record for a relationship path." .
+
+pharm:WeakLinkAssessment a owl:Class ;
+    rdfs:subClassOf pharm:GovernedObject ;
+    rdfs:label "Weak link assessment" ;
+    rdfs:comment "Assessment of the weakest relationship assertion in a path." .
+
+pharm:RelationshipEvidence a owl:Class ;
+    rdfs:subClassOf pharm:DocumentEvidenceSource ;
+    rdfs:label "Relationship evidence" ;
+    rdfs:comment "Evidence object used to support governed relationship assertions and paths." .
+
+pharm:DomainBoundaryCrossing a owl:Class ;
+    rdfs:subClassOf pharm:GovernedObject ;
+    rdfs:label "Domain boundary crossing" ;
+    rdfs:comment "Explicit marker for relationship paths that cross biomedical, clinical, regulatory, commercial, or operational domains." .
+
+pharm:SafetyLimitation a owl:Class ;
+    rdfs:subClassOf pharm:GovernedObject ;
+    rdfs:label "Safety limitation" ;
+    rdfs:comment "Required limitation metadata for safety relationships and safety-bearing paths." .
+
+pharm:RelationshipWarning a owl:Class ;
+    rdfs:subClassOf pharm:GovernedObject ;
+    rdfs:label "Relationship warning" ;
+    rdfs:comment "Governance warning shown with relationship assertions, hypotheses, or paths." .
+
+pharm:ReleaseArtifact a owl:Class ;
+    rdfs:subClassOf pharm:GovernedObject ;
+    rdfs:label "Release artifact" ;
+    rdfs:comment "Governed release metadata object; Phase 1 fixtures remain working-graph only." .
+
+pharm:Identifier a owl:Class ;
+    rdfs:label "External identifier" .
+
+pharm:ProvenanceRecord a owl:Class ;
+    rdfs:label "Provenance record" .
+
+pharm:EvidenceLink a owl:Class ;
+    rdfs:label "Evidence link" .
+
+pharm:ExternalIdentifier a owl:Class ;
+    rdfs:subClassOf pharm:Identifier ;
+    rdfs:label "External identifier" .
+
+pharm:canonicalId a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "canonical ID" .
+
+pharm:entityType a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "entity type" .
+
+pharm:preferredLabel a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "preferred label" .
+
+pharm:definition a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "definition" .
+
+pharm:lifecycleStatus a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "lifecycle status" .
+
+pharm:assertionType a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "assertion type" .
+
+pharm:confidenceScore a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:decimal ;
+    rdfs:label "confidence score" .
+
+pharm:sourceVocabulary a owl:DatatypeProperty ;
+    rdfs:domain pharm:MappingAssertion ;
+    rdfs:range xsd:string ;
+    rdfs:label "source vocabulary" .
+
+pharm:sourceVocabularyVersion a owl:DatatypeProperty ;
+    rdfs:domain pharm:MappingAssertion ;
+    rdfs:range xsd:string ;
+    rdfs:label "source vocabulary version" .
+
+pharm:targetVocabulary a owl:DatatypeProperty ;
+    rdfs:domain pharm:MappingAssertion ;
+    rdfs:range xsd:string ;
+    rdfs:label "target vocabulary" .
+
+pharm:targetVocabularyVersion a owl:DatatypeProperty ;
+    rdfs:domain pharm:MappingAssertion ;
+    rdfs:range xsd:string ;
+    rdfs:label "target vocabulary version" .
+
+pharm:mappingPredicate a owl:DatatypeProperty ;
+    rdfs:domain pharm:MappingAssertion ;
+    rdfs:range xsd:string ;
+    rdfs:label "mapping predicate" .
+
+pharm:reviewStatus a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "review status" .
+
+pharm:releaseMembership a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "release membership" .
+
+pharm:graphName a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "named graph" .
+
+pharm:sourceName a owl:DatatypeProperty ;
+    rdfs:domain pharm:ProvenanceRecord ;
+    rdfs:range xsd:string ;
+    rdfs:label "source name" .
+
+pharm:sourceVersion a owl:DatatypeProperty ;
+    rdfs:domain pharm:ProvenanceRecord ;
+    rdfs:range xsd:string ;
+    rdfs:label "source version" .
+
+pharm:actor a owl:DatatypeProperty ;
+    rdfs:domain pharm:ProvenanceRecord ;
+    rdfs:range xsd:string ;
+    rdfs:label "actor" .
+
+pharm:generatedAtTime a owl:DatatypeProperty ;
+    rdfs:domain pharm:ProvenanceRecord ;
+    rdfs:range xsd:dateTime ;
+    rdfs:label "generated at time" .
+
+pharm:provenanceId a owl:DatatypeProperty ;
+    rdfs:range xsd:string ;
+    rdfs:label "provenance ID" .
+
+pharm:activityType a owl:DatatypeProperty ;
+    rdfs:domain pharm:ProvenanceRecord ;
+    rdfs:range xsd:string ;
+    rdfs:label "activity type" .
+
+pharm:activityId a owl:DatatypeProperty ;
+    rdfs:domain pharm:ProvenanceRecord ;
+    rdfs:range xsd:string ;
+    rdfs:label "activity ID" .
+
+pharm:methodType a owl:DatatypeProperty ;
+    rdfs:domain pharm:ProvenanceRecord ;
+    rdfs:range xsd:string ;
+    rdfs:label "method type" .
+
+pharm:methodId a owl:DatatypeProperty ;
+    rdfs:domain pharm:ProvenanceRecord ;
+    rdfs:range xsd:string ;
+    rdfs:label "method ID" .
+
+pharm:confidenceType a owl:DatatypeProperty ;
+    rdfs:range xsd:string ;
+    rdfs:label "confidence type" .
+
+pharm:confidenceBand a owl:DatatypeProperty ;
+    rdfs:range xsd:string ;
+    rdfs:label "confidence band" .
+
+pharm:environmentName a owl:DatatypeProperty ;
+    rdfs:range xsd:string ;
+    rdfs:label "environment name" .
+
+pharm:tenantId a owl:DatatypeProperty ;
+    rdfs:range xsd:string ;
+    rdfs:label "tenant ID" .
+
+pharm:releaseStatus a owl:DatatypeProperty ;
+    rdfs:range xsd:string ;
+    rdfs:label "release status" .
+
+pharm:auditEventId a owl:DatatypeProperty ;
+    rdfs:range xsd:string ;
+    rdfs:label "audit event ID" .
+
+pharm:evidenceId a owl:DatatypeProperty ;
+    rdfs:domain pharm:DocumentEvidenceSource ;
+    rdfs:range xsd:string ;
+    rdfs:label "evidence ID" .
+
+pharm:evidenceType a owl:DatatypeProperty ;
+    rdfs:domain pharm:DocumentEvidenceSource ;
+    rdfs:range xsd:string ;
+    rdfs:label "evidence type" .
+
+pharm:evidenceSourceName a owl:DatatypeProperty ;
+    rdfs:domain pharm:DocumentEvidenceSource ;
+    rdfs:range xsd:string ;
+    rdfs:label "evidence source name" .
+
+pharm:evidenceSourceVersion a owl:DatatypeProperty ;
+    rdfs:domain pharm:DocumentEvidenceSource ;
+    rdfs:range xsd:string ;
+    rdfs:label "evidence source version" .
+
+pharm:sourceRecordId a owl:DatatypeProperty ;
+    rdfs:domain pharm:DocumentEvidenceSource ;
+    rdfs:range xsd:string ;
+    rdfs:label "source record ID" .
+
+pharm:sourceRetrievedAt a owl:DatatypeProperty ;
+    rdfs:domain pharm:DocumentEvidenceSource ;
+    rdfs:range xsd:dateTime ;
+    rdfs:label "source retrieved at" .
+
+pharm:rawArtifactUri a owl:DatatypeProperty ;
+    rdfs:domain pharm:DocumentEvidenceSource ;
+    rdfs:range xsd:anyURI ;
+    rdfs:label "raw artifact URI" .
+
+pharm:licenseClassification a owl:DatatypeProperty ;
+    rdfs:range xsd:string ;
+    rdfs:label "license classification" .
+
+pharm:disclaimerId a owl:DatatypeProperty ;
+    rdfs:range xsd:string ;
+    rdfs:label "disclaimer ID" .
+
+pharm:visibility a owl:DatatypeProperty ;
+    rdfs:domain pharm:DocumentEvidenceSource ;
+    rdfs:range xsd:string ;
+    rdfs:label "visibility" .
+
+pharm:modelName a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "model name" .
+
+pharm:modelVersion a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "model version" .
+
+pharm:modelRationale a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "model rationale" .
+
+pharm:deprecationReason a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "deprecation reason" .
+
+pharm:successorEntity a owl:ObjectProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range pharm:GovernedObject ;
+    rdfs:label "successor entity" .
+
+pharm:hasProvenance a owl:ObjectProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range pharm:ProvenanceRecord ;
+    rdfs:label "has provenance" .
+
+pharm:hasEvidence a owl:ObjectProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range pharm:DocumentEvidenceSource ;
+    rdfs:label "has evidence" .
+
+pharm:sourceEntity a owl:ObjectProperty ;
+    rdfs:domain pharm:MappingAssertion ;
+    rdfs:range pharm:GovernedObject ;
+    rdfs:label "source entity" .
+
+pharm:targetEntity a owl:ObjectProperty ;
+    rdfs:domain pharm:MappingAssertion ;
+    rdfs:range pharm:GovernedObject ;
+    rdfs:label "target entity" .
+
+pharm:relationshipSubject a owl:ObjectProperty ;
+    rdfs:domain pharm:RelationshipAssertion ;
+    rdfs:range pharm:GovernedObject ;
+    rdfs:label "relationship subject" .
+
+pharm:relationshipObject a owl:ObjectProperty ;
+    rdfs:domain pharm:RelationshipAssertion ;
+    rdfs:range pharm:GovernedObject ;
+    rdfs:label "relationship object" .
+
+pharm:relationshipPredicate a owl:ObjectProperty ;
+    rdfs:domain pharm:RelationshipAssertion ;
+    rdfs:range rdf:Property ;
+    rdfs:label "relationship predicate" .
+
+pharm:hasRelationshipClass a owl:DatatypeProperty ;
+    rdfs:domain pharm:RelationshipAssertion ;
+    rdfs:range xsd:string ;
+    rdfs:label "has relationship class" .
+
+pharm:hasAssertionType a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "has assertion type" ;
+    rdfs:comment "Semantic Bridge assertion type field; kept alongside pharm:assertionType for compatibility with existing Phase 1 assertions." .
+
+pharm:hasPathConfidence a owl:DatatypeProperty ;
+    rdfs:domain pharm:RelationshipPath ;
+    rdfs:range xsd:decimal ;
+    rdfs:label "has path confidence" .
+
+pharm:hasWeakestLink a owl:ObjectProperty ;
+    rdfs:domain pharm:RelationshipPath ;
+    rdfs:range pharm:WeakLinkAssessment ;
+    rdfs:label "has weakest link" .
+
+pharm:hasEvidenceStrength a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "has evidence strength" .
+
+pharm:hasDomainBoundaryCrossing a owl:ObjectProperty ;
+    rdfs:domain pharm:RelationshipPath ;
+    rdfs:range pharm:DomainBoundaryCrossing ;
+    rdfs:label "has domain boundary crossing" .
+
+pharm:hasRelationshipWarning a owl:ObjectProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range pharm:RelationshipWarning ;
+    rdfs:label "has relationship warning" .
+
+pharm:hasReviewRequirement a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "has review requirement" .
+
+pharm:hasCausalClaimStatus a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "has causal claim status" .
+
+pharm:usesRestrictedEvidence a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:boolean ;
+    rdfs:label "uses restricted evidence" .
+
+pharm:hasRedactionPolicy a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "has redaction policy" .
+
+pharm:isHypothesisAbout a owl:ObjectProperty ;
+    rdfs:domain pharm:BridgeHypothesis ;
+    rdfs:range pharm:GovernedObject ;
+    rdfs:label "is hypothesis about" .
+
+pharm:convertedToRelationshipAssertion a owl:ObjectProperty ;
+    rdfs:domain pharm:BridgeHypothesis ;
+    rdfs:range pharm:RelationshipAssertion ;
+    rdfs:label "converted to relationship assertion" .
+
+pharm:relationshipDirectionality a owl:DatatypeProperty ;
+    rdfs:domain pharm:RelationshipAssertion ;
+    rdfs:range xsd:string ;
+    rdfs:label "relationship directionality" .
+
+pharm:relationshipPolarity a owl:DatatypeProperty ;
+    rdfs:domain pharm:RelationshipAssertion ;
+    rdfs:range xsd:string ;
+    rdfs:label "relationship polarity" .
+
+pharm:confidenceBand a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "confidence band" .
+
+pharm:dataLicenseClass a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "data license class" .
+
+pharm:releaseId a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "release ID" .
+
+pharm:reviewedBy a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "reviewed by" .
+
+pharm:reviewedAt a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:dateTime ;
+    rdfs:label "reviewed at" .
+
+pharm:createdBy a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "created by" .
+
+pharm:createdAt a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:dateTime ;
+    rdfs:label "created at" .
+
+pharm:updatedAt a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:dateTime ;
+    rdfs:label "updated at" .
+
+pharm:knownLimitation a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "known limitation" .
+
+pharm:safetyLimitationId a owl:DatatypeProperty ;
+    rdfs:domain pharm:RelationshipAssertion ;
+    rdfs:range xsd:string ;
+    rdfs:label "safety limitation ID" .
+
+pharm:causalReviewStatus a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "causal review status" .
+
+pharm:blockedRationale a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "blocked rationale" .
+
+pharm:relationshipPathStart a owl:ObjectProperty ;
+    rdfs:domain pharm:RelationshipPath ;
+    rdfs:range pharm:GovernedObject ;
+    rdfs:label "relationship path start" .
+
+pharm:relationshipPathEnd a owl:ObjectProperty ;
+    rdfs:domain pharm:RelationshipPath ;
+    rdfs:range pharm:GovernedObject ;
+    rdfs:label "relationship path end" .
+
+pharm:relationshipPathEdge a owl:ObjectProperty ;
+    rdfs:domain pharm:RelationshipPath ;
+    rdfs:range pharm:RelationshipAssertion ;
+    rdfs:label "relationship path edge" .
+
+pharm:pathStatus a owl:DatatypeProperty ;
+    rdfs:domain pharm:RelationshipPath ;
+    rdfs:range xsd:string ;
+    rdfs:label "path status" .
+
+pharm:pathConfidenceBand a owl:DatatypeProperty ;
+    rdfs:domain pharm:RelationshipPath ;
+    rdfs:range xsd:string ;
+    rdfs:label "path confidence band" .
+
+pharm:pathContainsBlockedEdge a owl:DatatypeProperty ;
+    rdfs:domain pharm:RelationshipPath ;
+    rdfs:range xsd:boolean ;
+    rdfs:label "path contains blocked edge" .
+
+pharm:pathContainsUnreviewedModelSuggestedEdge a owl:DatatypeProperty ;
+    rdfs:domain pharm:RelationshipPath ;
+    rdfs:range xsd:boolean ;
+    rdfs:label "path contains unreviewed model-suggested edge" .
+
+pharm:exportAuthorizationStatus a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "export authorization status" .
+
+pharm:validationReportId a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "validation report ID" .
+
+pharmrel:compound_has_target a owl:ObjectProperty ;
+    rdfs:domain pharm:Compound ;
+    rdfs:range pharm:Target ;
+    rdfs:label "compound has target" .
+
+pharmrel:target_associated_with_disease a owl:ObjectProperty ;
+    rdfs:domain pharm:Target ;
+    rdfs:range pharm:DiseaseCondition ;
+    rdfs:label "target associated with disease" .
+
+pharmrel:trial_studies_condition a owl:ObjectProperty ;
+    rdfs:domain pharm:Trial ;
+    rdfs:range pharm:DiseaseCondition ;
+    rdfs:label "trial studies condition" .
+
+pharmrel:trial_uses_intervention a owl:ObjectProperty ;
+    rdfs:domain pharm:Trial ;
+    rdfs:range pharm:GovernedObject ;
+    rdfs:label "trial uses intervention" ;
+    rdfs:comment "Object must be a Compound or ProductDrug; enforced in SHACL where required." .
+
+pharmrel:product_has_adverse_event a owl:ObjectProperty ;
+    rdfs:domain pharm:ProductDrug ;
+    rdfs:range pharm:AdverseEvent ;
+    rdfs:label "product has adverse event" .
+
+pharmrel:disease_has_biomarker a owl:ObjectProperty ;
+    rdfs:domain pharm:DiseaseCondition ;
+    rdfs:range pharm:Biomarker ;
+    rdfs:label "disease has biomarker" .
+
+pharmrel:trial_has_endpoint a owl:ObjectProperty ;
+    rdfs:domain pharm:Trial ;
+    rdfs:range pharm:Endpoint ;
+    rdfs:label "trial has endpoint" .
+
+pharmrel:entity_supported_by_evidence a owl:ObjectProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range pharm:DocumentEvidenceSource ;
+    rdfs:label "entity supported by evidence" .
+
+pharmrel:term_maps_to_standard a owl:ObjectProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range pharm:GovernedObject ;
+    rdfs:label "term maps to standard" .
+
+pharmrel:entity_supersedes_entity a owl:ObjectProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range pharm:GovernedObject ;
+    rdfs:label "entity supersedes entity" .
+
+pharmrel:entity_has_synonym a owl:DatatypeProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "entity has synonym" .
+
+pharmrel:entity_has_external_identifier a owl:ObjectProperty ;
+    rdfs:domain pharm:GovernedObject ;
+    rdfs:range pharm:Identifier ;
+    rdfs:label "entity has external identifier" .

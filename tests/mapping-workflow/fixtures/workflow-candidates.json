@@ -1,0 +1,33 @@
+{
+  "tenant_id": "tenant-a",
+  "candidates": [
+    {
+      "candidate_id": "candidate:chembl-CHEMBL25:aspirin",
+      "review_status": "proposed",
+      "created_by": "user:normalizer",
+      "duplicate_flag": false,
+      "confidence_band": "high"
+    },
+    {
+      "candidate_id": "candidate:ctgov-NCT00000001-aspirin",
+      "review_status": "proposed",
+      "created_by": "user:normalizer",
+      "duplicate_flag": true,
+      "duplicate_of": "pharm:compound/aspirin",
+      "merge_action": "flag_only",
+      "confidence_band": "medium"
+    },
+    {
+      "candidate_id": "candidate:uniprot-P23219-PTGS1",
+      "review_status": "proposed",
+      "created_by": "user:normalizer",
+      "duplicate_flag": false,
+      "confidence_band": "high"
+    }
+  ],
+  "actors": {
+    "curator": { "actor_id": "user:curator-1", "roles": ["curator"] },
+    "approver": { "actor_id": "user:approver-1", "roles": ["domain_approver"] },
+    "viewer": { "actor_id": "user:viewer-1", "roles": ["viewer"] }
+  }
+}

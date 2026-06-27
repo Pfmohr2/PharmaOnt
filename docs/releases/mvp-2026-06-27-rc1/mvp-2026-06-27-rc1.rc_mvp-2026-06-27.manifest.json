@@ -1,0 +1,648 @@
+{
+  "approval_trace": [
+    {
+      "actor": "user:release-manager-p7",
+      "audit_event_id": "audit:proposal:p7:mvp:staged",
+      "decision": "staged_for_release",
+      "proposal_id": "proposal:p7:mvp",
+      "role": "release_manager",
+      "staging_id": "stage:mvp",
+      "validation_report_id": "validation:p7:mvp"
+    },
+    {
+      "actor": "user:release-manager-p7",
+      "audit_event_id": "audit:release-candidate:rc:mvp-2026-06-27:create",
+      "decision": "release_candidate_created",
+      "role": "release_manager"
+    }
+  ],
+  "artifact_hashes": {
+    "approval_trace": "sha256:55e4aaf2540968c5446e287dedcd66f9fb2483edee87d871a9cca7d31b2db706",
+    "backup_restore_rpo_minutes": 15,
+    "backup_restore_rto_minutes": 60,
+    "backup_restore_runbook": "sha256:eafecdda4662bd6af5239e7c39377cb688f6093f41aefc5a47b69df7099cbc13",
+    "changelog": "sha256:62a07271e51d778925e8c4c03a1425b73dd8fb3b1924ba4daf9b2867f688b8a8",
+    "content_snapshot": "sha256:e18d1ef247ee6847f49ded255d6d614ff813e299e26eb95bf783e313ff031b49",
+    "pilot_dataset_checklist": "sha256:6319317c365789f016a70359a615e00cbf6fc90cca6391ce3c4bbe48c492e387",
+    "pilot_plan": "sha256:efbe183320384a3af2f87a9a37e085b10aa46cfdfcec3b2689942148747a80c1",
+    "pilot_readiness_readme": "sha256:4a727eddddfee4870be7bfa728f93436430d3d6ae430fee28e7be6d1599ee568",
+    "pilot_success_kpis": "sha256:2ff1f6be48deb408c2eeb3dd9d2927143808fd6f2023537737c2a4b95bc0505c",
+    "readiness_gate": "software_complete_human_infra_gated",
+    "security_review": "sha256:26abfd97d4e2d1f54c9125e27fb2e03f2969e89cd9a7f6e9f6ce6df1559ce7a6",
+    "security_signoff_decision": "GO",
+    "source_version_pins": "sha256:4336ce13315b2e570cf6a2dc9bf5b14480b4b42e2a00f9279db016f25d9eb52c",
+    "validation_evidence_matrix": "sha256:d27b86d958055086ac0cb6021338e68ce1a54753eab534b533aa57383d2941ab",
+    "validation_package_manifest": "sha256:c837776533235d92158b47f5988ed69dd95963723541286fc2c38a63037b0523",
+    "validation_package_signed_report_digest": "sha256:11381669bdf6c36a4be171422fd128dd056641459895c0281b7c7e2e23fea0f3",
+    "validation_report": "sha256:1e6ccd4013a9f4ea07008f391d77ec2b3e48fc31fafa814efacd12a7d5e69361",
+    "validation_report_refs": "sha256:111c028b9209cd8fa3bb2a727e2a2b136c482f3e560577767f3823ab240567f4",
+    "validation_report_signature": "hmac-sha256:35d8c5f0423ce6c4f800a99b4933b2677fdf1049ee48c3b3a68fdb95abd24865",
+    "validation_report_signed_digest": "sha256:11381669bdf6c36a4be171422fd128dd056641459895c0281b7c7e2e23fea0f3"
+  },
+  "audit_event_range": {
+    "event_count": 3,
+    "event_ids": [
+      "audit:proposal:p7:mvp:approved",
+      "audit:proposal:p7:mvp:staged",
+      "audit:release-candidate:rc:mvp-2026-06-27:create"
+    ],
+    "event_types": [
+      "proposal.stage",
+      "release_candidate.create"
+    ],
+    "first": "audit:proposal:p7:mvp:approved",
+    "last": "audit:release-candidate:rc:mvp-2026-06-27:create"
+  },
+  "authorization_decision": {
+    "action": "release_candidate.create",
+    "actor_role_key": "release_manager",
+    "actor_user_id": "user:release-manager-p7",
+    "all_approved": true,
+    "allowed": true,
+    "approval_trace_digest": "sha256:e47b26c134bafe5e0a5e3631b7aa8b75113b46fa1b7d8d95c5a1f9623332bdfd",
+    "audit_event_id": "audit:release-candidate:rc:mvp-2026-06-27:create",
+    "audit_event_range_digest": "sha256:1935d96a68e095b9f8626ac31a1141687a7ed79820e0080fc5f1ecc9d386578d",
+    "changelog_digest": "sha256:62a07271e51d778925e8c4c03a1425b73dd8fb3b1924ba4daf9b2867f688b8a8",
+    "content_hashes_digest": "sha256:08912963ae334f1af1621562df4af81a833a279c174c0d73abf5202ae1d0dd21",
+    "correlation_id": "corr:p7:mvp-release",
+    "decision": "allow",
+    "decision_binding": "sha256:a6bdb74948b922ed9eedc48252491231b16fcea867983f51b5dd6fe4463a5706",
+    "decision_id": "decision:rc:mvp-2026-06-27",
+    "environment": "staging",
+    "expires_at": "2026-06-27T10:01:00.000Z",
+    "included_proposal_ids_digest": "sha256:20023190a01a2364803115243f32933d5e9790689f8533120627d955e606d085",
+    "issued_at": "2026-06-27T09:56:00.000Z",
+    "rationale_digest": "sha256:0a597184dae855d8397f9fd0ae3ca98a745399aeeca1e9992c8bc093cd50b1b1",
+    "release_candidate_id": "rc:mvp-2026-06-27",
+    "release_id": "mvp-2026-06-27-rc1",
+    "signature": "sha256:235ef8b77b022b86ebe0804486b9c2e044939bf2cf9593c2fbfd1f2e281f2b42",
+    "source_version_pins_digest": "sha256:4336ce13315b2e570cf6a2dc9bf5b14480b4b42e2a00f9279db016f25d9eb52c",
+    "tenant_id": "tenant-pilot-antiplatelet",
+    "validation_passed": true,
+    "validation_report_refs_digest": "sha256:111c028b9209cd8fa3bb2a727e2a2b136c482f3e560577767f3823ab240567f4",
+    "validation_summary_digest": "sha256:4f375c22f2b0ed24c82db3a9d29e2138d2ab30a5cec9234f7d07e2c4f6a8062d"
+  },
+  "changelog": {
+    "entries": [
+      {
+        "action": "assemble_immutable_candidate",
+        "object_id": "rc:mvp-2026-06-27",
+        "object_type": "release_candidate",
+        "ordinal": 1,
+        "title": "Cut immutable MVP candidate snapshot from approved staged governance package"
+      },
+      {
+        "action": "bind_governance_artifacts",
+        "object_id": "pharmaops-mvp-validation-package-2026-06-27",
+        "object_type": "governance_artifacts",
+        "ordinal": 2,
+        "title": "Bind validation package, security sign-off, backup/restore RPO/RTO, and pilot-readiness docs"
+      },
+      {
+        "action": "human_gated_deploy",
+        "object_id": "human-infra-live-deploy",
+        "object_type": "deployment_gate",
+        "ordinal": 3,
+        "title": "Live staging and controlled-prod promotion remain human/infra actions"
+      }
+    ],
+    "summary": "PharmaOps MVP release candidate assembled for pilot exit review."
+  },
+  "changelog_uri": "release-candidate://tenant-pilot-antiplatelet/rc:mvp-2026-06-27/changelog",
+  "content_snapshot": {
+    "created_at": "2026-06-27T09:56:00.000Z",
+    "environment": "staging",
+    "items": [
+      {
+        "assertion_type": "human_curated",
+        "confidence_band": "high",
+        "confidence_score": 0.98,
+        "confidence_source": "human_governed_release_readiness",
+        "environment": "staging",
+        "evidence_refs": [
+          {
+            "evidence_id": "evidence:p7:mvp-validation",
+            "evidence_role": "supports",
+            "required_for_release": true
+          },
+          {
+            "evidence_id": "evidence:p7:security-review",
+            "evidence_role": "supports",
+            "required_for_release": true
+          },
+          {
+            "evidence_id": "evidence:p7:backup-restore",
+            "evidence_role": "supports",
+            "required_for_release": true
+          },
+          {
+            "evidence_id": "evidence:p7:pilot-readiness",
+            "evidence_role": "supports",
+            "required_for_release": true
+          }
+        ],
+        "governance": {
+          "disposition": "human_approved_release_candidate",
+          "release_eligible": true,
+          "released_graph_target": "pending_human_infra_deploy"
+        },
+        "governance_artifacts": [
+          {
+            "artifact_key": "validation_package_manifest",
+            "digest": "sha256:c837776533235d92158b47f5988ed69dd95963723541286fc2c38a63037b0523",
+            "path": "docs/validation/mvp-validation-package/manifest.json"
+          },
+          {
+            "artifact_key": "validation_report",
+            "digest": "sha256:1e6ccd4013a9f4ea07008f391d77ec2b3e48fc31fafa814efacd12a7d5e69361",
+            "path": "docs/validation/mvp-validation-package/validation-report.json"
+          },
+          {
+            "artifact_key": "validation_evidence_matrix",
+            "digest": "sha256:d27b86d958055086ac0cb6021338e68ce1a54753eab534b533aa57383d2941ab",
+            "path": "docs/validation/mvp-validation-package/evidence-matrix.md"
+          },
+          {
+            "artifact_key": "security_review",
+            "digest": "sha256:26abfd97d4e2d1f54c9125e27fb2e03f2969e89cd9a7f6e9f6ce6df1559ce7a6",
+            "path": "docs/security/phase7-security-review.md"
+          },
+          {
+            "artifact_key": "backup_restore_runbook",
+            "digest": "sha256:eafecdda4662bd6af5239e7c39377cb688f6093f41aefc5a47b69df7099cbc13",
+            "path": "docs/runbooks/phase7-backup-restore.md"
+          },
+          {
+            "artifact_key": "pilot_readiness_readme",
+            "digest": "sha256:4a727eddddfee4870be7bfa728f93436430d3d6ae430fee28e7be6d1599ee568",
+            "path": "docs/runbooks/pilot-readiness/README.md"
+          },
+          {
+            "artifact_key": "pilot_plan",
+            "digest": "sha256:efbe183320384a3af2f87a9a37e085b10aa46cfdfcec3b2689942148747a80c1",
+            "path": "docs/runbooks/pilot-readiness/antiplatelet-aspirin-pilot-plan.md"
+          },
+          {
+            "artifact_key": "pilot_dataset_checklist",
+            "digest": "sha256:6319317c365789f016a70359a615e00cbf6fc90cca6391ce3c4bbe48c492e387",
+            "path": "docs/runbooks/pilot-readiness/dataset-checklist.md"
+          },
+          {
+            "artifact_key": "pilot_success_kpis",
+            "digest": "sha256:2ff1f6be48deb408c2eeb3dd9d2927143808fd6f2023537737c2a4b95bc0505c",
+            "path": "docs/runbooks/pilot-readiness/success-criteria-kpis.md"
+          }
+        ],
+        "mapping_id": "mapping:p7:mvp-antiplatelet-aspirin",
+        "object_type": "release_candidate_bundle",
+        "predicate": "skos:exactMatch",
+        "proposal_id": "proposal:p7:mvp",
+        "provenance_id": "pharmprov:p7-mvp-release",
+        "readiness": {
+          "human_or_infra_required": [
+            "staging deploy execution and environment smoke evidence",
+            "controlled-prod deploy approval after final EXIT Red Team",
+            "per-tenant and per-environment source-license approvals",
+            "pilot user access provisioning and training acknowledgment"
+          ],
+          "software_complete": {
+            "backup_restore_rpo_minutes": 15,
+            "backup_restore_rto_minutes": 60,
+            "immutable_snapshot_created": true,
+            "release_candidate_assembled": true,
+            "rollback_plan_bound": true,
+            "security_signoff": "GO",
+            "validation_p0_p1_gate": "pass"
+          }
+        },
+        "release_item_id": "release-item:p7:mvp-antiplatelet-aspirin",
+        "review_status": "approved",
+        "reviewed_by": "user:release-manager-p7",
+        "source_entity_id": "chembl:CHEMBL25",
+        "source_vocabulary_version": "CHEMBL_34",
+        "target_entity_id": "pharm:compound/aspirin",
+        "target_vocabulary_version": "2026-06-27",
+        "tenant_id": "tenant-pilot-antiplatelet",
+        "title": "Antiplatelet aspirin MVP semantic control-plane pilot candidate",
+        "validation_package": {
+          "gate": "pilot_ready_with_p2_residuals",
+          "package_id": "pharmaops-mvp-validation-package-2026-06-27",
+          "report_digest": "sha256:11381669bdf6c36a4be171422fd128dd056641459895c0281b7c7e2e23fea0f3",
+          "report_signature": "hmac-sha256:35d8c5f0423ce6c4f800a99b4933b2677fdf1049ee48c3b3a68fdb95abd24865",
+          "unresolved_p0_p1_count": 0
+        },
+        "workflow_status": "staged_for_release"
+      }
+    ],
+    "release_candidate_id": "rc:mvp-2026-06-27",
+    "release_id": "mvp-2026-06-27-rc1",
+    "schema_version": "release-candidate-content-snapshot.v1",
+    "snapshot_digest": "sha256:e18d1ef247ee6847f49ded255d6d614ff813e299e26eb95bf783e313ff031b49",
+    "snapshot_ref": "release-candidate://tenant-pilot-antiplatelet/rc:mvp-2026-06-27/snapshot/sha256:e18d1ef247ee6847f49ded255d6d614ff813e299e26eb95bf783e313ff031b49",
+    "source_version_pins": [
+      {
+        "approval_required_before_controlled_prod": true,
+        "source_name": "ChEMBL",
+        "source_version": "CHEMBL_34"
+      },
+      {
+        "approval_required_before_controlled_prod": true,
+        "source_name": "UniProt",
+        "source_version": "2026_02"
+      },
+      {
+        "approval_required_before_controlled_prod": false,
+        "source_name": "Manual curation",
+        "source_version": "2026-06-27"
+      },
+      {
+        "digest": "sha256:11381669bdf6c36a4be171422fd128dd056641459895c0281b7c7e2e23fea0f3",
+        "source_name": "PharmaOps validation package",
+        "source_version": "pharmaops-mvp-validation-package-2026-06-27"
+      }
+    ],
+    "tenant_id": "tenant-pilot-antiplatelet"
+  },
+  "created_at": "2026-06-27T09:56:00.000Z",
+  "created_by": "user:release-manager-p7",
+  "created_by_role": "release_manager",
+  "environment": "staging",
+  "export_uris": [
+    "release-candidate://tenant-pilot-antiplatelet/rc:mvp-2026-06-27/export/manifest"
+  ],
+  "included_graphs": [
+    {
+      "graph_name": "graph:tenant:tenant-pilot-antiplatelet:staging:release-candidate:mvp-2026-06-27",
+      "graph_role": "candidate_source_snapshot",
+      "target_release_graph": null
+    }
+  ],
+  "items": [
+    {
+      "assertion_type": "human_curated",
+      "confidence_band": "high",
+      "confidence_score": 0.98,
+      "confidence_source": "human_governed_release_readiness",
+      "environment": "staging",
+      "evidence_refs": [
+        {
+          "evidence_id": "evidence:p7:mvp-validation",
+          "evidence_role": "supports",
+          "required_for_release": true
+        },
+        {
+          "evidence_id": "evidence:p7:security-review",
+          "evidence_role": "supports",
+          "required_for_release": true
+        },
+        {
+          "evidence_id": "evidence:p7:backup-restore",
+          "evidence_role": "supports",
+          "required_for_release": true
+        },
+        {
+          "evidence_id": "evidence:p7:pilot-readiness",
+          "evidence_role": "supports",
+          "required_for_release": true
+        }
+      ],
+      "governance": {
+        "disposition": "human_approved_release_candidate",
+        "release_eligible": true,
+        "released_graph_target": "pending_human_infra_deploy"
+      },
+      "governance_artifacts": [
+        {
+          "artifact_key": "validation_package_manifest",
+          "digest": "sha256:c837776533235d92158b47f5988ed69dd95963723541286fc2c38a63037b0523",
+          "path": "docs/validation/mvp-validation-package/manifest.json"
+        },
+        {
+          "artifact_key": "validation_report",
+          "digest": "sha256:1e6ccd4013a9f4ea07008f391d77ec2b3e48fc31fafa814efacd12a7d5e69361",
+          "path": "docs/validation/mvp-validation-package/validation-report.json"
+        },
+        {
+          "artifact_key": "validation_evidence_matrix",
+          "digest": "sha256:d27b86d958055086ac0cb6021338e68ce1a54753eab534b533aa57383d2941ab",
+          "path": "docs/validation/mvp-validation-package/evidence-matrix.md"
+        },
+        {
+          "artifact_key": "security_review",
+          "digest": "sha256:26abfd97d4e2d1f54c9125e27fb2e03f2969e89cd9a7f6e9f6ce6df1559ce7a6",
+          "path": "docs/security/phase7-security-review.md"
+        },
+        {
+          "artifact_key": "backup_restore_runbook",
+          "digest": "sha256:eafecdda4662bd6af5239e7c39377cb688f6093f41aefc5a47b69df7099cbc13",
+          "path": "docs/runbooks/phase7-backup-restore.md"
+        },
+        {
+          "artifact_key": "pilot_readiness_readme",
+          "digest": "sha256:4a727eddddfee4870be7bfa728f93436430d3d6ae430fee28e7be6d1599ee568",
+          "path": "docs/runbooks/pilot-readiness/README.md"
+        },
+        {
+          "artifact_key": "pilot_plan",
+          "digest": "sha256:efbe183320384a3af2f87a9a37e085b10aa46cfdfcec3b2689942148747a80c1",
+          "path": "docs/runbooks/pilot-readiness/antiplatelet-aspirin-pilot-plan.md"
+        },
+        {
+          "artifact_key": "pilot_dataset_checklist",
+          "digest": "sha256:6319317c365789f016a70359a615e00cbf6fc90cca6391ce3c4bbe48c492e387",
+          "path": "docs/runbooks/pilot-readiness/dataset-checklist.md"
+        },
+        {
+          "artifact_key": "pilot_success_kpis",
+          "digest": "sha256:2ff1f6be48deb408c2eeb3dd9d2927143808fd6f2023537737c2a4b95bc0505c",
+          "path": "docs/runbooks/pilot-readiness/success-criteria-kpis.md"
+        }
+      ],
+      "mapping_id": "mapping:p7:mvp-antiplatelet-aspirin",
+      "object_type": "release_candidate_bundle",
+      "predicate": "skos:exactMatch",
+      "proposal_id": "proposal:p7:mvp",
+      "provenance_id": "pharmprov:p7-mvp-release",
+      "readiness": {
+        "human_or_infra_required": [
+          "staging deploy execution and environment smoke evidence",
+          "controlled-prod deploy approval after final EXIT Red Team",
+          "per-tenant and per-environment source-license approvals",
+          "pilot user access provisioning and training acknowledgment"
+        ],
+        "software_complete": {
+          "backup_restore_rpo_minutes": 15,
+          "backup_restore_rto_minutes": 60,
+          "immutable_snapshot_created": true,
+          "release_candidate_assembled": true,
+          "rollback_plan_bound": true,
+          "security_signoff": "GO",
+          "validation_p0_p1_gate": "pass"
+        }
+      },
+      "release_item_id": "release-item:p7:mvp-antiplatelet-aspirin",
+      "review_status": "approved",
+      "reviewed_by": "user:release-manager-p7",
+      "source_entity_id": "chembl:CHEMBL25",
+      "source_vocabulary_version": "CHEMBL_34",
+      "target_entity_id": "pharm:compound/aspirin",
+      "target_vocabulary_version": "2026-06-27",
+      "tenant_id": "tenant-pilot-antiplatelet",
+      "title": "Antiplatelet aspirin MVP semantic control-plane pilot candidate",
+      "validation_package": {
+        "gate": "pilot_ready_with_p2_residuals",
+        "package_id": "pharmaops-mvp-validation-package-2026-06-27",
+        "report_digest": "sha256:11381669bdf6c36a4be171422fd128dd056641459895c0281b7c7e2e23fea0f3",
+        "report_signature": "hmac-sha256:35d8c5f0423ce6c4f800a99b4933b2677fdf1049ee48c3b3a68fdb95abd24865",
+        "unresolved_p0_p1_count": 0
+      },
+      "workflow_status": "staged_for_release"
+    }
+  ],
+  "kind": "release_candidate",
+  "known_issues": [
+    {
+      "issue_id": "P7-P2-001",
+      "severity": "P2",
+      "status": "accepted_for_pilot_gate",
+      "summary": "Live DB/Fuseki tests require staging CI evidence or approved waiver."
+    },
+    {
+      "issue_id": "P7-P2-003",
+      "severity": "P2",
+      "status": "human_gated",
+      "summary": "Per-tenant/environment source-license approvals are required before controlled-prod promotion."
+    }
+  ],
+  "mapping_files": [
+    "pilot-fixtures/antiplatelet-aspirin/mappings.ttl"
+  ],
+  "ontology_modules": [
+    "packages/ontology/core.ttl",
+    "packages/ontology/pharmaops-control-plane.ttl"
+  ],
+  "previous_release_id": "2026.1.0",
+  "release_candidate_id": "rc:mvp-2026-06-27",
+  "release_id": "mvp-2026-06-27-rc1",
+  "rollback": {
+    "candidate_snapshot_ref": "release-candidate://tenant-pilot-antiplatelet/rc:mvp-2026-06-27/snapshot/sha256:e18d1ef247ee6847f49ded255d6d614ff813e299e26eb95bf783e313ff031b49",
+    "environment": "staging",
+    "previous_release_id": "2026.1.0",
+    "prior_snapshot_ref": "release:2026.1.0:immutable-snapshot",
+    "procedure": [
+      "Freeze new promotion attempts for the tenant and release domain.",
+      "Load the prior immutable release manifest identified by rollback_target_release_id.",
+      "Verify the prior manifest digest, snapshot reference, source-version pins, validation evidence, and approval trace.",
+      "Move the active release pointer back to rollback_target_release_id through the release workflow service account.",
+      "Invalidate and rebuild derived search, vector, and API caches from the restored immutable snapshot.",
+      "Emit an immutable release.rollback audit event with actor, rationale, before/after release IDs, and correlation ID.",
+      "Do not mutate existing released graphs or release candidate manifests."
+    ],
+    "release_candidate_id": "rc:mvp-2026-06-27",
+    "release_id": "mvp-2026-06-27-rc1",
+    "rollback_target_release_id": "2026.1.0",
+    "schema_version": "release-rollback-metadata.v1",
+    "source_version_pins": [
+      {
+        "approval_required_before_controlled_prod": true,
+        "source_name": "ChEMBL",
+        "source_version": "CHEMBL_34"
+      },
+      {
+        "approval_required_before_controlled_prod": true,
+        "source_name": "UniProt",
+        "source_version": "2026_02"
+      },
+      {
+        "approval_required_before_controlled_prod": false,
+        "source_name": "Manual curation",
+        "source_version": "2026-06-27"
+      },
+      {
+        "digest": "sha256:11381669bdf6c36a4be171422fd128dd056641459895c0281b7c7e2e23fea0f3",
+        "source_name": "PharmaOps validation package",
+        "source_version": "pharmaops-mvp-validation-package-2026-06-27"
+      }
+    ],
+    "tenant_id": "tenant-pilot-antiplatelet"
+  },
+  "rollback_target_release_id": "2026.1.0",
+  "schema_version": "release-candidate-package.v1",
+  "semantic_version": "2026.06.27-mvp-rc1",
+  "snapshot_ref": "release-candidate://tenant-pilot-antiplatelet/rc:mvp-2026-06-27/snapshot/sha256:e18d1ef247ee6847f49ded255d6d614ff813e299e26eb95bf783e313ff031b49",
+  "source_version_pins": [
+    {
+      "approval_required_before_controlled_prod": true,
+      "source_name": "ChEMBL",
+      "source_version": "CHEMBL_34"
+    },
+    {
+      "approval_required_before_controlled_prod": true,
+      "source_name": "UniProt",
+      "source_version": "2026_02"
+    },
+    {
+      "approval_required_before_controlled_prod": false,
+      "source_name": "Manual curation",
+      "source_version": "2026-06-27"
+    },
+    {
+      "digest": "sha256:11381669bdf6c36a4be171422fd128dd056641459895c0281b7c7e2e23fea0f3",
+      "source_name": "PharmaOps validation package",
+      "source_version": "pharmaops-mvp-validation-package-2026-06-27"
+    }
+  ],
+  "staged_entries": [
+    {
+      "audit_event_id": "audit:proposal:p7:mvp:staged",
+      "environment": "staging",
+      "payload_hash": "sha256:b0e4c7aac9a8ffeb83321208fb256d62b8a35874e66456cb01c00543ed04d86a",
+      "proposal_id": "proposal:p7:mvp",
+      "proposal_type": "mvp_release_candidate_bundle",
+      "release_id": "mvp-2026-06-27-rc1",
+      "staged_at": "2026-06-27T09:56:00.000Z",
+      "staged_by_role_key": "release_manager",
+      "staged_by_user_id": "user:release-manager-p7",
+      "staging_id": "stage:mvp",
+      "tenant_id": "tenant-pilot-antiplatelet",
+      "validation_report_id": "validation:p7:mvp",
+      "workflow_audit_events": [
+        {
+          "audit_event_id": "audit:proposal:p7:mvp:approved",
+          "event_type": "proposal_approved"
+        }
+      ]
+    }
+  ],
+  "tenant_id": "tenant-pilot-antiplatelet",
+  "validation_evidence": [
+    {
+      "environment": "staging",
+      "immutable": true,
+      "immutable_record_id": "validation-record:p7:mvp-validation-package",
+      "immutable_storage_digest": "sha256:11381669bdf6c36a4be171422fd128dd056641459895c0281b7c7e2e23fea0f3",
+      "input_payload_digest": "sha256:03a111d81ee5800bab4fe49cb356500027d5318bee5cf0e3f4f0c55d3d540a75",
+      "item_ids": [
+        "mapping:p7:mvp-antiplatelet-aspirin"
+      ],
+      "package_id": "pharmaops-mvp-validation-package-2026-06-27",
+      "package_path": "docs/validation/mvp-validation-package",
+      "persisted": true,
+      "release_candidate_id": "rc:mvp-2026-06-27",
+      "release_gate": "pilot_ready_with_p2_residuals",
+      "release_id": "mvp-2026-06-27-rc1",
+      "report_digest": "sha256:11381669bdf6c36a4be171422fd128dd056641459895c0281b7c7e2e23fea0f3",
+      "result": "passed",
+      "ruleset_version": "phase7.mvp-validation-package.v1",
+      "severity": "none",
+      "signature": {
+        "algorithm": "HMAC-SHA256",
+        "key_id": "pharmaops-validation-officer-dev-key-2026-06",
+        "signature": "hmac-sha256:35d8c5f0423ce6c4f800a99b4933b2677fdf1049ee48c3b3a68fdb95abd24865",
+        "signed_at": "2026-06-27T09:32:00.000Z"
+      },
+      "subject_id": "rc:mvp-2026-06-27",
+      "subject_type": "release_candidate",
+      "summary": {
+        "critical": 0,
+        "warning": 0
+      },
+      "tenant_id": "tenant-pilot-antiplatelet",
+      "validation_run_id": "validation:p7:mvp"
+    }
+  ],
+  "validation_report_refs": [
+    {
+      "environment": "staging",
+      "immutable": true,
+      "immutable_record_id": "validation-record:p7:mvp-validation-package",
+      "immutable_storage_digest": "sha256:11381669bdf6c36a4be171422fd128dd056641459895c0281b7c7e2e23fea0f3",
+      "input_payload_digest": "sha256:03a111d81ee5800bab4fe49cb356500027d5318bee5cf0e3f4f0c55d3d540a75",
+      "item_ids": [
+        "mapping:p7:mvp-antiplatelet-aspirin"
+      ],
+      "package_id": "pharmaops-mvp-validation-package-2026-06-27",
+      "package_path": "docs/validation/mvp-validation-package",
+      "persisted": true,
+      "release_candidate_id": "rc:mvp-2026-06-27",
+      "release_gate": "pilot_ready_with_p2_residuals",
+      "release_id": "mvp-2026-06-27-rc1",
+      "report_digest": "sha256:11381669bdf6c36a4be171422fd128dd056641459895c0281b7c7e2e23fea0f3",
+      "result": "passed",
+      "ruleset_version": "phase7.mvp-validation-package.v1",
+      "severity": "none",
+      "signature": {
+        "algorithm": "HMAC-SHA256",
+        "key_id": "pharmaops-validation-officer-dev-key-2026-06",
+        "signature": "hmac-sha256:35d8c5f0423ce6c4f800a99b4933b2677fdf1049ee48c3b3a68fdb95abd24865",
+        "signed_at": "2026-06-27T09:32:00.000Z"
+      },
+      "subject_id": "rc:mvp-2026-06-27",
+      "subject_type": "release_candidate",
+      "summary": {
+        "critical": 0,
+        "warning": 0
+      },
+      "tenant_id": "tenant-pilot-antiplatelet",
+      "validation_run_id": "validation:p7:mvp"
+    }
+  ],
+  "validation_result": {
+    "blocking": false,
+    "findings": [],
+    "resolved_validation_runs": [
+      {
+        "critical": 0,
+        "immutable_record_id": "validation-record:p7:mvp-validation-package",
+        "status": "passed",
+        "validation_run_id": "validation:p7:mvp"
+      },
+      {
+        "critical": 0,
+        "immutable_record_id": "validation-record:p7:mvp-validation-package",
+        "status": "passed",
+        "validation_run_id": "validation:p7:mvp"
+      }
+    ],
+    "ruleset_version": "phase4.validation-preview.v1+phase4.validation-evidence.v1",
+    "status": "pass",
+    "structural_result": {
+      "blocking": false,
+      "findings": [],
+      "ruleset_version": "phase4.validation-preview.v1",
+      "status": "pass",
+      "summary": {
+        "critical": 0,
+        "warning": 0
+      }
+    },
+    "summary": {
+      "critical": 0,
+      "warning": 0
+    },
+    "validation_evidence_result": {
+      "blocking": false,
+      "findings": [],
+      "resolved_validation_runs": [
+        {
+          "critical": 0,
+          "immutable_record_id": "validation-record:p7:mvp-validation-package",
+          "status": "passed",
+          "validation_run_id": "validation:p7:mvp"
+        },
+        {
+          "critical": 0,
+          "immutable_record_id": "validation-record:p7:mvp-validation-package",
+          "status": "passed",
+          "validation_run_id": "validation:p7:mvp"
+        }
+      ],
+      "ruleset_version": "phase4.validation-evidence.v1",
+      "status": "pass",
+      "summary": {
+        "critical": 0,
+        "warning": 0
+      }
+    }
+  }
+}

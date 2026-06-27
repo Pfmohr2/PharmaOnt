@@ -1,0 +1,113 @@
+@prefix pharm: <https://w3id.org/pharmaops/ontology/core#> .
+@prefix pharment: <https://example.pharmaops.local/tenant/acme/entity/> .
+@prefix pharmmap: <https://example.pharmaops.local/tenant/acme/mapping/> .
+@prefix pharmev: <https://example.pharmaops.local/tenant/acme/evidence/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+pharmev:release-ineligible-map-evidence-000001
+    a pharm:DocumentEvidenceSource ;
+    pharm:canonicalId "pharmev:release-ineligible-map-evidence-000001" ;
+    pharm:entityType "DocumentEvidenceSource" ;
+    pharm:preferredLabel "Release-ineligible mapping fixture evidence" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:evidence/release-ineligible-map-evidence-000001" ;
+        pharm:activityType "import" ;
+        pharm:activityId "activity:fixture-import-release-ineligible-map-evidence" ;
+        pharm:methodType "connector_transform" ;
+        pharm:confidenceType "not_applicable" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "tenant-acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:fixture-release-ineligible-map-evidence" ;
+        pharm:actor "connector:fixture" ;
+        pharm:sourceName "Release-ineligible mapping fixture" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T01:50:00Z"^^xsd:dateTime
+    ] .
+
+pharment:release-ineligible-source-term
+    a pharm:VocabularyTerm ;
+    pharm:canonicalId "pharment:release-ineligible-source-term" ;
+    pharm:entityType "VocabularyTerm" ;
+    pharm:preferredLabel "Release-ineligible source term" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:hasEvidence pharmev:release-ineligible-map-evidence-000001 ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:term/release-ineligible-source-term" ;
+        pharm:activityType "import" ;
+        pharm:activityId "activity:fixture-import-release-ineligible-source-term" ;
+        pharm:methodType "connector_transform" ;
+        pharm:confidenceType "not_applicable" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "tenant-acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:fixture-release-ineligible-source-term" ;
+        pharm:actor "connector:fixture" ;
+        pharm:sourceName "Source vocab fixture" ;
+        pharm:sourceVersion "2026" ;
+        pharm:generatedAtTime "2026-06-27T01:51:00Z"^^xsd:dateTime
+    ] .
+
+pharment:release-ineligible-target-term
+    a pharm:VocabularyTerm ;
+    pharm:canonicalId "pharment:release-ineligible-target-term" ;
+    pharm:entityType "VocabularyTerm" ;
+    pharm:preferredLabel "Release-ineligible target term" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:hasEvidence pharmev:release-ineligible-map-evidence-000001 ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:term/release-ineligible-target-term" ;
+        pharm:activityType "import" ;
+        pharm:activityId "activity:fixture-import-release-ineligible-target-term" ;
+        pharm:methodType "connector_transform" ;
+        pharm:confidenceType "not_applicable" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "tenant-acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:fixture-release-ineligible-target-term" ;
+        pharm:actor "connector:fixture" ;
+        pharm:sourceName "Target vocab fixture" ;
+        pharm:sourceVersion "2026" ;
+        pharm:generatedAtTime "2026-06-27T01:52:00Z"^^xsd:dateTime
+    ] .
+
+pharmmap:release-ineligible-map-000001
+    a pharm:MappingAssertion ;
+    pharm:canonicalId "pharmmap:release-ineligible-map-000001" ;
+    pharm:entityType "MappingAssertion" ;
+    pharm:preferredLabel "Invalid mapping in proposed state inside release graph" ;
+    pharm:lifecycleStatus "proposed" ;
+    pharm:reviewStatus "proposed" ;
+    pharm:releaseMembership "graph:tenant:acme:release:2026.0.0:mappings" ;
+    pharm:sourceEntity pharment:release-ineligible-source-term ;
+    pharm:targetEntity pharment:release-ineligible-target-term ;
+    pharm:mappingPredicate "exactMatch" ;
+    pharm:sourceVocabulary "SourceFixture" ;
+    pharm:sourceVocabularyVersion "2026" ;
+    pharm:targetVocabulary "TargetFixture" ;
+    pharm:targetVocabularyVersion "2026" ;
+    pharm:confidenceScore 0.91 ;
+    pharm:hasEvidence pharmev:release-ineligible-map-evidence-000001 ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:mapping/release-ineligible-map-000001" ;
+        pharm:activityType "normalize" ;
+        pharm:activityId "activity:fixture-normalize-release-ineligible-map" ;
+        pharm:methodType "rule" ;
+        pharm:confidenceType "rule_score" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "tenant-acme" ;
+        pharm:releaseStatus "release_candidate" ;
+        pharm:auditEventId "audit:fixture-release-ineligible-map" ;
+        pharm:actor "connector:fixture" ;
+        pharm:sourceName "release-ineligible mapping fixture" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T01:53:00Z"^^xsd:dateTime
+    ] .

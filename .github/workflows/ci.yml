@@ -1,0 +1,95 @@
+name: PharmaOps CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  semantic-spine:
+    name: Semantic spine gates
+    runs-on: ubuntu-latest
+    env:
+      ENVIRONMENT_NAME: test
+      COMPOSE_PROJECT_NAME: pharmaops-ci
+      POSTGRES_DB: pharmaops_ci
+      POSTGRES_USER: pharmaops
+      POSTGRES_PASSWORD: pharmaops_ci_password
+      POSTGRES_PORT: 5432
+      FUSEKI_DATASET: pharmaops_ci
+      FUSEKI_ADMIN_PASSWORD: pharmaops_ci_password
+      FUSEKI_PORT: 3030
+      FUSEKI_JVM_ARGS: -Xmx1g
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Lint JavaScript syntax
+        run: |
+          set -euo pipefail
+          files="$(git ls-files '*.js' '*.mjs')"
+          if [ -n "$files" ]; then
+            echo "$files" | xargs -n 1 node --check
+          fi
+
+      - name: Type check contract declarations
+        run: |
+          set -euo pipefail
+          test -f packages/contracts/src/index.d.ts
+          test -f packages/pharma-identifiers/src/index.d.ts
+
+      - name: Unit tests
+        run: npm run test:unit
+
+      - name: Ingestion runtime tests
+        run: npm run test:ingestion
+
+      - name: Start live Fuseki and PostgreSQL stack
+        run: docker compose -f infra/docker/docker-compose.yml up -d
+
+      - name: Wait for live stack health
+        run: |
+          set -euo pipefail
+
+          for i in $(seq 1 60); do
+            if docker compose -f infra/docker/docker-compose.yml exec -T postgres pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+              && curl -fsS "http://localhost:${FUSEKI_PORT}/$/ping" >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          docker compose -f infra/docker/docker-compose.yml ps
+          docker compose -f infra/docker/docker-compose.yml logs postgres rdf-store
+          exit 1
+
+      - name: Ontology and SHACL fixture validation
+        run: npm run test:ontology
+
+      - name: Security live-stack suite
+        run: npm run test:security
+
+      - name: Full test matrix
+        run: npm test
+
+      - name: E2E placeholder
+        run: echo "E2E smoke suite placeholder: wire browser/API release-path tests when apps and APIs exist."
+
+      - name: Dump live stack logs on failure
+        if: failure()
+        run: docker compose -f infra/docker/docker-compose.yml logs postgres rdf-store
+
+      - name: Stop live stack
+        if: always()
+        run: docker compose -f infra/docker/docker-compose.yml down --volumes --remove-orphans

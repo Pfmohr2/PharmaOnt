@@ -1,0 +1,22 @@
+{
+  "source_name": "ChEMBL",
+  "source_version": "CHEMBL_34",
+  "source_record_id": "CHEMBL25",
+  "source_record_uri": "https://www.ebi.ac.uk/chembl/api/data/molecule/CHEMBL25.json",
+  "source_retrieved_at": "2026-06-27T02:55:00.000Z",
+  "license_classification": "open_with_attribution",
+  "materialization_policy": "materialize",
+  "sensitivity_classification": "public",
+  "retention_class": "public_source_snapshot",
+  "permitted_uses": ["ingest", "normalize", "curate", "search", "evidence", "export", "release"],
+  "export_restrictions": ["attribution_required"],
+  "disclaimer_ids": ["source_terms:chembl"],
+  "normalized_record": {
+    "source_id": "CHEMBL25",
+    "label": "ASPIRIN",
+    "entity_class": "compound",
+    "identifiers": ["chembl.compound:CHEMBL25"],
+    "synonyms": ["ASPIRIN", "Acetylsalicylic acid"],
+    "source_version": "CHEMBL_34"
+  }
+}

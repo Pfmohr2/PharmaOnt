@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pharmaops.example/schema/mapping-object.schema.json",
+  "title": "PharmaOps Mapping Object",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "mapping_id",
+    "source_entity_id",
+    "target_entity_id",
+    "predicate",
+    "source_vocabulary",
+    "source_vocabulary_version",
+    "target_vocabulary",
+    "target_vocabulary_version",
+    "source_license_classification",
+    "source_license_policy_id",
+    "target_license_classification",
+    "target_license_policy_id",
+    "data_sensitivity",
+    "materialization_policy",
+    "permitted_uses",
+    "export_restrictions",
+    "disclaimer_ids",
+    "legal_approval_id",
+    "retention_class",
+    "license_status",
+    "confidence_score",
+    "confidence_band",
+    "evidence_ids",
+    "evidence_refs",
+    "provenance_id",
+    "created_by",
+    "reviewed_by",
+    "review_status",
+    "release_id",
+    "provenance"
+  ],
+  "properties": {
+    "mapping_id": { "type": "string", "minLength": 1 },
+    "source_entity_id": { "type": "string", "minLength": 1 },
+    "target_entity_id": { "type": "string", "minLength": 1 },
+    "predicate": {
+      "type": "string",
+      "enum": [
+        "exactMatch",
+        "closeMatch",
+        "broadMatch",
+        "narrowMatch",
+        "relatedMatch",
+        "replacedBy",
+        "hasDbXref",
+        "notMatch",
+        "uncertainMatch",
+        "requiresReview"
+      ]
+    },
+    "source_vocabulary": { "type": "string", "minLength": 1 },
+    "source_vocabulary_version": { "type": "string", "minLength": 1 },
+    "target_vocabulary": { "type": "string", "minLength": 1 },
+    "target_vocabulary_version": { "type": "string", "minLength": 1 },
+    "source_license_classification": { "$ref": "#/$defs/licenseClassification" },
+    "source_license_policy_id": { "type": "string", "minLength": 1 },
+    "target_license_classification": { "$ref": "#/$defs/licenseClassification" },
+    "target_license_policy_id": { "type": "string", "minLength": 1 },
+    "data_sensitivity": {
+      "type": "string",
+      "enum": ["public", "restricted_public", "licensed", "internal_confidential", "phi_pii", "unknown"]
+    },
+    "materialization_policy": {
+      "type": "string",
+      "enum": ["materialize", "federate", "stream", "redact_then_materialize", "block"]
+    },
+    "permitted_uses": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["ingest", "normalize", "curate", "search", "evidence", "export", "release"]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "export_restrictions": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "disclaimer_ids": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "legal_approval_id": { "type": ["string", "null"] },
+    "retention_class": { "type": "string", "minLength": 1 },
+    "license_status": {
+      "type": "string",
+      "enum": ["valid", "restricted", "blocked", "pending_review", "not_required"]
+    },
+    "confidence_score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "confidence_band": {
+      "type": "string",
+      "enum": ["high", "medium", "low", "blocked"]
+    },
+    "evidence_ids": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/evidenceRef" },
+      "minItems": 1
+    },
+    "provenance_id": { "type": "string", "minLength": 1 },
+    "created_by": { "type": "string", "minLength": 1 },
+    "reviewed_by": { "type": ["string", "null"] },
+    "review_status": {
+      "type": "string",
+      "enum": ["draft", "proposed", "approved", "rejected", "deprecated", "released"]
+    },
+    "release_id": { "type": ["string", "null"] },
+    "provenance": {
+      "type": "object",
+      "required": ["actor", "timestamp", "source", "source_version", "audit_event_id"],
+      "additionalProperties": true,
+      "properties": {
+        "actor": { "type": "string", "minLength": 1 },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "source": { "type": "string", "minLength": 1 },
+        "source_version": { "type": "string", "minLength": 1 },
+        "audit_event_id": { "type": "string", "minLength": 1 }
+      }
+    }
+  },
+  "$defs": {
+    "evidenceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_id", "evidence_role"],
+      "properties": {
+        "evidence_id": { "type": "string", "minLength": 1 },
+        "evidence_role": {
+          "type": "string",
+          "enum": ["supports", "contradicts", "context", "source_only", "validation_evidence", "approval_evidence"]
+        },
+        "required_for_release": { "type": "boolean" }
+      }
+    },
+    "licenseClassification": {
+      "type": "string",
+      "enum": [
+        "open_materializable",
+        "open_with_attribution",
+        "licensed_federated",
+        "licensed_materializable_with_restrictions",
+        "internal_confidential",
+        "contains_phi_or_pii",
+        "blocked_pending_legal_review"
+      ]
+    }
+  }
+}

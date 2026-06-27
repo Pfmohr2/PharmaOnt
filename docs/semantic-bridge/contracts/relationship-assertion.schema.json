@@ -1,0 +1,334 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pharmaops.example/schemas/semantic-bridge/relationship-assertion.schema.json",
+  "title": "PharmaOps Semantic Bridge RelationshipAssertion",
+  "description": "First-class governed cross-domain relationship assertion. A relationship assertion is not an opaque graph edge; it carries class, evidence, provenance, confidence, review, license, and release-context metadata.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "relationship_assertion_id",
+    "tenant_id",
+    "environment",
+    "source_entity_id",
+    "target_entity_id",
+    "predicate",
+    "relationship_class",
+    "assertion_type",
+    "directionality",
+    "polarity",
+    "evidence_refs",
+    "source_record_ids",
+    "source_names",
+    "source_versions",
+    "confidence",
+    "review_status",
+    "release_context",
+    "data_license",
+    "known_limitations",
+    "warnings",
+    "created_by",
+    "created_at",
+    "updated_at",
+    "provenance_id",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": { "const": "semantic-bridge.relationship-assertion.v1" },
+    "relationship_assertion_id": { "type": "string", "minLength": 1 },
+    "tenant_id": { "type": "string", "minLength": 1 },
+    "environment": { "type": "string", "minLength": 1 },
+    "source_entity_id": { "type": "string", "minLength": 1 },
+    "target_entity_id": { "type": "string", "minLength": 1 },
+    "predicate": { "type": "string", "minLength": 1 },
+    "relationship_class": { "$ref": "#/$defs/relationshipClass" },
+    "secondary_relationship_tags": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/secondaryRelationshipTag" },
+      "uniqueItems": true
+    },
+    "assertion_type": { "$ref": "#/$defs/assertionType" },
+    "directionality": {
+      "type": "string",
+      "enum": ["directed", "undirected", "bidirectional"]
+    },
+    "polarity": {
+      "type": "string",
+      "enum": ["positive", "negative", "conflicting", "unknown"]
+    },
+    "causal_claim_status": {
+      "type": "string",
+      "enum": ["not_causal", "causal_claim_reviewed", "causal_claim_prohibited", "causal_claim_unknown"]
+    },
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/evidenceRef" }
+    },
+    "source_record_ids": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "source_names": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "source_versions": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "confidence": { "$ref": "#/$defs/confidence" },
+    "review_status": { "$ref": "#/$defs/reviewStatus" },
+    "reviewed_by": { "type": ["string", "null"] },
+    "reviewed_at": { "type": ["string", "null"], "format": "date-time" },
+    "release_context": { "$ref": "#/$defs/releaseContext" },
+    "data_license": { "$ref": "#/$defs/dataLicense" },
+    "known_limitations": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/relationshipWarning" },
+      "uniqueItems": true
+    },
+    "blocked_rationale": { "type": ["string", "null"] },
+    "validation_report_ids": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "created_by": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "provenance_id": { "type": "string", "minLength": 1 },
+    "provenance": { "$ref": "#/$defs/provenance" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "assertion_type": { "const": "model_suggested" } }, "required": ["assertion_type"] },
+      "then": {
+        "properties": {
+          "review_status": { "enum": ["draft", "proposed", "in_review", "rejected", "deprecated", "superseded"] },
+          "release_context": {
+            "type": "object",
+            "required": ["release_id", "scope"],
+            "properties": {
+              "release_id": { "type": "null" },
+              "scope": { "enum": ["working"] }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "anyOf": [
+          { "properties": { "relationship_class": { "const": "safety" } }, "required": ["relationship_class"] },
+          {
+            "properties": {
+              "secondary_relationship_tags": {
+                "contains": { "const": "causal_sensitive" }
+              }
+            },
+            "required": ["secondary_relationship_tags"]
+          }
+        ]
+      },
+      "then": { "required": ["causal_claim_status"] }
+    },
+    {
+      "if": { "properties": { "review_status": { "const": "released" } }, "required": ["review_status"] },
+      "then": {
+        "properties": {
+          "assertion_type": { "not": { "const": "model_suggested" } },
+          "release_context": {
+            "type": "object",
+            "required": ["release_id", "scope"],
+            "properties": {
+              "release_id": { "type": "string", "minLength": 1 },
+              "scope": { "const": "release" }
+            }
+          }
+        },
+        "required": ["validation_report_ids"]
+      }
+    },
+    {
+      "if": { "properties": { "relationship_class": { "const": "blocked" } }, "required": ["relationship_class"] },
+      "then": { "required": ["blocked_rationale"] }
+    }
+  ],
+  "$defs": {
+    "relationshipClass": {
+      "type": "string",
+      "enum": [
+        "identity",
+        "vocabulary_crosswalk",
+        "hierarchical",
+        "mechanistic",
+        "clinical",
+        "safety",
+        "regulatory",
+        "commercial",
+        "operational",
+        "evidence_support",
+        "inferred",
+        "hypothesis",
+        "blocked"
+      ]
+    },
+    "secondaryRelationshipTag": {
+      "type": "string",
+      "enum": ["causal_sensitive", "restricted_evidence", "patient_impacting"]
+    },
+    "assertionType": {
+      "type": "string",
+      "enum": ["imported", "human_curated", "inferred", "model_suggested", "system_generated", "deprecated"]
+    },
+    "reviewStatus": {
+      "type": "string",
+      "enum": ["draft", "proposed", "in_review", "approved", "rejected", "released", "deprecated", "superseded"]
+    },
+    "confidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["confidence_score", "confidence_band", "confidence_source", "calibration_id", "fabricated"],
+      "properties": {
+        "confidence_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "confidence_band": { "type": "string", "enum": ["high", "medium", "low", "blocked"] },
+        "confidence_source": {
+          "type": "string",
+          "enum": ["source_asserted", "model_calibrated_score", "rule_score", "reviewer_decision", "path_confidence_engine"]
+        },
+        "calibration_id": { "type": ["string", "null"] },
+        "fabricated": { "const": false },
+        "confidence_rationale": { "type": ["string", "null"] }
+      }
+    },
+    "evidenceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_id", "evidence_role", "source_name", "source_version", "source_record_id", "source_span_ids"],
+      "properties": {
+        "evidence_id": { "type": "string", "minLength": 1 },
+        "evidence_role": {
+          "type": "string",
+          "enum": ["supports", "contradicts", "context", "source_only", "validation_evidence", "approval_evidence"]
+        },
+        "source_name": { "type": "string", "minLength": 1 },
+        "source_version": { "type": "string", "minLength": 1 },
+        "source_record_id": { "type": ["string", "null"] },
+        "source_span_ids": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "evidence_type": {
+          "type": "string",
+          "enum": ["source_record", "document", "text_span", "structured_field", "artifact", "citation", "validation_report", "approval_record"]
+        },
+        "disclaimer_ids": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "source_limitations": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "required_for_release": { "type": "boolean" }
+      }
+    },
+    "releaseContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["release_id", "scope", "included_in_release"],
+      "properties": {
+        "release_id": { "type": ["string", "null"] },
+        "scope": { "type": "string", "enum": ["working", "release", "release_candidate"] },
+        "included_in_release": { "type": "boolean" },
+        "release_candidate_id": { "type": ["string", "null"] }
+      }
+    },
+    "dataLicense": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["license_status", "license_classification", "permitted_uses", "export_restrictions", "data_sensitivity"],
+      "properties": {
+        "license_status": { "type": "string", "enum": ["valid", "restricted", "blocked", "pending_review", "not_required"] },
+        "license_classification": {
+          "type": "string",
+          "enum": [
+            "open_materializable",
+            "open_with_attribution",
+            "licensed_federated",
+            "licensed_materializable_with_restrictions",
+            "internal_confidential",
+            "contains_phi_or_pii",
+            "blocked_pending_legal_review"
+          ]
+        },
+        "license_policy_id": { "type": ["string", "null"] },
+        "permitted_uses": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "export_restrictions": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "data_sensitivity": {
+          "type": "string",
+          "enum": ["public", "restricted_public", "licensed", "internal_confidential", "phi_pii", "unknown"]
+        }
+      }
+    },
+    "relationshipWarning": {
+      "type": "string",
+      "enum": [
+        "contains_model_suggested_content",
+        "contains_inferred_content",
+        "contains_hypothesis_content",
+        "contains_restricted_evidence",
+        "contains_redacted_evidence",
+        "contains_safety_non_causal_limitation",
+        "contains_causal_claim",
+        "contains_conflicting_evidence",
+        "not_in_released_context",
+        "requires_human_review"
+      ]
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["actor", "activity", "method", "source", "time", "audit_event_id"],
+      "properties": {
+        "actor": { "type": "string", "minLength": 1 },
+        "activity": { "type": "string", "minLength": 1 },
+        "method": { "type": "string", "minLength": 1 },
+        "source": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["source_name", "source_version"],
+          "properties": {
+            "source_name": { "type": "string", "minLength": 1 },
+            "source_version": { "type": "string", "minLength": 1 }
+          }
+        },
+        "time": { "type": "string", "format": "date-time" },
+        "audit_event_id": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

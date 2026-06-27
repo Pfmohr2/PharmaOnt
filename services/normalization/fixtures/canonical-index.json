@@ -1,0 +1,64 @@
+{
+  "canonical_entities": [
+    {
+      "canonical_id": "pharment:compound/aspirin",
+      "entity_class": "compound",
+      "preferred_label": "Aspirin",
+      "synonyms": ["ASPIRIN", "Acetylsalicylic acid"],
+      "vocabulary_version": "working-2026-06-27",
+      "license_classification": "open_with_attribution",
+      "license_policy_id": "PharmaOps:license-policy:working-2026-06-27",
+      "external_ids": [
+        {
+          "vocabulary": "chembl",
+          "id": "CHEMBL25",
+          "version": "CHEMBL_34",
+          "source_name": "ChEMBL"
+        },
+        {
+          "vocabulary": "pubchem",
+          "id": "2244",
+          "version": "2026-06-27",
+          "source_name": "PubChem"
+        }
+      ],
+      "corroborating_sources": ["ChEMBL", "PubChem"]
+    },
+    {
+      "canonical_id": "pharment:compound/paracetamol",
+      "entity_class": "compound",
+      "preferred_label": "Paracetamol",
+      "synonyms": ["Acetaminophen", "PARACETAMOL"],
+      "vocabulary_version": "working-2026-06-27",
+      "license_classification": "open_with_attribution",
+      "license_policy_id": "PharmaOps:license-policy:working-2026-06-27",
+      "external_ids": [
+        {
+          "vocabulary": "chembl",
+          "id": "CHEMBL1201585",
+          "version": "CHEMBL_34",
+          "source_name": "ChEMBL"
+        }
+      ],
+      "corroborating_sources": ["ChEMBL"]
+    },
+    {
+      "canonical_id": "pharment:protein/ptgs1",
+      "entity_class": "protein",
+      "preferred_label": "Prostaglandin G/H synthase 1",
+      "synonyms": ["Cyclooxygenase-1", "PTGS1", "COX1"],
+      "vocabulary_version": "working-2026-06-27",
+      "license_classification": "open_with_attribution",
+      "license_policy_id": "PharmaOps:license-policy:working-2026-06-27",
+      "external_ids": [
+        {
+          "vocabulary": "uniprot",
+          "id": "P23219",
+          "version": "2026_02",
+          "source_name": "UniProt"
+        }
+      ],
+      "corroborating_sources": ["UniProt"]
+    }
+  ]
+}

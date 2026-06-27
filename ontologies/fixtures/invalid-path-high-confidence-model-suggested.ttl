@@ -1,0 +1,91 @@
+@prefix pharm: <https://w3id.org/pharmaops/ontology/core#> .
+@prefix pharment: <https://example.pharmaops.local/tenant/acme/entity/> .
+@prefix pharmrelobj: <https://example.pharmaops.local/tenant/acme/relationship/> .
+@prefix pharmpath: <https://example.pharmaops.local/tenant/acme/path/> .
+@prefix pharmwarn: <https://example.pharmaops.local/tenant/acme/warning/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+pharmwarn:path-warning-000001
+    a pharm:RelationshipWarning ;
+    pharm:canonicalId "pharmwarn:path-warning-000001" ;
+    pharm:entityType "RelationshipWarning" ;
+    pharm:preferredLabel "Path contains unreviewed model suggestion" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:invalid-path-warning" ;
+        pharm:activityType "validate" ;
+        pharm:activityId "activity:invalid-path-warning" ;
+        pharm:methodType "rule" ;
+        pharm:confidenceType "not_applicable" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:invalid-path-warning" ;
+        pharm:actor "validator:semantic-bridge" ;
+        pharm:sourceName "Semantic Bridge rules" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T11:35:00Z"^^xsd:dateTime
+    ] .
+
+pharmpath:weak-link-invalid-000001
+    a pharm:WeakLinkAssessment ;
+    pharm:canonicalId "pharmpath:weak-link-invalid-000001" ;
+    pharm:entityType "WeakLinkAssessment" ;
+    pharm:preferredLabel "Invalid path weakest link" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:invalid-path-weak-link" ;
+        pharm:activityType "validate" ;
+        pharm:activityId "activity:invalid-path-weak-link" ;
+        pharm:methodType "rule" ;
+        pharm:confidenceType "rule_score" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:invalid-path-weak-link" ;
+        pharm:actor "validator:semantic-bridge" ;
+        pharm:sourceName "Semantic Bridge rules" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T11:35:00Z"^^xsd:dateTime
+    ] .
+
+pharmpath:path-high-confidence-model-edge
+    a pharm:RelationshipPath ;
+    pharm:canonicalId "pharmpath:path-high-confidence-model-edge" ;
+    pharm:entityType "RelationshipPath" ;
+    pharm:preferredLabel "Invalid high confidence model-suggested path" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:relationshipPathStart pharment:path-start ;
+    pharm:relationshipPathEnd pharment:path-end ;
+    pharm:relationshipPathEdge pharmrelobj:unreviewed-model-edge ;
+    pharm:hasPathConfidence 0.94 ;
+    pharm:pathConfidenceBand "high" ;
+    pharm:hasWeakestLink pharmpath:weak-link-invalid-000001 ;
+    pharm:pathStatus "approved" ;
+    pharm:releaseId "not_released" ;
+    pharm:usesRestrictedEvidence false ;
+    pharm:pathContainsBlockedEdge false ;
+    pharm:pathContainsUnreviewedModelSuggestedEdge true ;
+    pharm:exportAuthorizationStatus "authorized" ;
+    pharm:hasRelationshipWarning pharmwarn:path-warning-000001 ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:invalid-path-high-confidence" ;
+        pharm:activityType "validate" ;
+        pharm:activityId "activity:invalid-path-high-confidence" ;
+        pharm:methodType "rule" ;
+        pharm:confidenceType "rule_score" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:invalid-path-high-confidence" ;
+        pharm:actor "validator:semantic-bridge" ;
+        pharm:sourceName "Semantic Bridge path rules" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T11:35:00Z"^^xsd:dateTime
+    ] .

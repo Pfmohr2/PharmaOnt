@@ -1,0 +1,12 @@
+{
+  "schema_version": "phase7.validation-package-manifest.v1",
+  "package_id": "pharmaops-mvp-validation-package-2026-06-27",
+  "generated_at": "2026-06-27T09:32:00.000Z",
+  "files": [
+    "README.md",
+    "validation-report.json",
+    "evidence-matrix.md"
+  ],
+  "report_digest": "sha256:11381669bdf6c36a4be171422fd128dd056641459895c0281b7c7e2e23fea0f3",
+  "signature_key_id": "pharmaops-validation-officer-dev-key-2026-06"
+}

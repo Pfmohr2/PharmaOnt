@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pharmaops.example/schema/relationship-assertion.schema.json",
+  "title": "PharmaOps Relationship Assertion",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "relationship_id",
+    "subject",
+    "predicate",
+    "object",
+    "assertion_type",
+    "confidence_score",
+    "evidence_ids",
+    "evidence_refs",
+    "provenance_id",
+    "provenance",
+    "lifecycle_status",
+    "release_id",
+    "created_by",
+    "created_at"
+  ],
+  "properties": {
+    "relationship_id": { "type": "string", "minLength": 1 },
+    "subject": { "type": "string", "minLength": 1 },
+    "predicate": { "type": "string", "minLength": 1 },
+    "object": { "type": "string", "minLength": 1 },
+    "assertion_type": {
+      "type": "string",
+      "enum": ["imported", "human_curated", "model_suggested", "inferred", "deprecated", "administrative"]
+    },
+    "confidence_score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "evidence_ids": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["evidence_id", "evidence_role"],
+        "properties": {
+          "evidence_id": { "type": "string", "minLength": 1 },
+          "evidence_role": {
+            "type": "string",
+            "enum": ["supports", "contradicts", "context", "source_only", "validation_evidence", "approval_evidence"]
+          },
+          "required_for_release": { "type": "boolean" }
+        }
+      },
+      "minItems": 1
+    },
+    "provenance_id": { "type": "string", "minLength": 1 },
+    "evidence_policy_exception": { "type": ["string", "null"] },
+    "provenance": {
+      "type": "object",
+      "required": ["actor", "timestamp", "source", "source_version", "audit_event_id"],
+      "additionalProperties": true
+    },
+    "lifecycle_status": { "type": "string", "minLength": 1 },
+    "release_id": { "type": ["string", "null"] },
+    "created_by": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "anyOf": [
+    { "required": ["evidence_ids"] },
+    { "required": ["evidence_policy_exception"] }
+  ]
+}

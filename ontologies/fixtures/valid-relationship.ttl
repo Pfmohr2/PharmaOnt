@@ -1,0 +1,140 @@
+﻿@prefix pharm: <https://w3id.org/pharmaops/ontology/core#> .
+@prefix pharmrel: <https://w3id.org/pharmaops/ontology/relationship#> .
+@prefix pharment: <https://example.pharmaops.local/tenant/acme/entity/> .
+@prefix pharmrelobj: <https://example.pharmaops.local/tenant/acme/relationship/> .
+@prefix pharmev: <https://example.pharmaops.local/tenant/acme/evidence/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+pharmev:relationship-evidence-000001
+    a pharm:DocumentEvidenceSource ;
+    pharm:canonicalId "pharmev:relationship-evidence-000001" ;
+    pharm:entityType "DocumentEvidenceSource" ;
+    pharm:preferredLabel "Relationship fixture evidence" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:evidenceId "pharmev:relationship-evidence-000001" ;
+    pharm:evidenceType "source_record" ;
+    pharm:evidenceSourceName "Fixture source" ;
+    pharm:evidenceSourceVersion "2026-06-27" ;
+    pharm:sourceRecordId "relationship-evidence-000001" ;
+    pharm:sourceRetrievedAt "2026-06-27T01:35:00Z"^^xsd:dateTime ;
+    pharm:confidenceType "source_asserted" ;
+    pharm:provenanceId "pharmprov:relationship-evidence-000001" ;
+    pharm:licenseClassification "open_materializable" ;
+    pharm:disclaimerId "none" ;
+    pharm:tenantId "acme" ;
+    pharm:visibility "tenant" ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:valid-relationship-1" ;
+        pharm:activityType "import" ;
+        pharm:activityId "activity:valid-relationship-1" ;
+        pharm:methodType "connector_transform" ;
+        pharm:confidenceType "source_asserted" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:valid-relationship-1" ;
+        pharm:actor "connector:literature-fixture" ;
+        pharm:sourceName "Literature fixture" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T01:24:00Z"^^xsd:dateTime
+    ] .
+
+pharment:disease-mesh-d000001
+    a pharm:DiseaseCondition ;
+    pharm:canonicalId "pharment:disease-mesh-d000001" ;
+    pharm:entityType "DiseaseCondition" ;
+    pharm:preferredLabel "Fixture disease condition" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:hasEvidence pharmev:relationship-evidence-000001 ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:valid-relationship-2" ;
+        pharm:activityType "import" ;
+        pharm:activityId "activity:valid-relationship-2" ;
+        pharm:methodType "connector_transform" ;
+        pharm:confidenceType "source_asserted" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:valid-relationship-2" ;
+        pharm:actor "connector:mesh-fixture" ;
+        pharm:sourceName "MeSH fixture" ;
+        pharm:sourceVersion "2026" ;
+        pharm:generatedAtTime "2026-06-27T01:25:00Z"^^xsd:dateTime
+    ] .
+
+pharment:target-uniprot-p00533
+    a pharm:Protein ;
+    pharm:canonicalId "pharment:target-uniprot-p00533" ;
+    pharm:entityType "Protein" ;
+    pharm:preferredLabel "Fixture protein target P00533" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:hasEvidence pharmev:relationship-evidence-000001 ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:valid-relationship-3" ;
+        pharm:activityType "import" ;
+        pharm:activityId "activity:valid-relationship-3" ;
+        pharm:methodType "connector_transform" ;
+        pharm:confidenceType "source_asserted" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:valid-relationship-3" ;
+        pharm:actor "connector:uniprot-fixture" ;
+        pharm:sourceName "UniProt fixture" ;
+        pharm:sourceVersion "2026_02" ;
+        pharm:generatedAtTime "2026-06-27T01:26:00Z"^^xsd:dateTime
+    ] .
+
+pharmrelobj:rel-000001
+    a pharm:RelationshipAssertion ;
+    pharm:canonicalId "pharmrelobj:rel-000001" ;
+    pharm:entityType "RelationshipAssertion" ;
+    pharm:preferredLabel "Fixture target disease association assertion" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:assertionType "human_curated" ;
+    pharm:hasAssertionType "human_curated" ;
+    pharm:hasRelationshipClass "clinical" ;
+    pharm:relationshipDirectionality "directed" ;
+    pharm:relationshipPolarity "positive" ;
+    pharm:confidenceScore 0.85 ;
+    pharm:confidenceBand "high" ;
+    pharm:hasEvidenceStrength "strong" ;
+    pharm:reviewStatus "approved" ;
+    pharm:reviewedBy "curator:fixture" ;
+    pharm:reviewedAt "2026-06-27T01:28:00Z"^^xsd:dateTime ;
+    pharm:dataLicenseClass "open_materializable" ;
+    pharm:releaseId "not_released" ;
+    pharm:createdBy "curator:fixture" ;
+    pharm:createdAt "2026-06-27T01:27:00Z"^^xsd:dateTime ;
+    pharm:updatedAt "2026-06-27T01:28:00Z"^^xsd:dateTime ;
+    pharm:hasCausalClaimStatus "association_only" ;
+    pharm:usesRestrictedEvidence false ;
+    pharm:exportAuthorizationStatus "authorized" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:relationshipSubject pharment:target-uniprot-p00533 ;
+    pharm:relationshipPredicate pharmrel:target_associated_with_disease ;
+    pharm:relationshipObject pharment:disease-mesh-d000001 ;
+    pharm:hasEvidence pharmev:relationship-evidence-000001 ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:valid-relationship-4" ;
+        pharm:activityType "import" ;
+        pharm:activityId "activity:valid-relationship-4" ;
+        pharm:methodType "connector_transform" ;
+        pharm:confidenceType "source_asserted" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:valid-relationship-4" ;
+        pharm:actor "curator:fixture" ;
+        pharm:sourceName "manual fixture curation" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T01:27:00Z"^^xsd:dateTime
+    ] .
+

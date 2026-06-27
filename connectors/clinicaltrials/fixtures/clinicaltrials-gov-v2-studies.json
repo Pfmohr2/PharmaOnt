@@ -1,0 +1,84 @@
+{
+  "source_api_version": "ClinicalTrials.gov API v2",
+  "snapshot_date": "2026-06-27",
+  "studies": [
+    {
+      "protocolSection": {
+        "identificationModule": {
+          "nctId": "NCT04280705",
+          "briefTitle": "Adaptive COVID-19 Treatment Trial"
+        },
+        "statusModule": {
+          "overallStatus": "COMPLETED",
+          "startDateStruct": {
+            "date": "2020-02-21"
+          }
+        },
+        "conditionsModule": {
+          "conditions": ["COVID-19"]
+        },
+        "armsInterventionsModule": {
+          "interventions": [
+            {
+              "type": "DRUG",
+              "name": "Remdesivir"
+            }
+          ]
+        },
+        "designModule": {
+          "phases": ["PHASE3"]
+        }
+      },
+      "hasResults": true
+    },
+    {
+      "protocolSection": {
+        "identificationModule": {
+          "nctId": "NCT00000102",
+          "briefTitle": "Fixture Aspirin Pharmacodynamic Study"
+        },
+        "statusModule": {
+          "overallStatus": "RECRUITING"
+        },
+        "conditionsModule": {
+          "conditions": ["Platelet Aggregation"]
+        },
+        "armsInterventionsModule": {
+          "interventions": [
+            {
+              "type": "DRUG",
+              "name": "Aspirin"
+            }
+          ]
+        },
+        "designModule": {
+          "phases": ["EARLY_PHASE1"]
+        }
+      },
+      "hasResults": false
+    },
+    {
+      "protocolSection": {
+        "identificationModule": {
+          "briefTitle": "Invalid fixture record missing NCT ID"
+        },
+        "statusModule": {
+          "overallStatus": "UNKNOWN"
+        },
+        "conditionsModule": {
+          "conditions": ["Fixture condition"]
+        },
+        "contactsLocationsModule": {
+          "centralContacts": [
+            {
+              "name": "Fixture Contact",
+              "phone": "555-0100",
+              "email": "fixture@example.invalid"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "nextPageToken": null
+}

@@ -1,0 +1,176 @@
+@prefix pharm: <https://w3id.org/pharmaops/ontology/core#> .
+@prefix pharmrel: <https://w3id.org/pharmaops/ontology/relationship#> .
+@prefix pharment: <https://example.pharmaops.local/tenant/acme/entity/> .
+@prefix pharmrelobj: <https://example.pharmaops.local/tenant/acme/relationship/> .
+@prefix pharmpath: <https://example.pharmaops.local/tenant/acme/path/> .
+@prefix pharmwarn: <https://example.pharmaops.local/tenant/acme/warning/> .
+@prefix pharmev: <https://example.pharmaops.local/tenant/acme/evidence/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+pharmev:bridge-evidence-000001
+    a pharm:RelationshipEvidence ;
+    pharm:canonicalId "pharmev:bridge-evidence-000001" ;
+    pharm:entityType "RelationshipEvidence" ;
+    pharm:preferredLabel "Semantic Bridge fixture evidence" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:evidenceId "pharmev:bridge-evidence-000001" ;
+    pharm:evidenceType "source_record" ;
+    pharm:evidenceSourceName "Semantic Bridge fixture" ;
+    pharm:evidenceSourceVersion "2026-06-27" ;
+    pharm:sourceRecordId "bridge-evidence-000001" ;
+    pharm:sourceRetrievedAt "2026-06-27T11:20:00Z"^^xsd:dateTime ;
+    pharm:confidenceType "source_asserted" ;
+    pharm:provenanceId "pharmprov:bridge-evidence-000001" ;
+    pharm:licenseClassification "open_materializable" ;
+    pharm:disclaimerId "none" ;
+    pharm:tenantId "acme" ;
+    pharm:visibility "tenant" ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:valid-semantic-bridge-evidence" ;
+        pharm:activityType "import" ;
+        pharm:activityId "activity:valid-semantic-bridge-evidence" ;
+        pharm:methodType "connector_transform" ;
+        pharm:confidenceType "source_asserted" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:valid-semantic-bridge-evidence" ;
+        pharm:actor "connector:semantic-bridge-fixture" ;
+        pharm:sourceName "Semantic Bridge fixture" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T11:20:00Z"^^xsd:dateTime
+    ] .
+
+pharmwarn:warning-000001
+    a pharm:RelationshipWarning ;
+    pharm:canonicalId "pharmwarn:warning-000001" ;
+    pharm:entityType "RelationshipWarning" ;
+    pharm:preferredLabel "Association only warning" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:valid-semantic-bridge-warning" ;
+        pharm:activityType "validate" ;
+        pharm:activityId "activity:valid-semantic-bridge-warning" ;
+        pharm:methodType "rule" ;
+        pharm:confidenceType "not_applicable" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:valid-semantic-bridge-warning" ;
+        pharm:actor "validator:semantic-bridge" ;
+        pharm:sourceName "Semantic Bridge rules" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T11:21:00Z"^^xsd:dateTime
+    ] .
+
+pharmrelobj:rel-bridge-000001
+    a pharm:RelationshipAssertion ;
+    pharm:canonicalId "pharmrelobj:rel-bridge-000001" ;
+    pharm:entityType "RelationshipAssertion" ;
+    pharm:preferredLabel "Fixture bridge relationship assertion" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:assertionType "human_curated" ;
+    pharm:hasAssertionType "human_curated" ;
+    pharm:hasRelationshipClass "clinical" ;
+    pharm:relationshipDirectionality "directed" ;
+    pharm:relationshipPolarity "positive" ;
+    pharm:confidenceScore 0.82 ;
+    pharm:confidenceBand "high" ;
+    pharm:hasEvidenceStrength "strong" ;
+    pharm:reviewStatus "approved" ;
+    pharm:reviewedBy "curator:semantic-bridge-fixture" ;
+    pharm:reviewedAt "2026-06-27T11:23:00Z"^^xsd:dateTime ;
+    pharm:dataLicenseClass "open_materializable" ;
+    pharm:releaseId "not_released" ;
+    pharm:createdBy "curator:semantic-bridge-fixture" ;
+    pharm:createdAt "2026-06-27T11:22:00Z"^^xsd:dateTime ;
+    pharm:updatedAt "2026-06-27T11:23:00Z"^^xsd:dateTime ;
+    pharm:hasCausalClaimStatus "association_only" ;
+    pharm:usesRestrictedEvidence false ;
+    pharm:exportAuthorizationStatus "authorized" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:relationshipSubject pharment:compound-bridge-fixture ;
+    pharm:relationshipPredicate pharmrel:compound_has_target ;
+    pharm:relationshipObject pharment:target-bridge-fixture ;
+    pharm:hasEvidence pharmev:bridge-evidence-000001 ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:valid-semantic-bridge-rel" ;
+        pharm:activityType "approve" ;
+        pharm:activityId "activity:valid-semantic-bridge-rel" ;
+        pharm:methodType "reviewer_decision" ;
+        pharm:confidenceType "reviewer_decision" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:valid-semantic-bridge-rel" ;
+        pharm:actor "curator:semantic-bridge-fixture" ;
+        pharm:sourceName "Semantic Bridge fixture" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T11:23:00Z"^^xsd:dateTime
+    ] .
+
+pharmpath:weak-link-000001
+    a pharm:WeakLinkAssessment ;
+    pharm:canonicalId "pharmpath:weak-link-000001" ;
+    pharm:entityType "WeakLinkAssessment" ;
+    pharm:preferredLabel "Fixture weakest link assessment" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:valid-semantic-bridge-weak-link" ;
+        pharm:activityType "validate" ;
+        pharm:activityId "activity:valid-semantic-bridge-weak-link" ;
+        pharm:methodType "rule" ;
+        pharm:confidenceType "rule_score" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:valid-semantic-bridge-weak-link" ;
+        pharm:actor "validator:semantic-bridge" ;
+        pharm:sourceName "Semantic Bridge rules" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T11:24:00Z"^^xsd:dateTime
+    ] .
+
+pharmpath:path-000001
+    a pharm:RelationshipPath ;
+    pharm:canonicalId "pharmpath:path-000001" ;
+    pharm:entityType "RelationshipPath" ;
+    pharm:preferredLabel "Fixture governed relationship path" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:relationshipPathStart pharment:compound-bridge-fixture ;
+    pharm:relationshipPathEnd pharment:target-bridge-fixture ;
+    pharm:relationshipPathEdge pharmrelobj:rel-bridge-000001 ;
+    pharm:hasPathConfidence 0.82 ;
+    pharm:pathConfidenceBand "high" ;
+    pharm:hasWeakestLink pharmpath:weak-link-000001 ;
+    pharm:pathStatus "approved" ;
+    pharm:releaseId "not_released" ;
+    pharm:usesRestrictedEvidence false ;
+    pharm:pathContainsBlockedEdge false ;
+    pharm:pathContainsUnreviewedModelSuggestedEdge false ;
+    pharm:exportAuthorizationStatus "authorized" ;
+    pharm:hasRelationshipWarning pharmwarn:warning-000001 ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:valid-semantic-bridge-path" ;
+        pharm:activityType "validate" ;
+        pharm:activityId "activity:valid-semantic-bridge-path" ;
+        pharm:methodType "rule" ;
+        pharm:confidenceType "rule_score" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:valid-semantic-bridge-path" ;
+        pharm:actor "validator:semantic-bridge" ;
+        pharm:sourceName "Semantic Bridge path rules" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T11:25:00Z"^^xsd:dateTime
+    ] .

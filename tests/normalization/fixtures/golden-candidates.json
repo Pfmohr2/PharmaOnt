@@ -1,0 +1,162 @@
+{
+  "fixture_version": "phase3-normalization-golden-v1",
+  "source_records": [
+    {
+      "source_record_id": "chembl:CHEMBL25",
+      "source_name": "ChEMBL",
+      "source_version": "34",
+      "label": "Aspirin",
+      "identifiers": ["chembl:CHEMBL25"],
+      "synonyms": ["acetylsalicylic acid", "ASA"],
+      "raw_artifact_uri": "memory://fixtures/chembl/34/CHEMBL25",
+      "evidence_id": "evidence:chembl-34-CHEMBL25"
+    },
+    {
+      "source_record_id": "uniprot:P23219",
+      "source_name": "UniProt",
+      "source_version": "2026_02",
+      "label": "PTGS1_HUMAN",
+      "identifiers": ["uniprot:P23219"],
+      "synonyms": ["Prostaglandin G/H synthase 1", "COX-1"],
+      "raw_artifact_uri": "memory://fixtures/uniprot/2026_02/P23219",
+      "evidence_id": "evidence:uniprot-2026-02-P23219"
+    },
+    {
+      "source_record_id": "ctgov:NCT00000001",
+      "source_name": "ClinicalTrials.gov",
+      "source_version": "2026-06-27",
+      "label": "Aspirin platelet response study",
+      "identifiers": ["ctgov:ASPIRIN-PLATELET-FIXTURE"],
+      "synonyms": ["acetylsalicylic acid platelet trial"],
+      "raw_artifact_uri": "memory://fixtures/ctgov/2026-06-27/NCT00000001",
+      "evidence_id": "evidence:ctgov-2026-06-27-NCT00000001"
+    }
+  ],
+  "canonical_entities": [
+    {
+      "canonical_entity_id": "pharm:compound/aspirin",
+      "entity_class": "compound",
+      "preferred_label": "Aspirin",
+      "identifiers": ["chembl:CHEMBL25", "pubchem:CID2244"],
+      "synonyms": ["acetylsalicylic acid", "ASA"]
+    },
+    {
+      "canonical_entity_id": "pharm:target/PTGS1",
+      "entity_class": "target",
+      "preferred_label": "Prostaglandin G/H synthase 1",
+      "identifiers": ["uniprot:P23219"],
+      "synonyms": ["PTGS1", "COX-1"]
+    }
+  ],
+  "expected_candidates": [
+    {
+      "source_record_id": "chembl:CHEMBL25",
+      "candidates": [
+        {
+          "candidate_id": "candidate:chembl-CHEMBL25:aspirin",
+          "canonical_entity_id": "pharm:compound/aspirin",
+          "rank": 1,
+          "match_reason": "identifier_exact",
+          "confidence_score": 0.99,
+          "confidence_band": "high",
+          "review_status": "proposed",
+          "duplicate_flag": false,
+          "merge_action": "review_required",
+          "evidence_refs": [{ "evidence_id": "evidence:chembl-34-CHEMBL25", "evidence_role": "supports", "required_for_release": true }],
+          "provenance": {
+            "actor": "service:normalization",
+            "source": "ChEMBL",
+            "source_version": "34",
+            "raw_artifact_uri": "memory://fixtures/chembl/34/CHEMBL25",
+            "method": "deterministic_identifier_match"
+          }
+        }
+      ],
+      "expected_mapping": {
+        "mapping_id": "pharmmap:chembl-CHEMBL25-to-aspirin",
+        "source_entity_id": "chembl:CHEMBL25",
+        "target_entity_id": "pharm:compound/aspirin",
+        "predicate": "exactMatch",
+        "source_vocabulary": "ChEMBL",
+        "source_vocabulary_version": "34",
+        "target_vocabulary": "PharmaOps Canonical",
+        "target_vocabulary_version": "2026.0",
+        "confidence_band": "high",
+        "review_status": "proposed"
+      }
+    },
+    {
+      "source_record_id": "uniprot:P23219",
+      "candidates": [
+        {
+          "candidate_id": "candidate:uniprot-P23219-PTGS1",
+          "canonical_entity_id": "pharm:target/PTGS1",
+          "rank": 1,
+          "match_reason": "identifier_exact",
+          "confidence_score": 0.98,
+          "confidence_band": "high",
+          "review_status": "proposed",
+          "duplicate_flag": false,
+          "merge_action": "review_required",
+          "evidence_refs": [{ "evidence_id": "evidence:uniprot-2026-02-P23219", "evidence_role": "supports", "required_for_release": true }],
+          "provenance": {
+            "actor": "service:normalization",
+            "source": "UniProt",
+            "source_version": "2026_02",
+            "raw_artifact_uri": "memory://fixtures/uniprot/2026_02/P23219",
+            "method": "deterministic_identifier_match"
+          }
+        }
+      ],
+      "expected_mapping": {
+        "mapping_id": "pharmmap:uniprot-P23219-to-PTGS1",
+        "source_entity_id": "uniprot:P23219",
+        "target_entity_id": "pharm:target/PTGS1",
+        "predicate": "exactMatch",
+        "source_vocabulary": "UniProt",
+        "source_vocabulary_version": "2026_02",
+        "target_vocabulary": "PharmaOps Canonical",
+        "target_vocabulary_version": "2026.0",
+        "confidence_band": "high",
+        "review_status": "proposed"
+      }
+    },
+    {
+      "source_record_id": "ctgov:NCT00000001",
+      "candidates": [
+        {
+          "candidate_id": "candidate:ctgov-NCT00000001-aspirin",
+          "canonical_entity_id": "pharm:compound/aspirin",
+          "rank": 1,
+          "match_reason": "synonym_phrase",
+          "confidence_score": 0.74,
+          "confidence_band": "medium",
+          "review_status": "proposed",
+          "duplicate_flag": true,
+          "duplicate_of": "pharm:compound/aspirin",
+          "merge_action": "flag_only",
+          "evidence_refs": [{ "evidence_id": "evidence:ctgov-2026-06-27-NCT00000001", "evidence_role": "context", "required_for_release": false }],
+          "provenance": {
+            "actor": "service:normalization",
+            "source": "ClinicalTrials.gov",
+            "source_version": "2026-06-27",
+            "raw_artifact_uri": "memory://fixtures/ctgov/2026-06-27/NCT00000001",
+            "method": "synonym_phrase_match"
+          }
+        }
+      ],
+      "expected_mapping": {
+        "mapping_id": "pharmmap:ctgov-NCT00000001-to-aspirin",
+        "source_entity_id": "ctgov:NCT00000001",
+        "target_entity_id": "pharm:compound/aspirin",
+        "predicate": "relatedMatch",
+        "source_vocabulary": "ClinicalTrials.gov",
+        "source_vocabulary_version": "2026-06-27",
+        "target_vocabulary": "PharmaOps Canonical",
+        "target_vocabulary_version": "2026.0",
+        "confidence_band": "medium",
+        "review_status": "proposed"
+      }
+    }
+  ]
+}

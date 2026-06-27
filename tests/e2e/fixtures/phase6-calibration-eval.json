@@ -1,0 +1,10 @@
+{
+  "calibration_id": "cal:p6-curation-e2e",
+  "calibration_version": "2026-06-27",
+  "calibration_method": "heldout-review-set",
+  "sample_size": 240,
+  "expected_accuracy": 0.84,
+  "observed_accuracy": 0.81,
+  "confidence_interval": [0.76, 0.87],
+  "metrics_source": "phase6-calibration-eval-fixture"
+}

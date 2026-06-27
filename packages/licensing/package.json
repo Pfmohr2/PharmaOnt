@@ -1,0 +1,11 @@
+{
+  "name": "@pharmaops/licensing",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Runtime data-license, materialization, AI-use, export, and retention policy checks for PharmaOps ingestion.",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "scripts": {
+    "test": "node --test"
+  }
+}

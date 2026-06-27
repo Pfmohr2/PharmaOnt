@@ -1,0 +1,105 @@
+{
+  "tenant_id": "tenant-a",
+  "environment": "test",
+  "proposals": [
+    {
+      "proposal_id": "proposal:synonym:aspirin",
+      "proposal_type": "synonym",
+      "semantic_object_type": "entity_synonym",
+      "semantic_object_id": "pharment:compound/aspirin",
+      "title": "Add ASA synonym for aspirin",
+      "payload": {
+        "synonym_id": "synonym:aspirin-asa",
+        "subject_id": "pharment:compound/aspirin",
+        "synonym": "ASA",
+        "language": "en",
+        "evidence_refs": [{ "evidence_id": "pharmev:evidence-2026-000001", "evidence_role": "supports", "tenant_id": "tenant-a" }]
+      },
+      "provenance": {
+        "provenance_id": "pharmprov:p4/synonym-aspirin",
+        "source": "curator-entry",
+        "source_version": "working-2026-06-27",
+        "evidence_ids": ["pharmev:evidence-2026-000001"]
+      },
+      "rationale": "Contributor found label synonym in source evidence.",
+      "confidence_score": 0.94,
+      "confidence_band": "high",
+      "confidence_source": "curator_evidence"
+    },
+    {
+      "proposal_id": "proposal:mapping:aspirin",
+      "proposal_type": "mapping",
+      "semantic_object_type": "mapping",
+      "semantic_object_id": "pharmmap:aspirin-chembl-pubchem",
+      "title": "Approve ChEMBL to PubChem aspirin mapping",
+      "payload": {
+        "mapping_id": "pharmmap:aspirin-chembl-pubchem",
+        "source_entity_id": "chembl:CHEMBL25",
+        "target_entity_id": "pubchem:CID2244",
+        "predicate": "exactMatch",
+        "source_vocabulary": "ChEMBL",
+        "source_vocabulary_version": "34",
+        "target_vocabulary": "PubChem",
+        "target_vocabulary_version": "2026-06-01",
+        "evidence_refs": [{ "evidence_id": "pharmev:evidence-2026-000001", "evidence_role": "supports", "tenant_id": "tenant-a" }]
+      },
+      "provenance": {
+        "provenance_id": "pharmprov:p4/mapping-aspirin",
+        "source": "ChEMBL",
+        "source_version": "34",
+        "evidence_ids": ["pharmev:evidence-2026-000001"]
+      },
+      "rationale": "Contributor proposes exact mapping for curation.",
+      "confidence_score": 0.97,
+      "confidence_band": "high",
+      "confidence_source": "deterministic_identifier_match"
+    },
+    {
+      "proposal_id": "proposal:relationship:aspirin-target",
+      "proposal_type": "relationship",
+      "semantic_object_type": "relationship_assertion",
+      "semantic_object_id": "pharmrel:aspirin-target-cox1",
+      "title": "Link aspirin to PTGS1 target evidence",
+      "payload": {
+        "relationship_id": "pharmrel:aspirin-target-cox1",
+        "subject": "pharment:compound/aspirin",
+        "predicate": "pharm:hasKnownTarget",
+        "object": "uniprot:P23219",
+        "evidence_refs": [{ "evidence_id": "pharmev:evidence-2026-000002", "evidence_role": "supports", "tenant_id": "tenant-a" }]
+      },
+      "provenance": {
+        "provenance_id": "pharmprov:p4/relationship-aspirin-target",
+        "source": "UniProt fixture",
+        "source_version": "2026_02",
+        "evidence_ids": ["pharmev:evidence-2026-000002"]
+      },
+      "rationale": "Contributor proposes target relationship from evidence.",
+      "confidence_score": 0.88,
+      "confidence_band": "medium",
+      "confidence_source": "curator_evidence"
+    },
+    {
+      "proposal_id": "proposal:evidence:aspirin",
+      "proposal_type": "evidence-link",
+      "semantic_object_type": "evidence-link",
+      "semantic_object_id": "pharmev:aspirin-label-2026",
+      "title": "Attach aspirin label evidence",
+      "payload": {
+        "evidence_link_id": "pharmevlink:aspirin-label-2026",
+        "evidence_id": "pharmev:evidence-2026-000001",
+        "evidence_role": "supports",
+        "evidence_refs": [{ "evidence_id": "pharmev:evidence-2026-000001", "evidence_role": "supports", "tenant_id": "tenant-a" }]
+      },
+      "provenance": {
+        "provenance_id": "pharmprov:p4/evidence-aspirin",
+        "source": "PubMed fixture",
+        "source_version": "2026-06-27",
+        "evidence_ids": ["pharmev:evidence-2026-000001"]
+      },
+      "rationale": "Contributor links supporting evidence.",
+      "confidence_score": 0.91,
+      "confidence_band": "high",
+      "confidence_source": "curator_evidence"
+    }
+  ]
+}

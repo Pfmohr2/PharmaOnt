@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pharmaops.local/schemas/audit-event.schema.json",
+  "title": "PharmaOps Audit Event Stub",
+  "description": "Audit-event schema stub aligned with Security Model and Validation Plan. The audit service may refine storage-specific fields later.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "event_type",
+    "occurred_at",
+    "actor",
+    "tenant_id",
+    "environment",
+    "resource",
+    "action",
+    "outcome",
+    "correlation_id"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "login",
+        "logout",
+        "failed_auth",
+        "role_change",
+        "source_configuration_change",
+        "connector_run",
+        "entity_change",
+        "mapping_change",
+        "relationship_change",
+        "evidence_change",
+        "ai_suggestion",
+        "review_decision",
+        "release_staging",
+        "release_promotion",
+        "failed_promotion",
+        "rollback",
+        "export",
+        "admin_action",
+        "validation_run",
+        "audit_search",
+        "audit_export",
+        "license_policy_decision",
+        "retention_or_legal_hold_change"
+      ]
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actor_id", "actor_type"],
+      "properties": {
+        "actor_id": { "type": "string" },
+        "actor_type": {
+          "type": "string",
+          "enum": ["human_user", "service_account", "connector_job", "model", "system"]
+        },
+        "actor_role": { "type": ["string", "null"] },
+        "source_ip_or_client_id": { "type": ["string", "null"] },
+        "impersonation_or_break_glass_context": { "type": ["string", "null"] }
+      }
+    },
+    "tenant_id": {
+      "type": "string"
+    },
+    "environment": {
+      "type": "string",
+      "enum": ["local", "dev", "test", "staging", "release_candidate", "production"]
+    },
+    "correlation_id": {
+      "type": "string"
+    },
+    "request_id": {
+      "type": ["string", "null"]
+    },
+    "resource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["resource_type", "resource_id"],
+      "properties": {
+        "resource_type": { "type": "string" },
+        "resource_id": { "type": "string" },
+        "resource_version": { "type": ["string", "null"] },
+        "workflow_state_before": { "type": ["string", "null"] },
+        "workflow_state_after": { "type": ["string", "null"] },
+        "release_id": { "type": ["string", "null"] },
+        "source_system": { "type": ["string", "null"] },
+        "source_version": { "type": ["string", "null"] }
+      }
+    },
+    "action": {
+      "type": "string"
+    },
+    "decision": {
+      "type": ["string", "null"]
+    },
+    "rationale": {
+      "type": ["string", "null"]
+    },
+    "policy_result": {
+      "type": ["string", "null"],
+      "enum": ["allow", "deny", "warn", "not_applicable", null]
+    },
+    "validation_result": {
+      "type": ["string", "null"],
+      "enum": ["passed", "warning", "failed", "blocked", "not_applicable", null]
+    },
+    "provenance_ref": {
+      "type": ["string", "null"]
+    },
+    "artifact_hash": {
+      "type": ["string", "null"],
+      "pattern": "^(sha256:)?[A-Fa-f0-9]{64}$"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": ["success", "failure", "denied", "blocked", "warning"]
+    },
+    "failure_reason": {
+      "type": ["string", "null"]
+    }
+  }
+}
+

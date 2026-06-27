@@ -1,0 +1,156 @@
+{
+  "schema_version": "phase5.search-golden.v1",
+  "tenant_id": "tenant-a",
+  "environment": "prod",
+  "release_id": "release-2026-01",
+  "records": [
+    {
+      "id": "pharment:compound/aspirin",
+      "object_id": "pharment:compound/aspirin",
+      "entity_id": "pharment:compound/aspirin",
+      "object_type": "compound",
+      "entity_type": "compound",
+      "assertion_id": "assertion:aspirin-canonical",
+      "assertion_type": "canonical",
+      "preferred_label": "Aspirin",
+      "display_label": "Aspirin",
+      "definition": "Acetylsalicylic acid compound record.",
+      "identifiers": ["chembl:CHEMBL25", "pubchem:CID2244"],
+      "synonyms": [
+        {
+          "synonym_id": "synonym:asa",
+          "value": "ASA",
+          "source": "RxNorm",
+          "evidence_id": "pharmev:evidence-asa"
+        }
+      ],
+      "mappings": [
+        {
+          "mapping_id": "pharmmap:aspirin-chembl-pubchem",
+          "source_entity_id": "chembl:CHEMBL25",
+          "target_entity_id": "pubchem:CID2244",
+          "predicate": "skos:exactMatch",
+          "source": "ChEMBL",
+          "evidence_id": "pharmev:evidence-chembl"
+        }
+      ],
+      "evidence_refs": [
+        {
+          "evidence_id": "pharmev:evidence-chembl",
+          "evidence_role": "supports",
+          "source_name": "ChEMBL",
+          "snippet": "Aspirin record CHEMBL25 exact-matches PubChem CID2244."
+        },
+        {
+          "evidence_id": "pharmev:evidence-asa",
+          "evidence_role": "supports",
+          "source_name": "RxNorm",
+          "snippet": "ASA is a synonym for aspirin."
+        }
+      ],
+      "source_name": "ChEMBL",
+      "source_vocabulary": "ChEMBL",
+      "source_vocabulary_version": "34",
+      "target_vocabulary": "PubChem",
+      "target_vocabulary_version": "2026-06-01",
+      "source_version": "34",
+      "provenance_id": "pharmprov:aspirin",
+      "artifact_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "license_classification": "open_with_attribution",
+      "license_policy_id": "license-policy:chembl-34",
+      "export_restrictions": ["attribution_required"]
+    },
+    {
+      "id": "pharmrel:aspirin-ptgs1",
+      "relationship_id": "pharmrel:aspirin-ptgs1",
+      "object_id": "pharmrel:aspirin-ptgs1",
+      "object_type": "relationship",
+      "assertion_id": "pharmrel:aspirin-ptgs1",
+      "assertion_type": "relationship",
+      "display_label": "Aspirin compound has target PTGS1",
+      "subject_id": "pharment:compound/aspirin",
+      "predicate": "compound_has_target",
+      "target_entity_id": "pharment:target/ptgs1",
+      "object_label": "PTGS1",
+      "evidence_refs": [
+        {
+          "evidence_id": "pharmev:evidence-target",
+          "evidence_role": "supports",
+          "source_name": "Manual curation",
+          "snippet": "Curated PTGS1 target relationship for aspirin."
+        }
+      ],
+      "source_name": "Manual curation",
+      "source_version": "2026-06-27",
+      "provenance_id": "pharmprov:relationship-aspirin-ptgs1",
+      "artifact_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "license_classification": "internal_governed",
+      "license_policy_id": "license-policy:internal-curation"
+    },
+    {
+      "id": "pharment:target/ptgs1",
+      "object_id": "pharment:target/ptgs1",
+      "entity_id": "pharment:target/ptgs1",
+      "object_type": "target",
+      "entity_type": "target",
+      "assertion_id": "assertion:ptgs1-canonical",
+      "assertion_type": "canonical",
+      "preferred_label": "PTGS1",
+      "display_label": "PTGS1",
+      "definition": "Prostaglandin-endoperoxide synthase 1 target.",
+      "identifiers": ["uniprot:P23219"],
+      "source_name": "UniProt",
+      "source_version": "2026_02",
+      "provenance_id": "pharmprov:ptgs1",
+      "artifact_hash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "license_classification": "open_with_attribution",
+      "license_policy_id": "license-policy:uniprot"
+    },
+    {
+      "id": "pharment:compound/hidden-aspirin",
+      "object_id": "pharment:compound/hidden-aspirin",
+      "entity_id": "pharment:compound/hidden-aspirin",
+      "object_type": "compound",
+      "entity_type": "compound",
+      "assertion_id": "assertion:hidden-aspirin",
+      "assertion_type": "canonical",
+      "preferred_label": "Hidden Aspirin",
+      "display_label": "Hidden Aspirin",
+      "identifiers": ["chembl:CHEMBL25-HIDDEN"],
+      "source_name": "ChEMBL",
+      "tenant_id": "tenant-b"
+    }
+  ],
+  "golden_queries": [
+    {
+      "name": "keyword",
+      "query": "aspirin",
+      "expected_top_ids": ["pharmrel:aspirin-ptgs1", "pharment:compound/aspirin"],
+      "expected_reason_types": ["label", "relationship", "evidence"],
+      "expected_facets": {
+        "object_type": ["compound", "relationship"],
+        "assertion_type": ["canonical", "relationship"]
+      }
+    },
+    {
+      "name": "identifier-curie",
+      "query": "chembl:CHEMBL25",
+      "expected_top_ids": ["pharment:compound/aspirin"],
+      "expected_reason_types": ["identifier"],
+      "expected_facets": {
+        "object_type": ["compound"],
+        "assertion_type": ["canonical"]
+      }
+    },
+    {
+      "name": "synonym-expanded",
+      "query": "ASA",
+      "expected_top_ids": ["pharment:compound/aspirin"],
+      "expected_reason_types": ["synonym"],
+      "expected_facets": {
+        "object_type": ["compound"],
+        "assertion_type": ["canonical"]
+      }
+    }
+  ]
+}

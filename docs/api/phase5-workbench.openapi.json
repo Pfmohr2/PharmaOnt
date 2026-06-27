@@ -1,0 +1,639 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "PharmaOps Phase 5 Workbench API",
+    "version": "phase5.workbench-api.v1",
+    "description": "Workbench contract for governed search, entity detail, explanation/evidence lookup, and export. Every result-returning endpoint is server-filtered by tenant, environment, role, release, assertion type, license, and export policy."
+  },
+  "paths": {
+    "/api/workbench/search": {
+      "post": {
+        "operationId": "searchWorkbench",
+        "summary": "Search authorized workbench records",
+        "description": "Routes hits through services/search/src/index.js querySearchIndex and the API authorization boundary before returning results.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Server-filtered search response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workbench/entities/{entityId}": {
+      "get": {
+        "operationId": "getWorkbenchEntity",
+        "summary": "Get authorized entity detail",
+        "description": "Returns header, mappings, synonyms, relationships, evidence, history, and impact after API authorization filtering.",
+        "parameters": [
+          {
+            "name": "entityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "release_id",
+            "in": "query",
+            "schema": {
+              "type": ["string", "null"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Server-filtered entity page payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityDetailResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workbench/explanations/search-hit/{hitId}": {
+      "get": {
+        "operationId": "explainSearchHit",
+        "summary": "Explain an authorized search hit",
+        "description": "Authorizes the hit before invoking services/explanation explainSearchHit.",
+        "parameters": [
+          {
+            "name": "hitId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "release_id",
+            "in": "query",
+            "schema": {
+              "type": ["string", "null"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Explanation response with match reasons, evidence, provenance, and governance flags",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExplanationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workbench/evidence/by-assertion/{assertionId}": {
+      "get": {
+        "operationId": "getEvidenceForAssertion",
+        "summary": "Get evidence viewer payload for an authorized assertion",
+        "description": "Authorizes the assertion before invoking services/explanation evidenceForAssertion.",
+        "parameters": [
+          {
+            "name": "assertionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "release_id",
+            "in": "query",
+            "schema": {
+              "type": ["string", "null"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Evidence viewer response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvidenceResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workbench/export/preview": {
+      "post": {
+        "operationId": "previewWorkbenchExport",
+        "summary": "Preview an authorized export scope",
+        "description": "Uses services/export/src/index.js buildAuthorizedExport in dry-run mode.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authorized export preview",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workbench/export": {
+      "post": {
+        "operationId": "createWorkbenchExport",
+        "summary": "Create an authorized export job",
+        "description": "Uses buildAuthorizedExport and preserves IDs, vocabulary versions, release context, provenance, license metadata, and hashes.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authorized export job response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ReleaseContext": {
+        "type": "object",
+        "required": ["release_id", "scope"],
+        "properties": {
+          "release_id": {
+            "type": ["string", "null"]
+          },
+          "scope": {
+            "type": "string",
+            "enum": ["release", "working"]
+          }
+        }
+      },
+      "SearchRequest": {
+        "type": "object",
+        "required": ["query"],
+        "properties": {
+          "query_id": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "filters": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "release_id": {
+            "type": ["string", "null"]
+          },
+          "release_context": {
+            "$ref": "#/components/schemas/ReleaseContext"
+          }
+        }
+      },
+      "WorkbenchResult": {
+        "type": "object",
+        "required": ["object_id", "object_type", "display_label", "assertion_type", "badges", "match_reasons", "actions"],
+        "properties": {
+          "object_id": {
+            "type": "string"
+          },
+          "object_type": {
+            "type": "string"
+          },
+          "display_label": {
+            "type": "string"
+          },
+          "preferred_label": {
+            "type": ["string", "null"]
+          },
+          "snippet": {
+            "type": ["string", "null"]
+          },
+          "rank": {
+            "type": ["number", "null"]
+          },
+          "score_band": {
+            "type": ["string", "null"],
+            "enum": ["high", "medium", "low", null]
+          },
+          "assertion_type": {
+            "type": "string"
+          },
+          "lifecycle_status": {
+            "type": ["string", "null"]
+          },
+          "review_status": {
+            "type": ["string", "null"]
+          },
+          "release_id": {
+            "type": ["string", "null"]
+          },
+          "badges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Badge"
+            }
+          },
+          "match_reasons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MatchReason"
+            }
+          },
+          "evidence_refs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "actions": {
+            "$ref": "#/components/schemas/Actions"
+          }
+        }
+      },
+      "SearchResponse": {
+        "type": "object",
+        "required": ["schema_version", "query_id", "tenant_id", "environment", "release_context", "results", "visible_count", "authorization_filtered", "policy_notice", "facets", "actions"],
+        "properties": {
+          "schema_version": {
+            "const": "phase5.workbench-api.v1"
+          },
+          "query_id": {
+            "type": "string"
+          },
+          "generated_at": {
+            "type": "string"
+          },
+          "tenant_id": {
+            "type": "string"
+          },
+          "environment": {
+            "type": "string"
+          },
+          "release_context": {
+            "$ref": "#/components/schemas/ReleaseContext"
+          },
+          "query": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkbenchResult"
+            }
+          },
+          "visible_count": {
+            "type": "integer"
+          },
+          "authorization_filtered": {
+            "const": true
+          },
+          "policy_notice": {
+            "type": "string"
+          },
+          "facets": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "actions": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "EntityDetailResponse": {
+        "type": "object",
+        "required": ["schema_version", "tenant_id", "environment", "release_context", "entity_id", "header", "sections", "authorization_filtered"],
+        "properties": {
+          "schema_version": {
+            "const": "phase5.workbench-api.v1"
+          },
+          "tenant_id": {
+            "type": "string"
+          },
+          "environment": {
+            "type": "string"
+          },
+          "release_context": {
+            "$ref": "#/components/schemas/ReleaseContext"
+          },
+          "entity_id": {
+            "type": "string"
+          },
+          "header": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "sections": {
+            "type": "object",
+            "required": ["mappings", "synonyms", "relationships", "evidence", "history", "impact"],
+            "properties": {
+              "mappings": {
+                "type": "array"
+              },
+              "synonyms": {
+                "type": "array"
+              },
+              "relationships": {
+                "type": "array"
+              },
+              "evidence": {
+                "type": "array"
+              },
+              "history": {
+                "type": "array"
+              },
+              "impact": {
+                "type": "array"
+              }
+            }
+          },
+          "authorization_filtered": {
+            "const": true
+          },
+          "policy_notice": {
+            "type": "string"
+          },
+          "actions": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "ExportRequest": {
+        "type": "object",
+        "required": ["scope"],
+        "properties": {
+          "scope": {
+            "type": "object",
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["search", "selected", "entity", "evidence", "graph"]
+              },
+              "query_id": {
+                "type": "string"
+              },
+              "object_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "entity_id": {
+                "type": "string"
+              },
+              "evidence_id": {
+                "type": "string"
+              },
+              "graph_scope_id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          },
+          "format": {
+            "type": "string",
+            "enum": ["json", "jsonld", "csv", "tsv", "rdf", "validation-report"]
+          },
+          "release_id": {
+            "type": ["string", "null"]
+          },
+          "release_context": {
+            "$ref": "#/components/schemas/ReleaseContext"
+          }
+        }
+      },
+      "ExportResponse": {
+        "type": "object",
+        "required": ["schema_version", "export_id", "tenant_id", "environment", "release_context", "authorization_filtered", "record_count", "invalid_record_count", "rows", "row_content_hashes", "manifest_digest", "preserved_fields", "restrictions"],
+        "properties": {
+          "schema_version": {
+            "const": "phase5.workbench-api.v1"
+          },
+          "export_id": {
+            "type": "string"
+          },
+          "tenant_id": {
+            "type": "string"
+          },
+          "environment": {
+            "type": "string"
+          },
+          "format": {
+            "type": "string"
+          },
+          "release_context": {
+            "$ref": "#/components/schemas/ReleaseContext"
+          },
+          "authorization_filtered": {
+            "const": true
+          },
+          "record_count": {
+            "type": "integer"
+          },
+          "invalid_record_count": {
+            "type": "integer",
+            "description": "Visible authorized rows dropped fail-closed because required regulated export fields were missing. Hidden authorization-filtered counts are never exposed by the workbench API."
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "row_content_hashes": {
+            "type": "array",
+            "description": "Per-row hashes computed over canonical sorted exported row content.",
+            "items": {
+              "type": "string",
+              "pattern": "^sha256:[a-f0-9]{64}$"
+            }
+          },
+          "manifest_digest": {
+            "type": "string",
+            "description": "Digest over export metadata and canonical sorted full exported row content.",
+            "pattern": "^sha256:[a-f0-9]{64}$"
+          },
+          "preserved_fields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "restrictions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "export_job": {
+            "type": ["object", "null"],
+            "description": "Ready export job for non-empty exports. Null for previews, zero-row scopes, and hidden-only scopes.",
+            "additionalProperties": true
+          }
+        }
+      },
+      "ExplanationResponse": {
+        "type": "object",
+        "required": ["schema_version", "tenant_id", "environment", "release_context", "authorization_filtered", "explanation"],
+        "properties": {
+          "schema_version": {
+            "const": "phase5.workbench-api.v1"
+          },
+          "tenant_id": {
+            "type": "string"
+          },
+          "environment": {
+            "type": "string"
+          },
+          "release_context": {
+            "$ref": "#/components/schemas/ReleaseContext"
+          },
+          "authorization_filtered": {
+            "const": true
+          },
+          "explanation": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "EvidenceResponse": {
+        "type": "object",
+        "required": ["schema_version", "tenant_id", "environment", "release_context", "authorization_filtered", "evidence"],
+        "properties": {
+          "schema_version": {
+            "const": "phase5.workbench-api.v1"
+          },
+          "tenant_id": {
+            "type": "string"
+          },
+          "environment": {
+            "type": "string"
+          },
+          "release_context": {
+            "$ref": "#/components/schemas/ReleaseContext"
+          },
+          "authorization_filtered": {
+            "const": true
+          },
+          "evidence": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "Badge": {
+        "type": "object",
+        "required": ["label", "value"],
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "MatchReason": {
+        "type": "object",
+        "required": ["reason_type", "field", "matched_value"],
+        "properties": {
+          "reason_type": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          },
+          "matched_value": {
+            "type": ["string", "number", "boolean", "null"]
+          },
+          "normalized_value": {
+            "type": ["string", "null"]
+          },
+          "source": {
+            "type": ["string", "null"]
+          },
+          "evidence_id": {
+            "type": ["string", "null"]
+          },
+          "highlight_ranges": {
+            "type": "array"
+          }
+        }
+      },
+      "Actions": {
+        "type": "object",
+        "required": ["can_open", "can_export", "can_view_evidence", "can_view_graph"],
+        "properties": {
+          "can_open": {
+            "type": "boolean"
+          },
+          "can_export": {
+            "type": "boolean"
+          },
+          "can_view_evidence": {
+            "type": "boolean"
+          },
+          "can_view_graph": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}
