@@ -23,6 +23,7 @@ export class Phase5WorkbenchApi {
     resolveSourceLicenseApprovalPacket = null,
     explanationService = null,
     resolveSearchHit = null,
+    relationshipAssertionApi = null,
     clock = () => new Date(),
     idFactory = defaultIdFactory
   } = {}) {
@@ -32,6 +33,7 @@ export class Phase5WorkbenchApi {
     this.resolveSourceLicenseApprovalPacket = resolveSourceLicenseApprovalPacket;
     this.explanationService = explanationService;
     this.resolveSearchHit = resolveSearchHit;
+    this.relationshipAssertionApi = relationshipAssertionApi;
     this.clock = clock;
     this.idFactory = idFactory;
   }
@@ -91,7 +93,14 @@ export class Phase5WorkbenchApi {
     assertPrincipal(principal);
     assertText(entityId, "entityId");
     const releaseContext = releaseContextFor(principal, request);
-    const raw = await this.resolveEntityDetail({ entityId, principal, releaseContext });
+    const rawResolved = await this.resolveEntityDetail({ entityId, principal, releaseContext });
+    const raw = await this.withAuthorizedRelationshipSection({
+      raw: rawResolved,
+      principal,
+      entityId,
+      request,
+      releaseContext
+    });
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
       throw new WorkbenchApiError("entity resolver returned no detail", { entity_id: entityId });
     }
@@ -186,6 +195,30 @@ export class Phase5WorkbenchApi {
       release_context: releaseContext,
       authorization_filtered: true,
       evidence
+    };
+  }
+
+  async withAuthorizedRelationshipSection({ raw, principal, entityId, request, releaseContext }) {
+    if (!this.relationshipAssertionApi) {
+      return raw;
+    }
+    if (typeof this.relationshipAssertionApi.listEntityRelationships !== "function") {
+      throw new WorkbenchApiError("relationshipAssertionApi.listEntityRelationships is required");
+    }
+    const relationshipResponse = await this.relationshipAssertionApi.listEntityRelationships({
+      principal,
+      entityId,
+      request: {
+        ...request,
+        release_context: request.release_context ?? releaseContext
+      }
+    });
+    if (relationshipResponse?.authorization_filtered !== true || !Array.isArray(relationshipResponse.relationships)) {
+      throw new WorkbenchApiError("relationship assertion API must return authorized relationships");
+    }
+    return {
+      ...(raw ?? {}),
+      relationships: relationshipResponse.relationships.map(normalizeRelationshipSectionCandidate)
     };
   }
 
@@ -351,7 +384,7 @@ function authorizedSectionRows(raw, byApiId, section) {
 
 function normalizeSearchResult(result) {
   return stripApiMeta({
-    object_id: result.object_id ?? result.entity_id ?? result.assertion_id ?? result.mapping_id ?? result.relationship_id ?? result.id,
+    object_id: result.object_id ?? result.entity_id ?? result.assertion_id ?? result.mapping_id ?? result.relationship_assertion_id ?? result.relationship_id ?? result.id,
     object_type: result.object_type ?? result.result_type ?? result.assertion_type,
     display_label: result.display_label ?? result.preferred_label ?? result.label ?? result.id,
     preferred_label: result.preferred_label ?? result.display_label ?? result.label ?? null,
@@ -362,6 +395,8 @@ function normalizeSearchResult(result) {
     lifecycle_status: result.lifecycle_status ?? null,
     review_status: result.review_status ?? null,
     release_id: result.release_id ?? null,
+    relationship_assertion_id: result.relationship_assertion_id ?? null,
+    provenance_id: result.provenance_id ?? null,
     badges: result.badges ?? badgesFor(result),
     match_reasons: result.match_reasons ?? [],
     evidence_refs: result.evidence_refs ?? [],
@@ -392,8 +427,10 @@ function normalizeEntityHeader(row) {
 function normalizeEntitySectionRow(section, row) {
   return stripApiMeta({
     section,
-    id: row.id ?? row.mapping_id ?? row.relationship_id ?? row.evidence_id ?? row.audit_event_id ?? row.object_id,
+    id: row.id ?? row.mapping_id ?? row.relationship_assertion_id ?? row.relationship_id ?? row.evidence_id ?? row.audit_event_id ?? row.object_id,
     assertion_type: row.assertion_type,
+    relationship_assertion_id: row.relationship_assertion_id ?? null,
+    relationship_assertion_type: row.relationship_assertion_type ?? null,
     lifecycle_status: row.lifecycle_status ?? row.review_status ?? null,
     release_id: row.release_id ?? null,
     badges: row.badges ?? badgesFor(row),
@@ -401,6 +438,20 @@ function normalizeEntitySectionRow(section, row) {
     provenance_id: row.provenance_id ?? null,
     source: row
   });
+}
+
+function normalizeRelationshipSectionCandidate(row) {
+  return {
+    ...row,
+    id: row.id ?? row.relationship_assertion_id ?? row.relationship_id ?? row.object_id,
+    object_id: row.object_id ?? row.relationship_assertion_id ?? row.relationship_id ?? row.id,
+    object_type: "relationship",
+    result_type: "relationship",
+    assertion_type: row.assertion_type ?? "relationship",
+    relationship_assertion_id: row.relationship_assertion_id ?? row.relationship_id ?? row.id,
+    provenance_id: row.provenance_id ?? row.source?.provenance_id ?? null,
+    evidence_refs: row.evidence_refs ?? row.source?.evidence_refs ?? []
+  };
 }
 
 function buildFacets(results) {

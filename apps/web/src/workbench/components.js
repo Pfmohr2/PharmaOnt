@@ -62,6 +62,8 @@ export function renderSearchResultRow(result) {
     component: "ResultRow",
     object_id: requireText(result.object_id, "result.object_id"),
     object_type: requireText(result.object_type, "result.object_type"),
+    relationship_assertion_id: result.relationship_assertion_id ?? null,
+    provenance_id: result.provenance_id ?? result.source?.provenance_id ?? null,
     display_label: requireText(result.display_label, "result.display_label"),
     snippet: result.snippet ?? null,
     assertion_badge: renderAssertionBadge({
@@ -269,6 +271,8 @@ function renderEntitySectionRow(section, row) {
   return {
     id: row.id ?? row.mapping_id ?? row.relationship_id ?? row.evidence_id ?? row.audit_event_id ?? null,
     section,
+    relationship_assertion_id: row.relationship_assertion_id ?? null,
+    provenance_id: row.provenance_id ?? row.source?.provenance_id ?? null,
     source: row,
     badges: renderAssertionBadge({
       assertion_type: row.assertion_type,

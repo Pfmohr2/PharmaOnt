@@ -82,6 +82,8 @@ export function indexGovernedStoreState(storeState = {}) {
     ...arrayOf(storeState.canonicalEntities).map((record) => ({ assertion_type: "canonical", ...record })),
     ...arrayOf(storeState.mappings).map((record) => ({ object_type: "mapping", assertion_type: "mapping", ...record })),
     ...arrayOf(storeState.relationships).map((record) => ({ object_type: "relationship", assertion_type: "relationship", ...record })),
+    ...arrayOf(storeState.relationship_assertions).map((record) => ({ object_type: "relationship", assertion_type: "relationship", ...record })),
+    ...arrayOf(storeState.relationshipAssertions).map((record) => ({ object_type: "relationship", assertion_type: "relationship", ...record })),
     ...arrayOf(storeState.evidence).map((record) => ({ object_type: "evidence", assertion_type: "evidence", ...record }))
   ];
   return records.map(buildSearchIndexDocument);
@@ -101,6 +103,7 @@ export function buildSearchIndexDocument(record) {
     record.entity_id,
     record.assertion_id,
     record.mapping_id,
+    record.relationship_assertion_id,
     record.relationship_id,
     record.evidence_id,
     record.document_id,
@@ -130,6 +133,7 @@ export function buildSearchIndexDocument(record) {
     record.entity_id,
     record.assertion_id,
     record.mapping_id,
+    record.relationship_assertion_id,
     record.relationship_id,
     record.evidence_id,
     record.document_id,
@@ -337,6 +341,8 @@ function relationshipReasons(document, term) {
       queryTerm: term.original,
       source: relationship.source,
       scoreContribution: FIELD_WEIGHTS.relationship,
+      relationship_assertion_id: relationship.relationship_assertion_id,
+      relationship_id: relationship.relationship_id,
       evidence_id: relationship.evidence_id
     }));
 }
@@ -375,6 +381,8 @@ function matchReason({
   source = "search_index",
   scoreContribution,
   mapping_id = null,
+  relationship_assertion_id = null,
+  relationship_id = null,
   synonym_id = null,
   evidence_id = null
 }) {
@@ -391,6 +399,8 @@ function matchReason({
     source: source ?? "search_index",
     score_contribution: scoreContribution,
     mapping_id,
+    relationship_assertion_id,
+    relationship_id,
     synonym_id,
     evidence_id,
     highlight_ranges: []
@@ -531,27 +541,33 @@ function normalizeRelationships(value, record) {
       return { relationship_id: String(relationship), search_values: [String(relationship)], source: "search_index" };
     }
     return {
-      relationship_id: relationship.relationship_id ?? relationship.id ?? null,
-      subject_id: relationship.subject_id ?? relationship.subject ?? null,
+      relationship_assertion_id: relationship.relationship_assertion_id ?? relationship.assertion_id ?? null,
+      relationship_id: relationship.relationship_id ?? relationship.relationship_assertion_id ?? relationship.id ?? null,
+      subject_id: relationship.subject_id ?? relationship.source_entity_id ?? relationship.subject ?? null,
       predicate: relationship.predicate ?? relationship.relationship_type ?? null,
-      object_id: relationship.object_id ?? relationship.object ?? null,
+      object_id: relationship.object_id ?? relationship.target_entity_id ?? relationship.object ?? null,
       label: relationship.label ?? relationship.predicate ?? relationship.relationship_type ?? null,
       source: relationship.source ?? relationship.source_name ?? "search_index",
-      evidence_id: relationship.evidence_id ?? null,
+      evidence_id: relationship.evidence_id ?? relationship.evidence_refs?.[0]?.evidence_id ?? null,
       search_values: uniqueText([
+        relationship.relationship_assertion_id,
+        relationship.assertion_id,
         relationship.relationship_id,
         relationship.id,
         relationship.subject_id,
+        relationship.source_entity_id,
         relationship.subject,
         relationship.predicate,
         relationship.relationship_type,
         relationship.object_id,
+        relationship.target_entity_id,
         relationship.object,
-        relationship.label
+        relationship.label,
+        relationship.provenance_id
       ])
     };
   });
-  if (record.relationship_id || record.subject_id || record.predicate) {
+  if (record.relationship_assertion_id || record.relationship_id || record.subject_id || record.source_entity_id || record.predicate) {
     relationships.push(normalizeRelationships([record], {})[0]);
   }
   return relationships.filter(Boolean);

@@ -36,6 +36,50 @@ test("Phase 5 entity page renders mappings, synonyms, relationships, evidence, h
   assert.equal(page.can_export, true);
 });
 
+test("B9 frontend read models preserve relationship assertion and provenance keys", () => {
+  const searchPayload = searchResponse();
+  searchPayload.results = [{
+    object_id: "ra:aspirin-ptgs1",
+    object_type: "relationship",
+    relationship_assertion_id: "ra:aspirin-ptgs1",
+    provenance_id: "pharmprov:relationship/aspirin-ptgs1",
+    display_label: "Aspirin targets PTGS1",
+    snippet: "Relationship matched by predicate and evidence.",
+    assertion_type: "relationship",
+    lifecycle_status: "released",
+    release_id: "release-2026-01",
+    badges: [{ label: "Relationship", value: "relationship" }],
+    match_reasons: [{ reason_type: "relationship", field: "relationships", matched_value: "compound_has_target", evidence_id: "pharmev:aspirin-ptgs1" }],
+    evidence_refs: [{ evidence_id: "pharmev:aspirin-ptgs1", evidence_role: "supports" }],
+    actions: { can_open: true, can_export: false, can_view_evidence: true, can_view_graph: true }
+  }];
+  searchPayload.visible_count = 1;
+  searchPayload.facets = {
+    object_type: [{ value: "relationship", count: 1 }],
+    assertion_type: [{ value: "relationship", count: 1 }]
+  };
+  const detailPayload = entityDetailResponse();
+  detailPayload.sections.relationships = [{
+    id: "ra:aspirin-ptgs1",
+    relationship_assertion_id: "ra:aspirin-ptgs1",
+    provenance_id: "pharmprov:relationship/aspirin-ptgs1",
+    assertion_type: "relationship",
+    lifecycle_status: "released",
+    release_id: "release-2026-01",
+    evidence_refs: [{ evidence_id: "pharmev:aspirin-ptgs1", evidence_role: "supports" }]
+  }];
+
+  const search = renderSearchSurface(searchPayload);
+  const entity = renderEntityPage(detailPayload);
+
+  assert.equal(search.results[0].relationship_assertion_id, "ra:aspirin-ptgs1");
+  assert.equal(search.results[0].provenance_id, "pharmprov:relationship/aspirin-ptgs1");
+  const relationshipRow = entity.tabs.find((tab) => tab.id === "relationships").rows[0];
+  assert.equal(relationshipRow.relationship_assertion_id, "ra:aspirin-ptgs1");
+  assert.equal(relationshipRow.provenance_id, "pharmprov:relationship/aspirin-ptgs1");
+  assert.equal(relationshipRow.evidence, true);
+});
+
 test("Phase 5 explanation panel and evidence viewer render provenance, restrictions, supports, and model-suggested warning", () => {
   const explanation = renderExplanationPanel(explanationResponse({ assertion_type: "model_suggested" }));
   const evidence = renderEvidenceViewer(evidenceResponse());
