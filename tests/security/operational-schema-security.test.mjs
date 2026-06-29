@@ -86,8 +86,8 @@ test("tenant-scoped app role cannot read another tenant's rows on tenant-owned o
   const missingTenantRows = [];
 
   for (const table of tables) {
-    const visibleTenantA = Number(appPsql(`SELECT count(*) FROM pharmaops.${quoteIdent(table)} WHERE tenant_id = '${tenantA}';`));
-    const leakedTenantB = Number(appPsql(`SELECT count(*) FROM pharmaops.${quoteIdent(table)} WHERE tenant_id = '${tenantB}';`));
+    const visibleTenantA = appPsqlInteger(`SELECT count(*) FROM pharmaops.${quoteIdent(table)} WHERE tenant_id = '${tenantA}';`);
+    const leakedTenantB = appPsqlInteger(`SELECT count(*) FROM pharmaops.${quoteIdent(table)} WHERE tenant_id = '${tenantB}';`);
 
     if (visibleTenantA < 1) {
       missingTenantRows.push(table);
@@ -223,7 +223,7 @@ test("RBAC negative controls reject self-approval, viewer export permission, pri
           );
         `
       ),
-    /requires a second approver/i
+    /require a second approver/i
   );
 
   assertSqlFails(
@@ -547,7 +547,7 @@ test("Phase 4 immutable governance proof model requires server-side persisted-re
 });
 
 test("release_metadata rejects rows weaker than the ADR-0002 canonical ledger contract", { skip: skipReason }, () => {
-  assertSqlFailure(
+  assertSqlFails(
     () => adminPsql(testDb, `
       INSERT INTO pharmaops.release_metadata (
         tenant_id,
@@ -585,7 +585,7 @@ test("release_metadata rejects rows weaker than the ADR-0002 canonical ledger co
     /release_metadata_manifest_digest_format/
   );
 
-  assertSqlFailure(
+  assertSqlFails(
     () => adminPsql(testDb, `
       INSERT INTO pharmaops.release_metadata (
         tenant_id,
@@ -625,7 +625,7 @@ test("release_metadata rejects rows weaker than the ADR-0002 canonical ledger co
 });
 
 test("normal app role cannot write release_metadata ledger rows directly", { skip: skipReason }, () => {
-  assertSqlFailure(
+  assertSqlFails(
     () => appPsql(`
       INSERT INTO pharmaops.release_metadata (
         tenant_id,
@@ -706,6 +706,22 @@ function appPsql(sql) {
       RESET ROLE;
     `
   ).trim();
+}
+
+function appPsqlInteger(sql) {
+  const output = appPsql(sql);
+  const lines = output
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const commandStatusLines = new Set(["SET", "BEGIN", "COMMIT", "RESET"]);
+  const integerLines = lines.filter((line) => /^-?\d+$/.test(line));
+  const unexpectedLines = lines.filter((line) => !commandStatusLines.has(line) && !/^-?\d+$/.test(line));
+
+  assert.deepEqual(unexpectedLines, [], `unexpected SQL output while parsing integer result: ${output}`);
+  assert.equal(integerLines.length, 1, `expected exactly one integer SQL result line, got ${integerLines.length}: ${output}`);
+
+  return Number(integerLines[0]);
 }
 
 function assertSqlFails(runSql, pattern) {

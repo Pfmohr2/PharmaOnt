@@ -1,0 +1,66 @@
+﻿=== P7 gate #1 rerun 2026-06-29T10:16:08.3389164-04:00 ===
+=== docker compose --env-file infra/env/staging.env -f infra/docker/docker-compose.yml up -d ===
+docker :  Container pharmaops-staging-postgres Running 
+At line:6 char:1
++ docker compose --env-file infra/env/staging.env -f infra/docker/docke ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ( Container phar...stgres Running : 
+   String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ Container pharmaops-staging-fuseki Running 
+=== npm run test:ontology ===
+
+> pharmaops@0.1.0 test:ontology
+> node --test "tests/ontology/**/*.test.mjs"
+
+[32m✔ Phase 1 SHACL file contains blocker shapes for entity, mapping, and provenance validation [90m(3.1692ms)[39m[39m
+[32m✔ valid ontology fixtures satisfy semantic spine blocker checks [90m(15.1369ms)[39m[39m
+[32m✔ entity fixture without preferred label fails loudly [90m(1.8197ms)[39m[39m
+[32m✔ mapping missing target vocabulary version fails loudly [90m(2.0732ms)[39m[39m
+[32m✔ assertion without provenance fails loudly [90m(2.2514ms)[39m[39m
+[32m✔ model suggested assertion cannot be approved or release-membered [90m(2.7568ms)[39m[39m
+[32m✔ Semantic Bridge relationship missing class, evidence, review, license, or release context fails loudly [90m(1.3345ms)[39m[39m
+[32m✔ Semantic Bridge high-confidence path with unreviewed model-suggested edge fails loudly [90m(2.4246ms)[39m[39m
+[32m✔ release-ineligible mapping state fails loudly inside a release graph [90m(1.8532ms)[39m[39m
+[34mℹ tests 9[39m
+[34mℹ suites 0[39m
+[34mℹ pass 9[39m
+[34mℹ fail 0[39m
+[34mℹ cancelled 0[39m
+[34mℹ skipped 0[39m
+[34mℹ todo 0[39m
+[34mℹ duration_ms 545.6788[39m
+=== npm run test:security ===
+
+> pharmaops@0.1.0 test:security
+> node --test "tests/security/**/*.test.mjs"
+
+[32m✔ P5 authz filter drops unauthorized and cross-tenant results before API response leaves server [90m(1.6817ms)[39m[39m
+[32m✔ P5 search boundary applies same server-side filter for Dwight index queries [90m(1.9253ms)[39m[39m
+[32m✔ P5 export boundary enforces tenant, release, role, license, and export-use scope [90m(3.9752ms)[39m[39m
+[32m✔ P5-RT-003 authz chokepoints do not expose hidden filtered counts [90m(0.3432ms)[39m[39m
+[32m✔ P5-RT-001 export drops rows missing regulated provenance, vocabulary, artifact, and license fields [90m(0.5195ms)[39m[39m
+[32m✔ P5-RT-002 export manifest digest changes when regulated row content changes [90m(0.7908ms)[39m[39m
+[32m✔ P5 direct authz filter fails closed on missing scope and preserves curator access to model suggestions [90m(0.2814ms)[39m[39m
+[32m✔ P5 server modules expose and call the central authz filter chokepoint [90m(0.5612ms)[39m[39m
+[32m✔ tenant-scoped app role cannot read another tenant's rows on tenant-owned operational tables [90m(17761.9096ms)[39m[39m
+[32m✔ audit_events are append-only for normal application roles [90m(895.1669ms)[39m[39m
+[32m✔ RBAC negative controls reject self-approval, viewer export permission, privileged self-approval, and break-glass without audit [90m(2468.0052ms)[39m[39m
+[32m✔ service-account export grants require human owner, release scope, license policy, destination, and expiry [90m(1195.1565ms)[39m[39m
+[32m✔ ADR-0002-dependent audit storage decisions are explicitly marked in DB docs [90m(0.8527ms)[39m[39m
+[32m✔ Phase 2 ingestion security model documents connector service-account invariants [90m(1.0703ms)[39m[39m
+[32m✔ Phase 3 governed mapping RBAC documents server-side decision invariants [90m(1.1031ms)[39m[39m
+[32m✔ Phase 4 proposal lifecycle RBAC documents role boundaries and signed decisions [90m(2.6647ms)[39m[39m
+[32m✔ Phase 4 immutable governance proof model requires server-side persisted-record verification [90m(1.9355ms)[39m[39m
+[32m✔ release_metadata rejects rows weaker than the ADR-0002 canonical ledger contract [90m(733.6993ms)[39m[39m
+[32m✔ normal app role cannot write release_metadata ledger rows directly [90m(281.3723ms)[39m[39m
+[34mℹ tests 19[39m
+[34mℹ suites 0[39m
+[34mℹ pass 19[39m
+[34mℹ fail 0[39m
+[34mℹ cancelled 0[39m
+[34mℹ skipped 0[39m
+[34mℹ todo 0[39m
+[34mℹ duration_ms 27962.7713[39m
+=== exits ontology=0 security=0 ===
