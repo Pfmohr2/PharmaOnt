@@ -1,3 +1,5 @@
+import { GraphWritePolicyError, assertGraphWritePolicy, classifyNamedGraph } from "./named-graphs.js";
+
 export class FusekiClient {
   constructor({
     baseUrl = process.env.FUSEKI_BASE_URL ?? "http://localhost:3030",
@@ -39,7 +41,8 @@ export class FusekiClient {
     return response.json();
   }
 
-  async update(sparql) {
+  async update(sparql, options = {}) {
+    this.assertSparqlWriteAllowed(sparql, options);
     const body = new URLSearchParams({ update: sparql });
     const response = await this.fetch(this.datasetUrl("/update"), {
       method: "POST",
@@ -52,7 +55,8 @@ export class FusekiClient {
     await assertOk(response, "SPARQL update failed");
   }
 
-  async putGraph(graphName, turtle) {
+  async putGraph(graphName, turtle, options = {}) {
+    this.assertGraphWriteAllowed({ graphName, operation: "put graph", options });
     const response = await this.fetch(`${this.datasetUrl("/data")}?graph=${encodeURIComponent(graphName)}`, {
       method: "PUT",
       headers: {
@@ -78,14 +82,16 @@ export class FusekiClient {
     return response.text();
   }
 
-  async clearGraph(graphName) {
-    await this.update(`CLEAR GRAPH <${escapeIri(graphName)}>`);
+  async clearGraph(graphName, options = {}) {
+    this.assertGraphWriteAllowed({ graphName, operation: "clear graph", options });
+    await this.update(`CLEAR GRAPH <${escapeIri(graphName)}>`, options);
   }
 
-  async insertTurtle(graphName, turtle) {
+  async insertTurtle(graphName, turtle, options = {}) {
+    this.assertGraphWriteAllowed({ graphName, operation: "insert turtle", options });
     const existing = await this.getGraph(graphName);
     const next = [existing.trim(), turtle.trim()].filter(Boolean).join("\n\n");
-    await this.putGraph(graphName, next);
+    await this.putGraph(graphName, next, options);
   }
 
   async graphHasTriples(graphName) {
@@ -93,8 +99,9 @@ export class FusekiClient {
     return Boolean(result.boolean);
   }
 
-  async copyGraph(sourceGraph, targetGraph) {
-    await this.update(`COPY <${escapeIri(sourceGraph)}> TO <${escapeIri(targetGraph)}>`);
+  async copyGraph(sourceGraph, targetGraph, options = {}) {
+    this.assertGraphWriteAllowed({ graphName: targetGraph, operation: "copy graph", options });
+    await this.update(`COPY <${escapeIri(sourceGraph)}> TO <${escapeIri(targetGraph)}>`, options);
   }
 
   authHeaders() {
@@ -103,6 +110,30 @@ export class FusekiClient {
     }
     const token = Buffer.from(`${this.username}:${this.password}`).toString("base64");
     return { authorization: `Basic ${token}` };
+  }
+
+  assertGraphWriteAllowed({ graphName, operation, options = {} }) {
+    const graph = classifyNamedGraph(graphName);
+    assertGraphWritePolicy({
+      tenantId: graph.tenantId,
+      graphName,
+      capability: options.capability ?? null,
+      operation,
+      kind: graph.kind
+    });
+  }
+
+  assertSparqlWriteAllowed(sparql, options = {}) {
+    const graphs = tenantGraphsInSparql(sparql);
+    if (graphs.length === 0) {
+      throw new GraphWritePolicyError("SPARQL update requires an explicit tenant-scoped graph write target", {
+        reason: "missing_graph_write_target",
+        sparql
+      });
+    }
+    for (const graphName of graphs) {
+      this.assertGraphWriteAllowed({ graphName, operation: "sparql update", options });
+    }
   }
 }
 
@@ -116,4 +147,10 @@ async function assertOk(response, message) {
   }
   const text = await response.text().catch(() => "");
   throw new Error(`${message}: HTTP ${response.status} ${response.statusText}${text ? `: ${text}` : ""}`);
+}
+
+function tenantGraphsInSparql(sparql) {
+  return [...String(sparql ?? "").matchAll(/<([^>]+)>/g)]
+    .map((match) => match[1])
+    .filter((iri) => /^graph:tenant:/.test(iri));
 }

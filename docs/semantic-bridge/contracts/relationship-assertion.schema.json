@@ -40,7 +40,7 @@
     "environment": { "type": "string", "minLength": 1 },
     "source_entity_id": { "type": "string", "minLength": 1 },
     "target_entity_id": { "type": "string", "minLength": 1 },
-    "predicate": { "type": "string", "minLength": 1 },
+    "predicate": { "$ref": "#/$defs/relationshipPredicate" },
     "relationship_class": { "$ref": "#/$defs/relationshipClass" },
     "secondary_relationship_tags": {
       "type": "array",
@@ -58,7 +58,7 @@
     },
     "causal_claim_status": {
       "type": "string",
-      "enum": ["not_causal", "causal_claim_reviewed", "causal_claim_prohibited", "causal_claim_unknown"]
+      "enum": ["not_causal", "causal_prohibited", "causal_review_required", "causal_review_approved", "blocked_overclaim"]
     },
     "evidence_refs": {
       "type": "array",
@@ -144,25 +144,88 @@
       "then": { "required": ["causal_claim_status"] }
     },
     {
+      "if": { "properties": { "relationship_class": { "const": "identity" } }, "required": ["relationship_class"] },
+      "then": { "properties": { "predicate": { "$ref": "#/$defs/identityPredicate" } } }
+    },
+    {
+      "if": { "properties": { "relationship_class": { "const": "vocabulary_crosswalk" } }, "required": ["relationship_class"] },
+      "then": { "properties": { "predicate": { "$ref": "#/$defs/vocabularyCrosswalkPredicate" } } }
+    },
+    {
+      "if": { "properties": { "relationship_class": { "const": "hierarchical" } }, "required": ["relationship_class"] },
+      "then": { "properties": { "predicate": { "$ref": "#/$defs/hierarchicalPredicate" } } }
+    },
+    {
+      "if": { "properties": { "relationship_class": { "const": "mechanistic" } }, "required": ["relationship_class"] },
+      "then": { "properties": { "predicate": { "$ref": "#/$defs/mechanisticPredicate" } } }
+    },
+    {
+      "if": { "properties": { "relationship_class": { "const": "clinical" } }, "required": ["relationship_class"] },
+      "then": { "properties": { "predicate": { "$ref": "#/$defs/clinicalPredicate" } } }
+    },
+    {
+      "if": { "properties": { "relationship_class": { "const": "safety" } }, "required": ["relationship_class"] },
+      "then": { "properties": { "predicate": { "$ref": "#/$defs/safetyPredicate" } } }
+    },
+    {
+      "if": { "properties": { "relationship_class": { "const": "regulatory" } }, "required": ["relationship_class"] },
+      "then": { "properties": { "predicate": { "$ref": "#/$defs/regulatoryPredicate" } } }
+    },
+    {
+      "if": { "properties": { "relationship_class": { "const": "commercial" } }, "required": ["relationship_class"] },
+      "then": { "properties": { "predicate": { "$ref": "#/$defs/commercialPredicate" } } }
+    },
+    {
+      "if": { "properties": { "relationship_class": { "const": "operational" } }, "required": ["relationship_class"] },
+      "then": { "properties": { "predicate": { "$ref": "#/$defs/operationalPredicate" } } }
+    },
+    {
+      "if": { "properties": { "relationship_class": { "const": "evidence_support" } }, "required": ["relationship_class"] },
+      "then": { "properties": { "predicate": { "$ref": "#/$defs/evidenceSupportPredicate" } } }
+    },
+    {
+      "if": { "properties": { "relationship_class": { "const": "inferred" } }, "required": ["relationship_class"] },
+      "then": { "properties": { "predicate": { "$ref": "#/$defs/inferredPredicate" } } }
+    },
+    {
+      "if": { "properties": { "relationship_class": { "const": "hypothesis" } }, "required": ["relationship_class"] },
+      "then": { "properties": { "predicate": { "$ref": "#/$defs/hypothesisPredicate" } } }
+    },
+    {
       "if": { "properties": { "review_status": { "const": "released" } }, "required": ["review_status"] },
       "then": {
         "properties": {
           "assertion_type": { "not": { "const": "model_suggested" } },
+          "reviewed_by": { "type": "string", "minLength": 1 },
+          "reviewed_at": { "type": "string", "format": "date-time" },
           "release_context": {
             "type": "object",
             "required": ["release_id", "scope"],
             "properties": {
               "release_id": { "type": "string", "minLength": 1 },
-              "scope": { "const": "release" }
+              "scope": { "const": "release" },
+              "included_in_release": { "const": true }
+            }
+          },
+          "data_license": {
+            "type": "object",
+            "required": ["license_status", "license_classification", "permitted_uses"],
+            "properties": {
+              "license_status": { "not": { "enum": ["blocked", "pending_review"] } },
+              "license_classification": { "not": { "const": "blocked_pending_legal_review" } },
+              "permitted_uses": { "contains": { "const": "release" } }
             }
           }
         },
-        "required": ["validation_report_ids"]
+        "required": ["reviewed_by", "reviewed_at", "validation_report_ids"]
       }
     },
     {
       "if": { "properties": { "relationship_class": { "const": "blocked" } }, "required": ["relationship_class"] },
-      "then": { "required": ["blocked_rationale"] }
+      "then": {
+        "properties": { "predicate": { "$ref": "#/$defs/blockedPredicate" } },
+        "required": ["blocked_rationale"]
+      }
     }
   ],
   "$defs": {
@@ -183,6 +246,124 @@
         "hypothesis",
         "blocked"
       ]
+    },
+    "relationshipPredicate": {
+      "type": "string",
+      "enum": [
+        "same_as", "pharmrel:same_as",
+        "has_synonym", "pharmrel:has_synonym",
+        "has_external_identifier", "pharmrel:has_external_identifier",
+        "identity_replaced_by", "pharmrel:identity_replaced_by",
+        "exactMatch", "pharmrel:exactMatch",
+        "closeMatch", "pharmrel:closeMatch",
+        "broadMatch", "pharmrel:broadMatch",
+        "narrowMatch", "pharmrel:narrowMatch",
+        "relatedMatch", "pharmrel:relatedMatch",
+        "replacedBy", "pharmrel:replacedBy",
+        "hasDbXref", "pharmrel:hasDbXref",
+        "notMatch", "pharmrel:notMatch",
+        "uncertainMatch", "pharmrel:uncertainMatch",
+        "requiresReview", "pharmrel:requiresReview",
+        "term_maps_to_standard", "pharmrel:term_maps_to_standard",
+        "regulatory_crosswalk_to", "pharmrel:regulatory_crosswalk_to",
+        "broader_than", "pharmrel:broader_than",
+        "narrower_than", "pharmrel:narrower_than",
+        "parent_of", "pharmrel:parent_of",
+        "child_of", "pharmrel:child_of",
+        "part_of", "pharmrel:part_of",
+        "has_part", "pharmrel:has_part",
+        "subclass_of", "pharmrel:subclass_of",
+        "compound_has_target", "pharmrel:compound_has_target",
+        "target_associated_with_disease", "pharmrel:target_associated_with_disease",
+        "mechanistically_related_to", "pharmrel:mechanistically_related_to",
+        "inhibits", "pharmrel:inhibits",
+        "activates", "pharmrel:activates",
+        "binds_target", "pharmrel:binds_target",
+        "modulates_pathway", "pharmrel:modulates_pathway",
+        "trial_studies_condition", "pharmrel:trial_studies_condition",
+        "trial_uses_intervention", "pharmrel:trial_uses_intervention",
+        "trial_has_endpoint", "pharmrel:trial_has_endpoint",
+        "clinically_related_to", "pharmrel:clinically_related_to",
+        "associated_with_outcome", "pharmrel:associated_with_outcome",
+        "biomarker_stratifies_response", "pharmrel:biomarker_stratifies_response",
+        "product_has_adverse_event", "pharmrel:product_has_adverse_event",
+        "safety_context_related_to", "pharmrel:safety_context_related_to",
+        "has_reported_event_context", "pharmrel:has_reported_event_context",
+        "label_mentions_safety_event", "pharmrel:label_mentions_safety_event",
+        "safety_signal_for_investigation", "pharmrel:safety_signal_for_investigation",
+        "uses_submission_term", "pharmrel:uses_submission_term",
+        "label_contains_concept", "pharmrel:label_contains_concept",
+        "submission_codelist_maps_to", "pharmrel:submission_codelist_maps_to",
+        "controlled_term_for_context", "pharmrel:controlled_term_for_context",
+        "commercially_related_to", "pharmrel:commercially_related_to",
+        "product_aligned_to_indication", "pharmrel:product_aligned_to_indication",
+        "market_segment_for_population", "pharmrel:market_segment_for_population",
+        "payer_concept_related_to", "pharmrel:payer_concept_related_to",
+        "operational_dependency_of", "pharmrel:operational_dependency_of",
+        "dataset_feeds_dashboard", "pharmrel:dataset_feeds_dashboard",
+        "api_consumer_uses_term", "pharmrel:api_consumer_uses_term",
+        "workflow_depends_on_source", "pharmrel:workflow_depends_on_source",
+        "downstream_uses_mapping", "pharmrel:downstream_uses_mapping",
+        "entity_supported_by_evidence", "pharmrel:entity_supported_by_evidence",
+        "assertion_supported_by_evidence", "pharmrel:assertion_supported_by_evidence",
+        "evidence_supports_relationship", "pharmrel:evidence_supports_relationship",
+        "evidence_contradicts_relationship", "pharmrel:evidence_contradicts_relationship",
+        "evidence_context_for_relationship", "pharmrel:evidence_context_for_relationship",
+        "inferred_from_path", "pharmrel:inferred_from_path",
+        "inferred_mechanistic_bridge", "pharmrel:inferred_mechanistic_bridge",
+        "inferred_clinical_bridge", "pharmrel:inferred_clinical_bridge",
+        "inferred_safety_context", "pharmrel:inferred_safety_context",
+        "hypothesis_bridge", "pharmrel:hypothesis_bridge",
+        "is_hypothesis_about", "pharmrel:is_hypothesis_about",
+        "may_relate_to_investigation", "pharmrel:may_relate_to_investigation",
+        "accepted_for_investigation", "pharmrel:accepted_for_investigation",
+        "convertedToRelationshipAssertion", "pharmrel:convertedToRelationshipAssertion",
+        "unsupported", "pharmrel:unsupported",
+        "blocked", "pharmrel:blocked",
+        "contradicted_by_evidence", "pharmrel:contradicted_by_evidence",
+        "license_blocked", "pharmrel:license_blocked",
+        "causal_claim_blocked", "pharmrel:causal_claim_blocked",
+        "access_blocked", "pharmrel:access_blocked"
+      ]
+    },
+    "identityPredicate": {
+      "enum": ["same_as", "pharmrel:same_as", "has_synonym", "pharmrel:has_synonym", "has_external_identifier", "pharmrel:has_external_identifier", "identity_replaced_by", "pharmrel:identity_replaced_by", "exactMatch", "pharmrel:exactMatch"]
+    },
+    "vocabularyCrosswalkPredicate": {
+      "enum": ["exactMatch", "pharmrel:exactMatch", "closeMatch", "pharmrel:closeMatch", "broadMatch", "pharmrel:broadMatch", "narrowMatch", "pharmrel:narrowMatch", "relatedMatch", "pharmrel:relatedMatch", "replacedBy", "pharmrel:replacedBy", "hasDbXref", "pharmrel:hasDbXref", "notMatch", "pharmrel:notMatch", "uncertainMatch", "pharmrel:uncertainMatch", "requiresReview", "pharmrel:requiresReview", "term_maps_to_standard", "pharmrel:term_maps_to_standard", "regulatory_crosswalk_to", "pharmrel:regulatory_crosswalk_to"]
+    },
+    "hierarchicalPredicate": {
+      "enum": ["broader_than", "pharmrel:broader_than", "narrower_than", "pharmrel:narrower_than", "parent_of", "pharmrel:parent_of", "child_of", "pharmrel:child_of", "part_of", "pharmrel:part_of", "has_part", "pharmrel:has_part", "subclass_of", "pharmrel:subclass_of"]
+    },
+    "mechanisticPredicate": {
+      "enum": ["compound_has_target", "pharmrel:compound_has_target", "target_associated_with_disease", "pharmrel:target_associated_with_disease", "mechanistically_related_to", "pharmrel:mechanistically_related_to", "inhibits", "pharmrel:inhibits", "activates", "pharmrel:activates", "binds_target", "pharmrel:binds_target", "modulates_pathway", "pharmrel:modulates_pathway"]
+    },
+    "clinicalPredicate": {
+      "enum": ["trial_studies_condition", "pharmrel:trial_studies_condition", "trial_uses_intervention", "pharmrel:trial_uses_intervention", "trial_has_endpoint", "pharmrel:trial_has_endpoint", "clinically_related_to", "pharmrel:clinically_related_to", "associated_with_outcome", "pharmrel:associated_with_outcome", "biomarker_stratifies_response", "pharmrel:biomarker_stratifies_response"]
+    },
+    "safetyPredicate": {
+      "enum": ["product_has_adverse_event", "pharmrel:product_has_adverse_event", "safety_context_related_to", "pharmrel:safety_context_related_to", "has_reported_event_context", "pharmrel:has_reported_event_context", "label_mentions_safety_event", "pharmrel:label_mentions_safety_event", "safety_signal_for_investigation", "pharmrel:safety_signal_for_investigation"]
+    },
+    "regulatoryPredicate": {
+      "enum": ["regulatory_crosswalk_to", "pharmrel:regulatory_crosswalk_to", "uses_submission_term", "pharmrel:uses_submission_term", "label_contains_concept", "pharmrel:label_contains_concept", "submission_codelist_maps_to", "pharmrel:submission_codelist_maps_to", "controlled_term_for_context", "pharmrel:controlled_term_for_context"]
+    },
+    "commercialPredicate": {
+      "enum": ["commercially_related_to", "pharmrel:commercially_related_to", "product_aligned_to_indication", "pharmrel:product_aligned_to_indication", "market_segment_for_population", "pharmrel:market_segment_for_population", "payer_concept_related_to", "pharmrel:payer_concept_related_to"]
+    },
+    "operationalPredicate": {
+      "enum": ["operational_dependency_of", "pharmrel:operational_dependency_of", "dataset_feeds_dashboard", "pharmrel:dataset_feeds_dashboard", "api_consumer_uses_term", "pharmrel:api_consumer_uses_term", "workflow_depends_on_source", "pharmrel:workflow_depends_on_source", "downstream_uses_mapping", "pharmrel:downstream_uses_mapping"]
+    },
+    "evidenceSupportPredicate": {
+      "enum": ["entity_supported_by_evidence", "pharmrel:entity_supported_by_evidence", "assertion_supported_by_evidence", "pharmrel:assertion_supported_by_evidence", "evidence_supports_relationship", "pharmrel:evidence_supports_relationship", "evidence_contradicts_relationship", "pharmrel:evidence_contradicts_relationship", "evidence_context_for_relationship", "pharmrel:evidence_context_for_relationship"]
+    },
+    "inferredPredicate": {
+      "enum": ["inferred_from_path", "pharmrel:inferred_from_path", "inferred_mechanistic_bridge", "pharmrel:inferred_mechanistic_bridge", "inferred_clinical_bridge", "pharmrel:inferred_clinical_bridge", "inferred_safety_context", "pharmrel:inferred_safety_context"]
+    },
+    "hypothesisPredicate": {
+      "enum": ["hypothesis_bridge", "pharmrel:hypothesis_bridge", "is_hypothesis_about", "pharmrel:is_hypothesis_about", "may_relate_to_investigation", "pharmrel:may_relate_to_investigation", "accepted_for_investigation", "pharmrel:accepted_for_investigation", "convertedToRelationshipAssertion", "pharmrel:convertedToRelationshipAssertion"]
+    },
+    "blockedPredicate": {
+      "enum": ["unsupported", "pharmrel:unsupported", "blocked", "pharmrel:blocked", "notMatch", "pharmrel:notMatch", "contradicted_by_evidence", "pharmrel:contradicted_by_evidence", "license_blocked", "pharmrel:license_blocked", "causal_claim_blocked", "pharmrel:causal_claim_blocked", "access_blocked", "pharmrel:access_blocked"]
     },
     "secondaryRelationshipTag": {
       "type": "string",

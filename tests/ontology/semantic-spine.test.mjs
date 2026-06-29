@@ -41,11 +41,14 @@ test("Phase 1 SHACL file contains blocker shapes for entity, mapping, and proven
     "pharm:RelationshipClassValidityShape",
     "pharm:EvidenceRequirementsByRelationshipClassShape",
     "pharm:IdentityMappingSeparationShape",
+    "pharm:RelationshipPredicateClassMatrixShape",
     "pharm:SafetyLimitationRequirementsShape",
     "pharm:CausalClaimRestrictionsShape",
     "pharm:ReviewStateRestrictionsShape",
     "pharm:ReleasedRelationshipRequirementsShape",
+    "pharm:ReleasedRelationshipLicenseReviewerShape",
     "pharm:PathConfidenceConstraintsShape",
+    "pharm:ReleasedPathEdgeDerivedRequirementsShape",
     "pharm:WeakestLinkRequirementsShape",
     "pharm:RestrictedEvidenceAccessMetadataShape",
     "pharm:HypothesisLabelingShape",
@@ -65,7 +68,12 @@ test("Phase 1 SHACL file contains blocker shapes for entity, mapping, and proven
   assert.match(shapes, /assertionType[\s\S]*system_generated/, "relationship assertion type shape must include system_generated");
   assert.match(shapes, /reviewStatus[\s\S]*deprecated[\s\S]*superseded/, "relationship review status shape must include deprecated and superseded states");
   assert.match(shapes, /IdentityMappingSeparationShape[\s\S]*mappingPredicate[\s\S]*relationshipPredicate/, "identity and vocabulary relationships must not collapse mapping assertions");
+  assert.match(shapes, /RelationshipPredicateClassMatrixShape[\s\S]*evidence_support/, "class-predicate matrix must enumerate evidence_support");
+  assert.match(shapes, /RelationshipPredicateClassMatrixShape[\s\S]*exactMatch/, "class-predicate matrix must mention exactMatch mapping predicates");
+  assert.match(shapes, /causal_review_required[\s\S]*causal_review_approved[\s\S]*causal_prohibited[\s\S]*blocked_overclaim/, "causal status shape must use Andy canonical enum");
   assert.match(shapes, /pathContainsUnreviewedModelSuggestedEdge[\s\S]*pathConfidenceBand[\s\S]*high/, "path confidence shape must block high-confidence unreviewed model paths");
+  assert.match(shapes, /ReleasedPathEdgeDerivedRequirementsShape[\s\S]*relationshipPathEdge[\s\S]*model_suggested/, "released path shape must inspect edge-derived state");
+  assert.match(shapes, /ReleasedRelationshipLicenseReviewerShape[\s\S]*(reviewedBy[\s\S]*blocked_pending_legal_review|blocked_pending_legal_review[\s\S]*reviewedBy)/, "released relationship shape must block bad license and null reviewer");
   assert.match(shapes, /usesRestrictedEvidence[\s\S]*hasRedactionPolicy[\s\S]*exportAuthorizationStatus/, "restricted evidence shape must require redaction and export metadata");
   for (const provenanceField of [
     "provenanceId",

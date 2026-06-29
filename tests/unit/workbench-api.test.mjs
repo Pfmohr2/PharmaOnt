@@ -75,7 +75,7 @@ test("Phase 5 workbench search routes through search and API boundaries before s
   assert.equal(response.results[0].object_id, "pharment:compound/aspirin");
   assert.equal(response.results[0].assertion_type, "canonical");
   assert.deepEqual(response.results[0].match_reasons.map((reason) => reason.reason_type), ["label", "synonym"]);
-  assert.equal(response.actions.can_export, true);
+  assert.equal(response.actions.can_export, false);
   assert.ok(response.facets.object_type.some((facet) => facet.value === "compound" && facet.count === 1));
 });
 
@@ -112,6 +112,78 @@ test("Phase 5 entity detail filters header and every section through the API bou
   assert.equal(response.sections.evidence[0].provenance_id, "pharmprov:fixture");
   assert.equal(response.sections.history.length, 1);
   assert.equal(response.sections.impact.length, 1);
+});
+
+test("B9 entity detail relationships section is populated through authorized RelationshipAssertion API rows", async () => {
+  const relationshipApiCalls = [];
+  const api = fixtureApi({
+    entityDetail: {
+      header: entityHeader(),
+      relationships: [
+        sectionRow({
+          id: "relationship:raw-should-not-surface",
+          relationship_assertion_id: "ra:raw-should-not-surface",
+          assertion_type: "relationship",
+          release_id: null,
+          lifecycle_status: "in_review"
+        })
+      ]
+    },
+    relationshipAssertionApi: {
+      async listEntityRelationships(args) {
+        relationshipApiCalls.push(structuredClone(args));
+        return {
+          schema_version: "semantic-bridge.relationship-assertion-api.v1",
+          tenant_id: args.principal.tenant_id,
+          environment: args.principal.environment,
+          entity_id: args.entityId,
+          relationships: [
+            sectionRow({
+              id: "ra:released",
+              object_id: "ra:released",
+              object_type: "relationship",
+              relationship_assertion_id: "ra:released",
+              relationship_assertion_type: "human_curated",
+              assertion_type: "relationship",
+              lifecycle_status: "released",
+              review_status: "released",
+              release_id: "release-2026-01",
+              evidence_refs: [{ evidence_id: "pharmev:relationship:1", evidence_role: "supports" }],
+              provenance_id: "pharmprov:relationship:1"
+            }),
+            sectionRow({
+              id: "ra:hidden-working",
+              object_id: "ra:hidden-working",
+              object_type: "relationship",
+              relationship_assertion_id: "ra:hidden-working",
+              assertion_type: "relationship",
+              lifecycle_status: "in_review",
+              review_status: "in_review",
+              release_id: null,
+              provenance_id: "pharmprov:hidden-working"
+            })
+          ],
+          authorization_filtered: true
+        };
+      }
+    }
+  });
+
+  const response = await api.entityDetail({
+    principal: viewer,
+    entityId: "pharment:compound/aspirin",
+    request: { release_id: "release-2026-01" }
+  });
+
+  assert.equal(response.authorization_filtered, true);
+  assert.equal(relationshipApiCalls.length, 1);
+  assert.equal(relationshipApiCalls[0].entityId, "pharment:compound/aspirin");
+  assert.equal(relationshipApiCalls[0].request.release_id, "release-2026-01");
+  assert.deepEqual(response.sections.relationships.map((row) => row.relationship_assertion_id), ["ra:released"]);
+  assert.equal(response.sections.relationships[0].id, "ra:released");
+  assert.equal(response.sections.relationships[0].provenance_id, "pharmprov:relationship:1");
+  assert.deepEqual(response.sections.relationships[0].evidence_refs.map((ref) => ref.evidence_id), ["pharmev:relationship:1"]);
+  assert.equal("filtered_count" in response, false);
 });
 
 test("Phase 5 explanation endpoint authorizes the hit before calling Andy explanation service", async () => {
@@ -181,9 +253,7 @@ test("Phase 5 export endpoint uses authorized export boundary and preserves regu
   assert.equal("filtered_count" in response, false);
   assert.equal(response.invalid_record_count, 1);
   assert.equal(response.rows[0].canonical_ids.entity_id, "pharment:compound/aspirin");
-  assert.equal(response.rows[0].source_vocabulary_version, "34");
-  assert.equal(response.rows[0].target_vocabulary_version, "2026-06-01");
-  assert.equal(response.rows[0].provenance_id, "pharmprov:export");
+  assert.equal(response.rows[0].provenance_id, "pharmprov:internal:export");
   assert.equal(response.rows[0].release_id, "release-2026-01");
   assert.equal(response.rows[0].artifact_hash, "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
   assert.ok(response.preserved_fields.includes("provenance_id"));
@@ -246,7 +316,8 @@ function fixtureApi({
   entityDetail = null,
   exportRows = [],
   explanationService = null,
-  resolveSearchHit = null
+  resolveSearchHit = null,
+  relationshipAssertionApi = null
 } = {}) {
   return createPhase5WorkbenchApi({
     clock: () => new Date("2026-06-27T06:45:00.000Z"),
@@ -264,7 +335,8 @@ function fixtureApi({
       return exportRows;
     },
     explanationService,
-    resolveSearchHit
+    resolveSearchHit,
+    relationshipAssertionApi
   });
 }
 
@@ -323,22 +395,25 @@ function exportRow(overrides = {}) {
   return authzRow({
     id: "export:row",
     semantic_object_id: "pharment:compound/aspirin",
-    assertion_type: "canonical",
+    assertion_type: "evidence",
     lifecycle_status: "released",
     permitted_uses: ["search", "export"],
     canonical_ids: {
       entity_id: "pharment:compound/aspirin",
-      source_entity_id: "chembl:CHEMBL25",
-      target_entity_id: "pubchem:CID2244"
+      source_entity_id: null,
+      target_entity_id: null
     },
-    source_vocabulary_version: "34",
-    target_vocabulary_version: "2026-06-01",
-    source_version: "34",
-    evidence_refs: [{ evidence_id: "pharmev:evidence-1", evidence_role: "supports" }],
-    provenance_id: "pharmprov:export",
+    source_vocabulary: undefined,
+    source_vocabulary_version: undefined,
+    target_vocabulary: undefined,
+    target_vocabulary_version: undefined,
+    source_version: undefined,
+    source_terms_uri: undefined,
+    evidence_refs: undefined,
+    provenance_id: "pharmprov:internal:export",
     artifact_hash: "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    license_classification: "open_with_attribution",
-    license_policy_id: "license-policy:chembl-34",
+    license_classification: "internal",
+    license_policy_id: "license-policy:internal:workbench-export-fixture",
     ...overrides
   });
 }

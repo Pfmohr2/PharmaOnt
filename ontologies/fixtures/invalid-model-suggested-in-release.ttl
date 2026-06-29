@@ -99,7 +99,7 @@ pharmrelobj:rel-model-suggested-release
     pharm:lifecycleStatus "approved" ;
     pharm:assertionType "model_suggested" ;
     pharm:hasAssertionType "model_suggested" ;
-    pharm:hasRelationshipClass "clinical" ;
+    pharm:hasRelationshipClass "mechanistic" ;
     pharm:relationshipDirectionality "directed" ;
     pharm:relationshipPolarity "positive" ;
     pharm:modelName "fixture-linker" ;
@@ -117,7 +117,7 @@ pharmrelobj:rel-model-suggested-release
     pharm:createdBy "model:fixture-linker" ;
     pharm:createdAt "2026-06-27T01:49:00Z"^^xsd:dateTime ;
     pharm:updatedAt "2026-06-27T01:50:00Z"^^xsd:dateTime ;
-    pharm:hasCausalClaimStatus "association_only" ;
+    pharm:hasCausalClaimStatus "not_causal" ;
     pharm:usesRestrictedEvidence false ;
     pharm:exportAuthorizationStatus "authorized" ;
     pharm:releaseMembership "graph:tenant:acme:release:2026.0:canonical" ;

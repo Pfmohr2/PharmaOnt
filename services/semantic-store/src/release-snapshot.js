@@ -2,7 +2,8 @@ import { createHash, randomUUID } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { assertGraphTenant, assertReleaseGraph, assertWritableWorkingGraph, tenantReleaseGraph } from "./named-graphs.js";
+import { createGraphWriteGateway } from "./graph-write-gateway.js";
+import { assertGraphTenant, assertGraphWritePolicy, assertReleaseGraph, assertWritableWorkingGraph, classifyNamedGraph, tenantReleaseGraph } from "./named-graphs.js";
 import { NoopReleaseLedger } from "./release-ledger.js";
 
 export class ReleaseSnapshotService {
@@ -12,7 +13,7 @@ export class ReleaseSnapshotService {
     releaseLedger = new NoopReleaseLedger(),
     manifestRoot = new URL("../../../services/semantic-store/release-packages/", import.meta.url)
   }) {
-    this.fuseki = fusekiClient;
+    this.fuseki = createGraphWriteGateway({ fusekiClient, actor: "release_snapshot_service" });
     this.shaclRunner = shaclRunner;
     this.releaseLedger = releaseLedger;
     this.manifestRoot = manifestRoot;
@@ -49,6 +50,13 @@ export class ReleaseSnapshotService {
     assertOneCreator({ createdByUserId, createdByServiceAccountId });
     const releaseGraph = tenantReleaseGraph(tenantId, releaseId, domain);
     assertReleaseGraph(releaseGraph);
+    const releaseGraphInfo = classifyNamedGraph(releaseGraph);
+    assertGraphWritePolicy({
+      tenantId,
+      graphName: releaseGraph,
+      operation: "release snapshot graph copy",
+      kind: releaseGraphInfo.kind
+    });
 
     if (await this.fuseki.graphHasTriples(releaseGraph)) {
       throw new Error(`release graph already exists and is immutable: ${releaseGraph}`);

@@ -1,4 +1,4 @@
-import { buildAuthorizedExport } from "../../export/src/index.js";
+import { SourceLicenseExportPolicyError, buildAuthorizedExport, readSourceLicenseApprovalPacket } from "../../export/src/index.js";
 import { querySearchIndex } from "../../search/src/index.js";
 import { executeAuthorizedQuery } from "./query-boundary.js";
 
@@ -20,16 +20,20 @@ export class Phase5WorkbenchApi {
     resolveSearchIndex,
     resolveEntityDetail,
     resolveExportScope,
+    resolveSourceLicenseApprovalPacket = null,
     explanationService = null,
     resolveSearchHit = null,
+    relationshipAssertionApi = null,
     clock = () => new Date(),
     idFactory = defaultIdFactory
   } = {}) {
     this.resolveSearchIndex = requiredResolver(resolveSearchIndex, "resolveSearchIndex");
     this.resolveEntityDetail = requiredResolver(resolveEntityDetail, "resolveEntityDetail");
     this.resolveExportScope = requiredResolver(resolveExportScope, "resolveExportScope");
+    this.resolveSourceLicenseApprovalPacket = resolveSourceLicenseApprovalPacket;
     this.explanationService = explanationService;
     this.resolveSearchHit = resolveSearchHit;
+    this.relationshipAssertionApi = relationshipAssertionApi;
     this.clock = clock;
     this.idFactory = idFactory;
   }
@@ -89,7 +93,14 @@ export class Phase5WorkbenchApi {
     assertPrincipal(principal);
     assertText(entityId, "entityId");
     const releaseContext = releaseContextFor(principal, request);
-    const raw = await this.resolveEntityDetail({ entityId, principal, releaseContext });
+    const rawResolved = await this.resolveEntityDetail({ entityId, principal, releaseContext });
+    const raw = await this.withAuthorizedRelationshipSection({
+      raw: rawResolved,
+      principal,
+      entityId,
+      request,
+      releaseContext
+    });
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
       throw new WorkbenchApiError("entity resolver returned no detail", { entity_id: entityId });
     }
@@ -187,6 +198,30 @@ export class Phase5WorkbenchApi {
     };
   }
 
+  async withAuthorizedRelationshipSection({ raw, principal, entityId, request, releaseContext }) {
+    if (!this.relationshipAssertionApi) {
+      return raw;
+    }
+    if (typeof this.relationshipAssertionApi.listEntityRelationships !== "function") {
+      throw new WorkbenchApiError("relationshipAssertionApi.listEntityRelationships is required");
+    }
+    const relationshipResponse = await this.relationshipAssertionApi.listEntityRelationships({
+      principal,
+      entityId,
+      request: {
+        ...request,
+        release_context: request.release_context ?? releaseContext
+      }
+    });
+    if (relationshipResponse?.authorization_filtered !== true || !Array.isArray(relationshipResponse.relationships)) {
+      throw new WorkbenchApiError("relationship assertion API must return authorized relationships");
+    }
+    return {
+      ...(raw ?? {}),
+      relationships: relationshipResponse.relationships.map(normalizeRelationshipSectionCandidate)
+    };
+  }
+
   async exportPreview({ principal, request = {} } = {}) {
     const exportResult = await this.createExport({
       principal,
@@ -211,20 +246,26 @@ export class Phase5WorkbenchApi {
       throw new WorkbenchApiError("resolveExportScope must return an array");
     }
     const export_id = request.export_id ?? `export:${this.idFactory()}`;
+    const dryRun = request.dry_run === true;
+    const sourceLicenseApprovalPacket = await this.sourceLicenseApprovalPacketFor({ principal, request, releaseContext });
+    const requestedScopes = requestedExportScopesFor({ request, scope, dryRun });
     const authorizedExport = buildAuthorizedExport({
       principal,
       candidateResults,
       export_id,
       releaseContext,
-      format: request.format ?? "json"
+      format: request.format ?? "json",
+      sourceLicenseApprovalPacket,
+      requestedScopes,
+      action: dryRun ? "export.preview" : "export.create"
     });
-    const exportJob = request.dry_run === true || authorizedExport.record_count === 0
+    const exportJob = dryRun || authorizedExport.record_count === 0
       ? null
       : {
           job_id: export_id,
           status: "ready",
           created_by: principal.user_id ?? principal.service_account_id ?? null,
-          audit_event_id: `audit:${export_id}`,
+          audit_event_id: authorizedExport.source_license_policy?.audit_event?.audit_event_id ?? `audit:${export_id}`,
           artifact_hash: authorizedExport.manifest_digest,
           download_url: null
         };
@@ -242,11 +283,13 @@ export class Phase5WorkbenchApi {
       rows: authorizedExport.rows,
       row_content_hashes: authorizedExport.row_content_hashes,
       manifest_digest: authorizedExport.manifest_digest,
+      source_license_policy: authorizedExport.source_license_policy,
       export_scope: scope,
       formats: DEFAULT_EXPORT_FORMATS,
       default_format: "json",
       preserved_fields: [
         "canonical_ids",
+        "source_name",
         "source_vocabulary_version",
         "target_vocabulary_version",
         "evidence_refs",
@@ -254,12 +297,27 @@ export class Phase5WorkbenchApi {
         "source_version",
         "release_id",
         "artifact_hash",
+        "audit_event_ids",
+        "row_hashes",
         "license_classification",
         "license_policy_id"
       ],
       restrictions: summarizeExportRestrictions(authorizedExport.rows),
       export_job: exportJob
     };
+  }
+
+  async sourceLicenseApprovalPacketFor({ principal, request, releaseContext }) {
+    if (request.source_license_approval_packet) {
+      return request.source_license_approval_packet;
+    }
+    if (typeof this.resolveSourceLicenseApprovalPacket === "function") {
+      return this.resolveSourceLicenseApprovalPacket({ principal, request, releaseContext });
+    }
+    if (request.source_license_approval_packet_path) {
+      return readSourceLicenseApprovalPacket({ packetPath: request.source_license_approval_packet_path });
+    }
+    return null;
   }
 
   async resolveAuthorizedHit({ principal, hitId, hit, releaseContext }) {
@@ -326,7 +384,7 @@ function authorizedSectionRows(raw, byApiId, section) {
 
 function normalizeSearchResult(result) {
   return stripApiMeta({
-    object_id: result.object_id ?? result.entity_id ?? result.assertion_id ?? result.mapping_id ?? result.relationship_id ?? result.id,
+    object_id: result.object_id ?? result.entity_id ?? result.assertion_id ?? result.mapping_id ?? result.relationship_assertion_id ?? result.relationship_id ?? result.id,
     object_type: result.object_type ?? result.result_type ?? result.assertion_type,
     display_label: result.display_label ?? result.preferred_label ?? result.label ?? result.id,
     preferred_label: result.preferred_label ?? result.display_label ?? result.label ?? null,
@@ -337,6 +395,8 @@ function normalizeSearchResult(result) {
     lifecycle_status: result.lifecycle_status ?? null,
     review_status: result.review_status ?? null,
     release_id: result.release_id ?? null,
+    relationship_assertion_id: result.relationship_assertion_id ?? null,
+    provenance_id: result.provenance_id ?? null,
     badges: result.badges ?? badgesFor(result),
     match_reasons: result.match_reasons ?? [],
     evidence_refs: result.evidence_refs ?? [],
@@ -367,8 +427,10 @@ function normalizeEntityHeader(row) {
 function normalizeEntitySectionRow(section, row) {
   return stripApiMeta({
     section,
-    id: row.id ?? row.mapping_id ?? row.relationship_id ?? row.evidence_id ?? row.audit_event_id ?? row.object_id,
+    id: row.id ?? row.mapping_id ?? row.relationship_assertion_id ?? row.relationship_id ?? row.evidence_id ?? row.audit_event_id ?? row.object_id,
     assertion_type: row.assertion_type,
+    relationship_assertion_id: row.relationship_assertion_id ?? null,
+    relationship_assertion_type: row.relationship_assertion_type ?? null,
     lifecycle_status: row.lifecycle_status ?? row.review_status ?? null,
     release_id: row.release_id ?? null,
     badges: row.badges ?? badgesFor(row),
@@ -376,6 +438,20 @@ function normalizeEntitySectionRow(section, row) {
     provenance_id: row.provenance_id ?? null,
     source: row
   });
+}
+
+function normalizeRelationshipSectionCandidate(row) {
+  return {
+    ...row,
+    id: row.id ?? row.relationship_assertion_id ?? row.relationship_id ?? row.object_id,
+    object_id: row.object_id ?? row.relationship_assertion_id ?? row.relationship_id ?? row.id,
+    object_type: "relationship",
+    result_type: "relationship",
+    assertion_type: row.assertion_type ?? "relationship",
+    relationship_assertion_id: row.relationship_assertion_id ?? row.relationship_id ?? row.id,
+    provenance_id: row.provenance_id ?? row.source?.provenance_id ?? null,
+    evidence_refs: row.evidence_refs ?? row.source?.evidence_refs ?? []
+  };
 }
 
 function buildFacets(results) {
@@ -397,13 +473,56 @@ function countBy(results, field) {
 }
 
 function previewExport({ principal, candidateResults, releaseContext, exportId }) {
-  return buildAuthorizedExport({
-    principal,
-    candidateResults,
-    export_id: exportId,
-    releaseContext,
-    format: "json"
-  });
+  try {
+    return buildAuthorizedExport({
+      principal,
+      candidateResults,
+      export_id: exportId,
+      releaseContext,
+      format: "json",
+      action: "export.preview",
+      requestedScopes: ["export.preview"]
+    });
+  } catch (error) {
+    if (!(error instanceof SourceLicenseExportPolicyError)) {
+      throw error;
+    }
+    return {
+      export_id: exportId,
+      tenant_id: principal.tenant_id,
+      environment: principal.environment,
+      format: "json",
+      authorization_filtered: true,
+      record_count: 0,
+      invalid_record_count: 0,
+      rows: [],
+      row_content_hashes: [],
+      source_license_policy: {
+        allowed: false,
+        export_job_creatable: false,
+        denied_scopes: error.details?.denied_scopes ?? [],
+        blocks: error.details?.blocks ?? [error.message],
+        approval_ids: [],
+        audit_event: error.details?.audit_event ?? null,
+        requested_scopes: ["export.preview"]
+      },
+      manifest_digest: null
+    };
+  }
+}
+
+function requestedExportScopesFor({ request, scope, dryRun }) {
+  const scopes = request.requested_export_scopes
+    ?? request.export_scopes
+    ?? request.requestedScopes
+    ?? scope.requested_export_scopes
+    ?? scope.export_scopes
+    ?? scope.requestedScopes
+    ?? null;
+  if (Array.isArray(scopes)) {
+    return scopes;
+  }
+  return dryRun ? ["export.preview"] : ["export.released_curated_assertions"];
 }
 
 function summarizeExportRestrictions(rows) {

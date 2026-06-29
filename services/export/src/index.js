@@ -1,14 +1,30 @@
 import { createHash } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import { filterAuthorizedResults, isExportRegulatedResultComplete } from "../../authz-filter/src/index.js";
+import {
+  PILOT_SOURCE_LICENSE_PACKET_PATH,
+  evaluatePilotSourceLicenseExportRequest
+} from "../../ops/src/source-license-export-approval.js";
 
 const REQUIRED_EXPORT_ID_FIELDS = Object.freeze(["id"]);
+
+export class SourceLicenseExportPolicyError extends Error {
+  constructor(message, details = {}) {
+    super(message);
+    this.name = "SourceLicenseExportPolicyError";
+    this.details = details;
+  }
+}
 
 export function buildAuthorizedExport({
   principal,
   candidateResults,
   export_id,
   releaseContext = null,
-  format = "json"
+  format = "json",
+  sourceLicenseApprovalPacket = null,
+  requestedScopes = [],
+  action = "export.create"
 }) {
   const authorizedRows = filterAuthorizedResults({
     principal,
@@ -16,8 +32,27 @@ export function buildAuthorizedExport({
     action: "export",
     releaseContext
   });
-  const rows = authorizedRows.filter(isExportRegulatedResultComplete);
-  const droppedForMissingFields = authorizedRows.length - rows.length;
+  const exportRows = authorizedRows.map(normalizeExportCandidateRow);
+  const rows = exportRows.filter(isExportRegulatedResultComplete);
+  const droppedForMissingFields = exportRows.length - rows.length;
+  if (!sourceLicenseApprovalPacket && requiresSourceLicenseApprovalPacket({ rows })) {
+    throw missingSourceLicenseApprovalPacketError({
+      principal,
+      export_id,
+      requestedScopes,
+      action
+    });
+  }
+  const sourceLicensePolicy = sourceLicenseApprovalPacket
+    ? enforceSourceLicenseApprovalPacket({
+        packet: sourceLicenseApprovalPacket,
+        principal,
+        rows,
+        requestedScopes,
+        action,
+        export_id
+      })
+    : null;
   const row_content_hashes = rows.map((row) => buildExportRowContentHash(row));
   return {
     export_id,
@@ -29,6 +64,7 @@ export function buildAuthorizedExport({
     invalid_record_count: droppedForMissingFields,
     rows,
     row_content_hashes,
+    source_license_policy: sourceLicensePolicy,
     manifest_digest: sha256({
       export_id,
       tenant_id: principal.tenant_id,
@@ -36,8 +72,112 @@ export function buildAuthorizedExport({
       release_id: releaseContext?.release_id ?? principal.release_id ?? null,
       format,
       record_count: rows.length,
+      source_license_policy: sourceLicensePolicy
+        ? {
+            approval_ids: sourceLicensePolicy.approval_ids,
+            requested_scopes: sourceLicensePolicy.requested_scopes,
+            audit_event_id: sourceLicensePolicy.audit_event?.audit_event_id ?? null,
+            packet_digest: sourceLicenseApprovalPacket.packet_digest ?? null
+          }
+        : null,
       rows: rows.map(canonicalExportRow)
     })
+  };
+}
+
+function requiresSourceLicenseApprovalPacket({ rows }) {
+  return rows.some((row) => !isExplicitlyUngovernedExportRow(row));
+}
+
+function isExplicitlyUngovernedExportRow(row) {
+  return [
+    row?.source_key,
+    row?.source_name,
+    row?.source_version,
+    row?.source_vocabulary,
+    row?.source_vocabulary_version,
+    row?.target_vocabulary,
+    row?.target_vocabulary_version,
+    row?.source_terms_uri,
+    row?.license?.source_terms_uri
+  ].every((value) => !nonEmpty(value)) &&
+    !Array.isArray(row?.underlying_source_refs) &&
+    !Array.isArray(row?.source_refs) &&
+    !Array.isArray(row?.evidence_refs) &&
+    String(row?.license_policy_id ?? "").startsWith("license-policy:internal:") &&
+    String(row?.provenance_id ?? "").startsWith("pharmprov:internal:");
+}
+
+function missingSourceLicenseApprovalPacketError({
+  principal,
+  export_id,
+  requestedScopes,
+  action
+}) {
+  const auditEvent = {
+    audit_event_id: `audit:${sha256({
+      export_id,
+      action,
+      reason: "missing-source-license-approval-packet"
+    }).slice("sha256:".length, "sha256:".length + 24)}`,
+    event_type: action === "export.create"
+      ? "source_license_export.creation_denied"
+      : "source_license_export.preview_denied",
+    tenant_id: principal?.tenant_id ?? null,
+    environment: principal?.environment ?? null,
+    status: "denied",
+    metadata: {
+      requested_export_scopes: [...requestedScopes],
+      blocks: ["missing source-license approval packet for governed source export"]
+    }
+  };
+  return new SourceLicenseExportPolicyError("source-license approval packet is required for governed export request", {
+    export_id,
+    action,
+    requested_scopes: requestedScopes,
+    denied_scopes: [],
+    blocks: auditEvent.metadata.blocks,
+    approval_ids: [],
+    audit_event: auditEvent
+  });
+}
+
+export async function readSourceLicenseApprovalPacket({
+  packetPath = PILOT_SOURCE_LICENSE_PACKET_PATH
+} = {}) {
+  return JSON.parse(await readFile(packetPath, "utf8"));
+}
+
+export function enforceSourceLicenseApprovalPacket({
+  packet,
+  principal,
+  rows,
+  requestedScopes,
+  action,
+  export_id
+}) {
+  const evaluation = evaluatePilotSourceLicenseExportRequest({
+    packet,
+    principal,
+    sourceRows: rows,
+    requestedScopes,
+    action,
+    exportId: export_id
+  });
+  if (!evaluation.allowed || (action === "export.create" && !evaluation.export_job_creatable)) {
+    throw new SourceLicenseExportPolicyError("source-license approval packet denied export request", {
+      export_id,
+      action,
+      requested_scopes: requestedScopes,
+      denied_scopes: evaluation.denied_scopes,
+      blocks: evaluation.blocks,
+      approval_ids: evaluation.approval_ids,
+      audit_event: evaluation.audit_event
+    });
+  }
+  return {
+    ...evaluation,
+    requested_scopes: [...requestedScopes]
   };
 }
 
@@ -76,31 +216,63 @@ export function missingExportFields(row) {
 
 export function canonicalExportRow(row) {
   assertExportRowComplete(row);
+  const sourceName = row.source_name ?? firstNonEmpty(row.source_names) ?? null;
+  const sourceVersion = row.source_version ?? firstNonEmpty(row.source_versions) ?? null;
   return sortValue({
     id: row.id,
+    object_id: row.object_id ?? null,
+    object_type: row.object_type ?? null,
+    result_type: row.result_type ?? null,
     resource_id: row.resource_id ?? null,
     semantic_object_id: row.semantic_object_id ?? null,
     tenant_id: row.tenant_id,
     environment: row.environment,
     assertion_type: row.assertion_type ?? row.result_type ?? null,
+    relationship_id: row.relationship_id ?? null,
+    relationship_assertion_id: row.relationship_assertion_id ?? null,
+    relationship_assertion_type: row.relationship_assertion_type ?? null,
+    relationship_class: row.relationship_class ?? null,
+    predicate: row.predicate ?? null,
+    source_entity_id: row.source_entity_id ?? null,
+    target_entity_id: row.target_entity_id ?? null,
+    directionality: row.directionality ?? null,
+    polarity: row.polarity ?? null,
     release_id: row.release_id,
+    release_candidate_id: row.release_candidate_id ?? null,
+    release_context: row.release_context ?? null,
+    graph_name: row.graph_name ?? null,
     lifecycle_status: row.lifecycle_status ?? null,
     review_status: row.review_status ?? null,
     provenance_id: row.provenance_id,
+    source_key: row.source_key ?? null,
+    source_name: sourceName,
     source_vocabulary: row.source_vocabulary ?? null,
     source_vocabulary_version: row.source_vocabulary_version ?? null,
     target_vocabulary: row.target_vocabulary ?? null,
     target_vocabulary_version: row.target_vocabulary_version ?? null,
-    source_version: row.source_version ?? null,
+    source_version: sourceVersion,
+    source_names: row.source_names ?? [],
+    source_versions: row.source_versions ?? [],
+    source_record_ids: row.source_record_ids ?? [],
     artifact_hash: row.artifact_hash,
+    payload_hash: row.payload_hash ?? null,
     content_hash: row.content_hash ?? null,
     manifest_digest: row.manifest_digest ?? null,
     evidence_ids: row.evidence_ids ?? [],
+    evidence_refs: row.evidence_refs ?? [],
+    validation_report_id: row.validation_report_id ?? null,
+    validation_report_ids: row.validation_report_ids ?? [],
     license_status: row.license_status,
     license_classification: row.license_classification ?? row.license?.classification ?? row.license?.license_classification,
     license_policy_id: row.license_policy_id,
+    source_terms_uri: row.source_terms_uri ?? row.license?.source_terms_uri ?? null,
+    license_conditions: row.license_conditions ?? row.license?.conditions ?? null,
     permitted_uses: row.permitted_uses ?? row.license?.permitted_uses ?? [],
-    export_restrictions: row.export_restrictions ?? row.license?.export_restrictions ?? []
+    export_restrictions: row.export_restrictions ?? row.license?.export_restrictions ?? [],
+    export_authorization_status: row.export_authorization_status ?? null,
+    disclaimer_ids: row.disclaimer_ids ?? row.license?.disclaimer_ids ?? [],
+    audit_event_ids: row.audit_event_ids ?? [],
+    row_hashes: row.row_hashes ?? []
   });
 }
 
@@ -115,6 +287,32 @@ function sha256(value) {
 function requiresVocabularyVersions(row) {
   const assertionType = String(row?.assertion_type ?? row?.result_type ?? "");
   return ["mapping", "synonym", "relationship", "canonical", "approved", "released"].includes(assertionType);
+}
+
+function normalizeExportCandidateRow(row) {
+  if (!row || typeof row !== "object" || Array.isArray(row)) {
+    return row;
+  }
+  const sourceName = row.source_name ?? firstNonEmpty(row.source_names);
+  const sourceVersion = row.source_version ?? firstNonEmpty(row.source_versions);
+  const targetVersion = row.target_vocabulary_version ?? lastNonEmpty(row.source_versions) ?? sourceVersion;
+  return {
+    ...row,
+    id: row.id ?? row.relationship_assertion_id ?? row.relationship_id ?? row.object_id,
+    assertion_type: row.assertion_type ?? (row.relationship_assertion_id ? "relationship" : undefined),
+    source_name: sourceName,
+    source_version: sourceVersion,
+    source_vocabulary_version: row.source_vocabulary_version ?? sourceVersion,
+    target_vocabulary_version: targetVersion
+  };
+}
+
+function firstNonEmpty(value) {
+  return Array.isArray(value) ? value.find(nonEmpty) : undefined;
+}
+
+function lastNonEmpty(value) {
+  return Array.isArray(value) ? value.filter(nonEmpty).at(-1) : undefined;
 }
 
 function nonEmpty(value) {

@@ -18,8 +18,6 @@ test("P5-RT-001: export fails closed when required provenance fidelity fields ar
   const incomplete = exportRow({
     id: "export:missing-fields",
     provenance_id: undefined,
-    source_vocabulary_version: undefined,
-    target_vocabulary_version: undefined,
     artifact_hash: undefined,
     license_policy_id: undefined
   });
@@ -54,10 +52,9 @@ test("P5-RT-001: export fails closed when required provenance fidelity fields ar
 test("P5-RT-002: export manifest digest is bound to governed provenance fields", () => {
   const base = exportRow({ id: "export:aspirin" });
   for (const [field, value] of [
-    ["source_vocabulary_version", "35"],
-    ["provenance_id", "pharmprov:mutated"],
+    ["provenance_id", "pharmprov:internal:mutated"],
     ["artifact_hash", "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"],
-    ["license_policy_id", "license-policy:mutated"]
+    ["license_policy_id", "license-policy:internal:mutated"]
   ]) {
     const left = buildAuthorizedExport({
       principal,
@@ -167,22 +164,18 @@ function exportRow(overrides = {}) {
     environment: "prod",
     release_id: "release-2026-01",
     lifecycle_status: "released",
-    assertion_type: "canonical",
+    assertion_type: "evidence",
     permitted_uses: ["search", "export"],
     license_status: "valid",
     canonical_ids: {
       entity_id: "pharment:compound/aspirin",
-      source_entity_id: "chembl:CHEMBL25",
-      target_entity_id: "pubchem:CID2244"
+      source_entity_id: null,
+      target_entity_id: null
     },
-    source_vocabulary_version: "34",
-    target_vocabulary_version: "2026-06-01",
-    source_version: "34",
-    evidence_refs: [{ evidence_id: "pharmev:evidence-chembl", evidence_role: "supports" }],
-    provenance_id: "pharmprov:aspirin",
+    provenance_id: "pharmprov:internal:aspirin-export-fixture",
     artifact_hash: "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    license_classification: "open_with_attribution",
-    license_policy_id: "license-policy:chembl-34",
+    license_classification: "internal",
+    license_policy_id: "license-policy:internal:phase5-export-fixture",
     ...overrides
   };
 }

@@ -1,5 +1,8 @@
+import Ajv2020 from "ajv/dist/2020.js";
+import addFormats from "ajv-formats";
+
 import mappingObjectSchema from "./mapping-object.schema.json" with { type: "json" };
-import relationshipAssertionSchema from "./relationship-assertion.schema.json" with { type: "json" };
+import relationshipAssertionSchema from "../../../docs/semantic-bridge/contracts/relationship-assertion.schema.json" with { type: "json" };
 
 export const mappingPredicates = Object.freeze([
   "exactMatch",
@@ -36,6 +39,31 @@ export const mappingReviewStatuses = Object.freeze([
 export const mappingObjectRequiredFields = Object.freeze(mappingObjectSchema.required);
 export const mappingObjectSchemaContract = Object.freeze(mappingObjectSchema);
 export const relationshipAssertionSchemaContract = Object.freeze(relationshipAssertionSchema);
+
+const relationshipAssertionAjv = new Ajv2020({
+  allErrors: true,
+  strict: false
+});
+addFormats(relationshipAssertionAjv);
+
+export const relationshipAssertionSchemaSource = "docs/semantic-bridge/contracts/relationship-assertion.schema.json";
+export const relationshipAssertionValidator = relationshipAssertionAjv.compile(relationshipAssertionSchemaContract);
+
+function formatAjvError(error) {
+  const path = error.instancePath || "/";
+  const detail = error.params?.missingProperty
+    ? `${error.message}: ${error.params.missingProperty}`
+    : error.message;
+  return `${path} ${detail}`;
+}
+
+export function validateRelationshipAssertionContract(value) {
+  const valid = relationshipAssertionValidator(value);
+  return {
+    valid,
+    errors: valid ? [] : relationshipAssertionValidator.errors.map(formatAjvError)
+  };
+}
 
 export function validateMappingObjectShape(value) {
   const errors = [];

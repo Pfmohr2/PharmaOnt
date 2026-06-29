@@ -197,6 +197,42 @@ test("P6 AI suggestions are not returned inside a release context", () => {
   assert.deepEqual(response.results, []);
 });
 
+test("B9 relationship assertions index as relationship rows keyed by relationship_assertion_id", () => {
+  const service = createSearchIndexService({
+    documents: indexGovernedRecords({
+      relationship_assertions: [
+        relationshipAssertionRecord(),
+        relationshipAssertionRecord({
+          relationship_assertion_id: "ra:working",
+          id: undefined,
+          release_id: null,
+          review_status: "in_review",
+          lifecycle_status: "in_review",
+          release_context: { release_id: null, scope: "working" }
+        })
+      ]
+    }),
+    clock: () => new Date("2026-06-27T16:45:00.000Z")
+  });
+
+  const response = service.search({
+    principal: viewer,
+    query: { q: "ra:aspirin-ptgs1", filters: { object_type: ["relationship"] } },
+    releaseContext: { release_id: "release-2026-01", scope: "release" }
+  });
+
+  assert.equal(response.authorization_filtered, true);
+  assert.equal(response.total, 1);
+  const [hit] = response.results;
+  assert.equal(hit.object_type, "relationship");
+  assert.equal(hit.object_id, "ra:aspirin-ptgs1");
+  assert.equal(hit.relationship_assertion_id, "ra:aspirin-ptgs1");
+  assert.equal(hit.provenance_id, "pharmprov:relationship/aspirin-ptgs1");
+  assert.equal(hit.evidence_refs[0].evidence_id, "pharmev:aspirin-ptgs1");
+  assert.ok(hit.match_reasons.some((reason) => reason.relationship_assertion_id === "ra:aspirin-ptgs1"));
+  assert.equal("filtered_count" in response, false);
+});
+
 function governedStoreState() {
   return {
     compounds: [compoundRecord()],
@@ -205,6 +241,28 @@ function governedStoreState() {
     evidence: [evidenceRecord()],
     documents: [documentRecord()]
   };
+}
+
+function relationshipAssertionRecord(overrides = {}) {
+  return authzRecord({
+    id: undefined,
+    relationship_assertion_id: "ra:aspirin-ptgs1",
+    object_type: "relationship",
+    assertion_type: "relationship",
+    relationship_assertion_type: "human_curated",
+    display_label: "Aspirin targets PTGS1",
+    source_entity_id: "pharment:compound/aspirin",
+    predicate: "compound_has_target",
+    target_entity_id: "pharment:target/PTGS1",
+    review_status: "released",
+    lifecycle_status: "released",
+    release_id: "release-2026-01",
+    release_context: { release_id: "release-2026-01", scope: "release" },
+    evidence_refs: [{ evidence_id: "pharmev:aspirin-ptgs1", evidence_role: "supports", source_name: "ChEMBL" }],
+    provenance_id: "pharmprov:relationship/aspirin-ptgs1",
+    source_name: "ChEMBL",
+    ...overrides
+  });
 }
 
 function compoundRecord(overrides = {}) {

@@ -392,3 +392,251 @@ Reference read: `pharmaops_semantic_bridge_addendum_prompt.md` sections 3-12, Ad
 | SB-A-RT-WATCH-004 | P0 watch | RelationshipAssertion, RelationshipPath, BridgeHypothesis, or PathQuery contracts omit governed fields needed to block unprovenanced, unlicensed, unauthorized, or weak-link-hidden relationships. | Angela; Kevin; Jim | Every relationship assertion must include relationship class, evidence, provenance, confidence, assertion type, review status, data license status, and release context. Every path must include path confidence, weakest link, access filtering, warnings, and path status. | Holding for Phase A deliverables |
 | SB-A-RT-WATCH-005 | P0 watch | Multi-hop path confidence becomes a naive average or can exceed the weakest critical edge, hiding broadMatch/relatedMatch/model-suggested/safety/restricted weak links. | Angela; Jim; Andy | Path contracts and policies must cap confidence by weakest critical edge, block paths with blocked edges, prevent high confidence for unreviewed model-suggested edges, and require weakest-link explanation. | Holding for Phase A deliverables |
 | SB-A-RT-WATCH-006 | P0 watch | Path-level filtering leaks restricted evidence, hidden edge existence, source snippets, confidence notes, warnings, facets, or export metadata across tenant/license/release boundaries. | Angela; Kevin; Andy | Contracts must define edge-level and path-level authorization/redaction semantics; path is viewable/exportable only if every edge/evidence object is authorized, or policy-defined redaction is non-enumerating. | Holding for Phase A deliverables |
+
+## Semantic Bridge Phase A Red Team Review (2026-06-27)
+
+GO/NO-GO: NO-GO for starting Phase B. The four Phase A design deliverables are directionally aligned with the addendum, and the existing targeted tests pass, but adversarial probes found P0 contract/SHACL/policy inconsistencies that would let Phase B build on ambiguous or unsafe semantics.
+
+Verification run:
+- Targeted Phase A stack: `node --test packages/contracts/test/contracts.test.mjs tests/ontology/semantic-spine.test.mjs tests/unit/semantic-store.test.mjs` = 35 pass, 0 fail.
+- Custom probe 1: modified `valid-semantic-bridge.ttl` so a RelationshipAssertion used `relationship_class=evidence_support` with `relationshipPredicate pharmrel:exactMatch`; `validateSemanticTurtle()` returned `{ valid: true, errors: [] }`.
+- Custom probe 2: modified `valid-semantic-bridge.ttl` so a safety relationship used contract-style `hasCausalClaimStatus "causal_claim_reviewed"` without SHACL's `approved_causal_claim` literal; `validateSemanticTurtle()` returned `{ valid: true, errors: [] }`.
+- Custom probe 3: a JSON RelationshipPath with `path_status=released`, `path_confidence.confidence_band=high`, `weakest_link_adjusted=false`, no warnings, and an edge with `assertion_type=model_suggested` / `review_status=proposed` is valid under `docs/semantic-bridge/contracts/relationship-path.schema.json`.
+- Custom probe 4: a JSON RelationshipAssertion with `review_status=released`, `data_license.license_status=blocked`, blocked license classification, and `reviewed_by/reviewed_at=null` is valid under `docs/semantic-bridge/contracts/relationship-assertion.schema.json`.
+
+| Finding ID | Severity | Risk | Owner | Mitigation | Status |
+|---|---|---|---|---|---|
+| SB-A-RT-001 | P0 | Non-collapse is not enforced across contract/SHACL. An identity/crosswalk predicate can be smuggled into a generic relationship assertion: `relationship_class=evidence_support` with `relationshipPredicate pharmrel:exactMatch` passes the current SHACL runner. This violates addendum s4.1, s5, s6.1, and the Phase A attack surface. | Kevin; Angela; Jim | Add class/predicate matrix enforcement in JSON contracts and SHACL/runner. RelationshipAssertion predicates must be constrained by `relationship_class`; mapping/crosswalk predicates (`exactMatch`, `closeMatch`, `broadMatch`, etc.) must not validate as generic `evidence_support`, mechanistic, clinical, safety, or other domain relationship classes. | Open - blocks Phase B |
+| SB-A-RT-002 | P0 | Path integrity is not enforced in the JSON contract. A released, high-confidence path can contain a proposed `model_suggested` edge, no warning, and `weakest_link_adjusted=false` while remaining schema-valid. SHACL catches one RDF fixture only when a derived boolean flag is supplied, but the JSON contract does not enforce the edge-level rule. This violates addendum s7 and s19. | Angela; Kevin | RelationshipPath schema must block released paths containing `model_suggested`/hypothesis/unreviewed edges, block `high` confidence when any edge is model-suggested/low-confidence/blocked, require warnings tied to edge content, and require `weakest_link_adjusted=true` for scored paths. SHACL should derive or require equivalent edge facts, not trust optional summary booleans. | Open - blocks Phase B |
+| SB-A-RT-003 | P0 | Causal claim status literals drift across deliverables, creating a safety bypass. Policy uses `not_causal`, `causal_prohibited`, `causal_review_required`, `causal_review_approved`, `blocked_overclaim`; the RelationshipAssertion contract uses `not_causal`, `causal_claim_reviewed`, `causal_claim_prohibited`, `causal_claim_unknown`; SHACL uses `not_causal`, `hypothesis_only`, `association_only`, `approved_causal_claim`; the runner only triggers causal review for `approved_causal_claim`. A contract-style causal-reviewed status passes without triggering the causal-review gate. | Andy; Angela; Kevin | Choose one canonical `causal_claim_status` enum and use it verbatim in policy, JSON contracts, ontology predicates, SHACL shapes, runner checks, fixtures, and tests. The causal-review gate must trigger on every causal-approved/reviewed literal and block all prohibited/unknown/required-review overclaims. | Open - blocks Phase B |
+| SB-A-RT-004 | P0 | The RelationshipAssertion JSON contract does not enforce released relationship reviewer and license blockers. A released relationship with `license_status=blocked`, `license_classification=blocked_pending_legal_review`, and null `reviewed_by/reviewed_at` validates. This violates addendum s6.1, s6.3 inherited governance, s11 release-blocking requirements, and s19. | Angela; Kevin | RelationshipAssertion schema must require non-null `reviewed_by`/`reviewed_at`, non-blocked/non-pending license status, valid permitted uses, release ID, validation report, evidence, provenance, and release context for released assertions. Mirror these checks in SHACL and fixtures. | Open - blocks Phase B |
+
+## Semantic Bridge Phase A Fix Re-Red-Team (2026-06-27)
+
+GO/NO-GO: NO-GO for Phase B. The four original P0 fixtures now fail closed in `validateSemanticTurtle()`, and the requested targeted test stack is green, but residual multi-value Turtle bypasses remain in the SHACL runner parser around the same Phase A enforcement surfaces.
+
+Verification run:
+- Requested stack: `node --test tests/unit/semantic-store.test.mjs tests/ontology/semantic-spine.test.mjs` = 29 pass, 0 fail.
+- Baseline valid fixture: `valid-semantic-bridge.ttl` returns `{ valid: true, errors: [] }`.
+- P0-001 fixture: `invalid-sb-p0-001-class-predicate-matrix.ttl` returns `relationship_class evidence_support cannot use predicate exactMatch`.
+- P0-002 fixture: `invalid-sb-p0-002-released-path-model-edge.ttl` returns `high confidence path cannot include model_suggested edge`, `released path cannot include model_suggested edge`, and review-state edge errors.
+- P0-003 fixture: `invalid-sb-p0-003-causal-status-drift.ttl` returns `pharm:hasCausalClaimStatus has unapproved value causal_claim_reviewed`.
+- P0-004 fixture: `invalid-sb-p0-004-released-blocked-license-null-reviewer.ttl` returns `requires non-empty pharm:reviewedBy`, `released relationship cannot use release-blocking license blocked_pending_legal_review`, and `released relationship cannot have blocked export authorization`.
+
+| Finding ID | Severity | Risk | Owner | Mitigation | Status |
+|---|---|---|---|---|---|
+| SB-A-RT-005 | P0 | `validateSemanticTurtle()` checks only the first literal for several governed fields, so valid Turtle object lists can hide a blocking second value. Repros that returned `{ valid: true, errors: [] }`: `hasRelationshipClass "identity", "evidence_support"` with `relationshipPredicate pharmrel:exactMatch`; `hasCausalClaimStatus "not_causal", "causal_claim_reviewed"` on an approved safety assertion; released assertion with `dataLicenseClass "open_materializable", "blocked_pending_legal_review"`; released/high-confidence path edge with `assertionType "human_curated", "model_suggested"` and `hasAssertionType "human_curated", "model_suggested"`. This leaves the original four P0 surfaces bypassable by multi-valued RDF syntax even though the canned fixtures are blocked. | Kevin | Make the runner evaluate every value for enum, class/predicate, causal, assertion type, license, review, export, and path-edge fields; reject duplicate/multi-valued primary governance fields where the alignment doc says exactly one; add regression fixtures for object-list smuggling. | Open - blocks Phase B |
+
+## Semantic Bridge Phase A Fix Re-Red-Team Round 2 (2026-06-27)
+
+GO/NO-GO: NO-GO for Phase B. Kevin's same-line object-list fixtures for SB-A-RT-005 now fail closed, the original four P0 fixtures still fail, and the valid baseline still passes. However, equivalent valid Turtle object lists split across lines bypass `validateSemanticTurtle()` because `getObjectValues()` captures predicate objects only to the end of the current line.
+
+Verification run:
+- Requested stack: `node --test tests/unit/semantic-store.test.mjs tests/ontology/semantic-spine.test.mjs` = 30 pass, 0 fail.
+- Baseline valid fixture: `valid-semantic-bridge.ttl` returns `{ valid: true, errors: [] }`.
+- Original P0 fixtures still fail with the expected class/predicate, path model edge, causal-status, and released blocked-license/reviewer errors.
+- Same-line SB-A-RT-005 fixtures now fail with both content and `single-cardinality governance metadata but has 2 values` errors where applicable.
+
+| Finding ID | Severity | Risk | Owner | Mitigation | Status |
+|---|---|---|---|---|---|
+| SB-A-RT-006 | P0 | Cross-line Turtle object lists still smuggle illegal second values because `getObjectValues()` uses a line-bounded object regex. Repros returning `{ valid: true, errors: [] }`: `pharm:hasRelationshipClass "identity",` newline `"evidence_support"` with `relationshipPredicate pharmrel:exactMatch`; `pharm:hasCausalClaimStatus "not_causal",` newline `"causal_claim_reviewed"` on an approved safety assertion; released assertion with `pharm:dataLicenseClass "open_materializable",` newline `"blocked_pending_legal_review"`; released/high-confidence path edge with `pharm:assertionType "human_curated",` newline `"model_suggested"` and same for `hasAssertionType`. This is valid Turtle syntax and leaves SB-A-RT-005 bypassable after the patch. | Kevin | Parse Turtle statements structurally or make `getObjectValues()` capture predicate object lists through the terminating semicolon/period, not newline. Add cross-line object-list regression fixtures for all four Phase A surfaces. | Open - blocks Phase B |
+
+## Semantic Bridge Phase A Fix Re-Red-Team Round 3 (2026-06-27)
+
+GO/NO-GO: NO-GO for Phase B. The round-3 structural object capture fixes same-line and cross-line object-list smuggling fixtures, and the requested test stack is green. However, RDF graph-merge semantics remain unmodeled: repeated statements for the same subject are validated as separate blocks instead of one merged subject, so illegal governance triples can be placed in a separate statement that lacks its own `a pharm:RelationshipAssertion` and is ignored by relationship validation.
+
+Verification run:
+- Requested stack: `node --test tests/unit/semantic-store.test.mjs tests/ontology/semantic-spine.test.mjs` = 31 pass, 0 fail.
+- Baseline valid fixture: `valid-semantic-bridge.ttl` returns `{ valid: true, errors: [] }`.
+- Original P0, same-line RT-005, and cross-line RT-006 fixtures all fail with expected content and single-cardinality errors.
+
+| Finding ID | Severity | Risk | Owner | Mitigation | Status |
+|---|---|---|---|---|---|
+| SB-A-RT-007 | P0 | `validateSemanticTurtle()` validates statement blocks independently and does not merge repeated statements for the same RDF subject. Valid Turtle graphs can therefore hide extra governance triples in a separate statement. Repros returning `{ valid: true, errors: [] }`: (1) P0-001 class/predicate: main typed block uses `hasRelationshipClass "identity"` with `relationshipPredicate pharmrel:exactMatch`; later statement for the same subject adds `pharm:hasRelationshipClass "evidence_support"`. (2) P0-003 causal drift: main typed safety block uses `hasCausalClaimStatus "not_causal"`; separate statement for the same subject adds `pharm:hasCausalClaimStatus "causal_claim_reviewed"`. (3) P0-004 released license: main typed released assertion uses `dataLicenseClass "open_materializable"` with valid reviewer/export; separate statement for the same subject adds `pharm:dataLicenseClass "blocked_pending_legal_review"`. These are one RDF graph after parsing and should trigger the same per-value and single-cardinality guards. | Kevin | Merge triples by subject before validation, or use a real Turtle/RDF parser and validate against the merged graph. Single-cardinality and enum/policy checks must evaluate the complete subject graph, including repeated statements before or after the typed block. Add split-subject regression fixtures for class, causal status, and license governance fields. | Open - blocks Phase B |
+
+## Semantic Bridge Phase A Fix Final Re-Red-Team (2026-06-27)
+
+GO/NO-GO: NO-GO for Phase B. The merged-subject fix blocks prior split-subject fixtures when the repeated statements use the same lexical subject token. Original P0, RT-005, RT-006, and same-token RT-007 fixtures all fail closed, and the requested test stack is green. However, equivalent subjects written once as a prefixed name and once as a full IRI are still keyed as different subjects, so the same RDF subject is not merged.
+
+Verification run:
+- Requested stack: `node --test tests/unit/semantic-store.test.mjs tests/ontology/semantic-spine.test.mjs` = 32 pass, 0 fail.
+- Baseline valid fixture: `valid-semantic-bridge.ttl` returns `{ valid: true, errors: [] }`.
+- Original P0, RT-005 same-line lists, RT-006 cross-line lists, and RT-007 same-token split-subject fixtures all fail with expected content and single-cardinality errors.
+- Same-token split-subject path-edge model-suggested probe fails closed with assertion-type single-cardinality and released/high-confidence path model-edge blockers.
+
+| Finding ID | Severity | Risk | Owner | Mitigation | Status |
+|---|---|---|---|---|---|
+| SB-A-RT-008 | P0 | Subject merge keys are lexical, not RDF-normalized. A typed `pharmrelobj:*` subject and a separate `<https://example.pharmaops.local/tenant/acme/relationship/*>` statement for the same expanded IRI do not merge, so illegal governance triples can still be ignored. Repros returning `{ valid: true, errors: [] }`: (1) class/predicate: typed `pharmrelobj:rt007-p0-001...` block uses `identity` + `exactMatch`; full-IRI statement for the same subject adds `hasRelationshipClass "evidence_support"`. (2) causal: typed prefixed safety assertion uses `not_causal`; full-IRI statement adds `hasCausalClaimStatus "causal_claim_reviewed"`. (3) released license: typed prefixed released assertion uses `open_materializable`; full-IRI statement adds `dataLicenseClass "blocked_pending_legal_review"`. (4) path edge: typed prefixed edge is `human_curated`; full-IRI statement for the same edge adds `assertionType "model_suggested"` and `hasAssertionType "model_suggested"`, allowing the released/high-confidence path to pass. | Kevin | Resolve prefixes/base IRIs and canonicalize subject identifiers before merging statements, or use a real Turtle/RDF parser and validate the merged RDF graph. Add prefixed-name vs full-IRI split-subject fixtures for class, causal status, license, and path-edge assertion type. | Open - blocks Phase B |
+
+## Semantic Bridge Phase A Fix Confirmation Re-Red-Team (2026-06-27)
+
+GO/NO-GO: NO-GO for Phase B. SB-A-RT-008 fixed fixed-scope prefixed-name/full-IRI subject merging across class, causal, license, and path-edge surfaces. All original P0 and RT-005/006/007/008 fixtures fail closed, and the requested stack is green. A remaining keying bypass exists for legal mid-file prefix redeclaration: `parseTurtleDeclarations()` builds one final prefix map for the whole file, so earlier statements are canonicalized with a later prefix binding rather than the binding in scope at that statement.
+
+Verification run:
+- Requested stack: `node --test tests/unit/semantic-store.test.mjs tests/ontology/semantic-spine.test.mjs` = 33 pass, 0 fail.
+- Baseline valid fixture: `valid-semantic-bridge.ttl` returns `{ valid: true, errors: [] }`.
+- Original P0, RT-005, RT-006, same-token RT-007, and fixed-scope RT-008 fixtures all fail with expected semantic and single-cardinality errors.
+- Additional fixed-scope keying probes pass closed: inverse full-IRI typed block plus prefixed smuggled triple; default prefix `:x` vs explicit prefix; base-relative `<x>` vs absolute/prefixed subject; interleaved different-subject statements.
+
+| Finding ID | Severity | Risk | Owner | Mitigation | Status |
+|---|---|---|---|---|---|
+| SB-A-RT-009 | P0 | Mid-file prefix redeclaration can still prevent same-subject merge. Repro returning `{ valid: true, errors: [] }`: start with `@prefix pharmrelobj: <https://example.pharmaops.local/tenant/acme/relationship/> .`; create typed `pharmrelobj:redeclared-subject` with `hasRelationshipClass "identity"` and `relationshipPredicate pharmrel:exactMatch`; later redeclare `@prefix pharmrelobj: <https://example.pharmaops.local/tenant/acme/other-relationship/> .`; then add `<https://example.pharmaops.local/tenant/acme/relationship/redeclared-subject> pharm:hasRelationshipClass "evidence_support" .`. In Turtle, the first prefixed subject expands using the first declaration, but the runner canonicalizes all prefixed subjects with the final declaration, so the full-IRI smuggled triple is not merged and the class/predicate violation is missed. | Kevin; God | This is another distinct RDF keying case in the hand-rolled parser. Either process declarations in document order with statement-local prefix/base scope, or escalate to a real RDF/Turtle parser dependency decision as requested by loop governance. Add a mid-file prefix redeclaration regression fixture if keeping the hand-rolled parser. | Open - blocks Phase B |
+
+## Semantic Bridge Phase A N3 Structural Re-Red-Team (2026-06-27)
+
+GO/NO-GO: NO-GO for Phase B. The N3-backed validator closes the prior text-parser keying/smuggling class: original P0, RT-005, RT-006, RT-007, RT-008, and RT-009 fixtures all fail closed, and the requested Phase A stack is green. A new parsed-graph object-type gap remains: primary governance fields that must be enum literals can point to RDF collections or blank nodes. The rule layer sees the predicate as present and single-cardinality but `getLiteralValues()` returns no values, so enum, matrix, causal, model-suggested, and license blockers can be skipped.
+
+Verification run:
+- Requested stack: `node --test tests/unit/semantic-store.test.mjs tests/ontology/semantic-spine.test.mjs` = 34 pass, 0 fail.
+- Baseline valid fixture: `valid-semantic-bridge.ttl` returns `{ valid: true, errors: [] }`.
+- All existing invalid fixtures through `invalid-sb-rt-009-*` fail closed with expected semantic and/or single-cardinality errors.
+- Datatyped/language-tagged `"model_suggested"` still blocks as expected.
+
+| Finding ID | Severity | Risk | Owner | Mitigation | Status |
+|---|---|---|---|---|---|
+| SB-A-RT-010 | P0 | N3 parsed graph validation does not reject non-literal objects for literal-only governance fields. Repros returning `{ valid: true, errors: [] }`: (1) class/predicate: replace `pharm:hasRelationshipClass "evidence_support"` with `pharm:hasRelationshipClass ( "identity" "evidence_support" )` while keeping `relationshipPredicate pharmrel:exactMatch`; (2) class/predicate blank node: `pharm:hasRelationshipClass [ rdf:value "evidence_support" ]`; (3) path edge: set edge `pharm:assertionType ( "human_curated" "model_suggested" )` and `pharm:hasAssertionType ( "human_curated" "model_suggested" )`, with the edge otherwise approved, allowing the released/high-confidence path to pass; (4) safety causal: `pharm:hasCausalClaimStatus [ rdf:value "causal_claim_reviewed" ]`; (5) released license: `pharm:dataLicenseClass ( "open_materializable" "blocked_pending_legal_review" )` with valid reviewer/export. These are invalid for the intended contract/SHACL shape but pass the rule layer because blank-node/collection objects are neither literal enum values nor counted as multiple literal values. | Kevin | For every literal-only governance predicate, reject any non-literal object term outright and require exactly one literal value where single-cardinality applies. This includes relationship class, relationship predicate where appropriate, assertion type, causal status, license class, review status, confidence band, path status, export status, and release context fields. Add collection and blank-node object regression fixtures across class, path-edge assertion type, causal status, and license surfaces. | Open - blocks Phase B |
+
+## Semantic Bridge Phase A RT-010 Closing Re-Red-Team (2026-06-27)
+
+GO/NO-GO: NO-GO for Phase B. Kevin's RT-010 literal node-kind guard blocks the requested non-literal object fixtures and the prior P0/RT-005/006/007/008/009 fixtures still fail closed. `valid-semantic-bridge.ttl` still passes. A residual predicate-term gap remains: `relationshipPredicate` can be supplied as a literal string, causing the class/predicate matrix to skip enforcement and allowing an otherwise disallowed relationship class/predicate combination to validate.
+
+Verification run:
+- Requested stack: `node --test tests/unit/semantic-store.test.mjs tests/ontology/semantic-spine.test.mjs` = 35 pass, 0 fail.
+- Direct fixture matrix: `valid-semantic-bridge.ttl` returns `valid:true`; all original `invalid-sb-p0-*`, RT-005, RT-006, RT-007, RT-008, RT-009, and RT-010 fixtures return `valid:false`.
+- RT-010 object-type probes return `valid:false` with literal node-kind errors for NamedNode, empty collection, mixed collection, blank node, and collection objects on sampled literal-only governance fields.
+- Residual probe: modify `valid-semantic-bridge.ttl` so the relationship assertion has `pharm:hasRelationshipClass "evidence_support"` and `pharm:relationshipPredicate "exactMatch"` instead of an IRI object. `validateSemanticTurtle()` returns `valid:true, errors:[]`.
+
+| Finding ID | Severity | Risk | Owner | Mitigation | Status |
+|---|---|---|---|---|---|
+| SB-A-RT-011 | P0 | `relationshipPredicate` accepts a literal object and then drops out of relationship class/predicate matrix enforcement. Repro returning `{ valid: true, errors: [] }`: in `valid-semantic-bridge.ttl`, set `pharm:hasRelationshipClass "evidence_support"` and replace `pharm:relationshipPredicate pharmrel:compound_has_target` with `pharm:relationshipPredicate "exactMatch"`. Because `getTermValues(... "pharm:relationshipPredicate")` does not produce a normalized predicate for the literal term, `requireRelationshipPredicateMatrix()` returns early when `relationshipPredicates.length === 0`. This reopens the SB-A-RT-001 non-collapse surface through a term-shape mismatch rather than a non-literal governance object. | Kevin | Enforce node kind for `pharm:relationshipPredicate` as a required IRI/NamedNode governance term, or explicitly reject literal/blank-node/collection predicate objects before matrix checks. Matrix validation should not return success when a required predicate object has an unsupported term shape. Add regression fixtures for literal, blank-node, collection, and malformed predicate objects combined with disallowed relationship classes. | Closed - RT-011 final re-RT GO |
+
+## Semantic Bridge Phase A Final Enforcement Re-Red-Team (2026-06-27)
+
+GO/NO-GO: GO for Phase B. RT-010 literal-only node-kind guards and RT-011 IRI-only node-kind guards now close the term-shape class across the audited Phase A enforcement surfaces. Prior P0/RT-005/006/007/008/009/010/011 fixtures fail closed, `valid-semantic-bridge.ttl` passes, and a genuine IRI illegal class/predicate pair still triggers the relationship matrix.
+
+Verification run:
+- Requested stack: `node --test tests/unit/semantic-store.test.mjs tests/ontology/semantic-spine.test.mjs` = 36 pass, 0 fail.
+- Full suite: `npm test` = 284 tests, 273 pass, 0 fail, 11 skipped.
+- Direct validation matrix: `valid-semantic-bridge.ttl` passes; 29 `invalid-sb-p0-*` and `invalid-sb-rt-*` fixtures fail closed; 45 adversarial term-shape and semantic probes fail closed.
+- IRI-only field probes: RelationshipAssertion `relationshipSubject`, `relationshipPredicate`, `relationshipObject`, `hasEvidence`, `hasRelationshipWarning`; RelationshipPath `relationshipPathStart`, `relationshipPathEnd`, `relationshipPathEdge`, `hasWeakestLink`, `hasRelationshipWarning`; MappingAssertion `sourceEntity`, `targetEntity`, and `hasEvidence` all reject literal, blank-node, and collection objects.
+- Re-confirmed `relationshipPredicate` datatyped and language-tagged literals fail closed, RT-010 literal guard still fails closed, RT-007/RT-009 keying fixtures still fail closed, and `evidence_support` plus IRI `pharmrel:exactMatch` still fires `relationship_class evidence_support cannot use predicate exactMatch`.
+
+## Semantic Bridge Phase B B11 Red-Team (2026-06-27)
+
+GO/NO-GO: NO-GO for Phase B integration. The full baseline suite is green and most requested attack paths fail closed, but the RelationshipAssertion API `PATCH` path can replace evidence lineage on an approved assertion without demoting it to `in_review` or clearing reviewer metadata. This violates Phase B decision 6 and B6 evidence-change governance.
+
+Verification run:
+- Full suite before adding the standalone red-team repro: `npm test` = 326 tests, 315 pass, 0 fail, 11 skipped.
+- Standalone repro: `node --test tests/red-team/phase-b-b11-evidence-patch-repro.mjs` fails because actual `review_status` is `approved` while the required state is `in_review`.
+- Passing adversarial checks: direct released create blocked; `model_suggested` approval blocked; approval step-up required; safety/causal approval requires causal-safety approver role; release inclusion blocks `model_suggested` and blocked license; wrong relationship graph/import path blocked; API patch blocks direct review/release field mutation; entity relationship listing defaults to released-only and filters wrong tenant/environment; working listing requires explicit authorized role; export requires source-license packet and filters working/model/blocked/wrong-release rows.
+
+| Finding ID | Severity | Risk | Owner | Mitigation | Status |
+|---|---|---|---|---|---|
+| SB-B-RT-001 | P0 | `PATCH /relationship-assertions/{id}` can change `evidence_refs`, `source_record_ids`, `source_names`, and `source_versions` on an already approved RelationshipAssertion while preserving `review_status=approved`, `reviewed_by`, and `reviewed_at`. Repro: run `node --test tests/red-team/phase-b-b11-evidence-patch-repro.mjs`; the API response contains mutated evidence `bridge-evidence-mutated` and still returns `review_status: "approved"`. Root cause: `PATCH_BLOCKED_FIELDS` omits evidence lineage fields, and `patchRelationshipAssertion()` persists the merged candidate through `persistThroughStore()` / `RelationshipAssertionStore.createRelationshipAssertion()` instead of routing evidence changes through `updateRelationshipEvidence`, which contains the required demotion logic. | Angela; Kevin | Treat evidence and source-lineage fields as governed transition fields. Either block them in generic `PATCH` and require `attachRelationshipEvidence` / `replaceRelationshipEvidence`, or make `PATCH` detect evidence/source-lineage changes and route through the evidence update transition so approved/released-eligible assertions are demoted to `in_review` with `reviewed_by`/`reviewed_at` cleared before persistence. Add the B11 repro as a normal regression after the fix. | Closed - evidence PATCH re-RT confirmed |
+
+## Semantic Bridge Phase B B11 Evidence/PATCH Re-Red-Team (2026-06-27)
+
+GO/NO-GO: NO-GO for Phase B integration. SB-B-RT-001 is closed: evidence/source-lineage `PATCH` now routes through `updateRelationshipEvidence`, demotes approved assertions to `in_review`, clears reviewer metadata, and rejects mixed evidence-plus-other-field patches. A new create-path residual remains: creating another RelationshipAssertion with an already-used `relationship_assertion_id` appends a second RDF block for the same subject, so merged graph reads expose both old and new evidence/source-lineage while the row can remain `approved`.
+
+Verification run:
+- Full suite: `npm test` = 327 tests, 316 pass, 0 fail, 11 skipped.
+- Promoted repro: `B11 NO-GO repro: PATCH evidence on approved assertion must demote to in_review` now passes in the normal suite.
+- Additional probes passed: evidence-only patch demotes and clears reviewer; reused evidence ID with changed source metadata demotes; `source_versions`-only and case-only source-name changes route through demotion; mixed evidence plus other mutable fields rejects with `relationship_assertion_patch_evidence_mixed_fields`; direct review/release field patch remains blocked; license downgrade after approval remains rejected.
+- Residual repro: `node --test tests/red-team/phase-b-b11-create-existing-id-repro.mjs` fails with `Missing expected rejection` because duplicate create succeeds.
+
+| Finding ID | Severity | Risk | Owner | Mitigation | Status |
+|---|---|---|---|---|---|
+| SB-B-RT-002 | P0 | `POST /relationship-assertions` / `RelationshipAssertionStore.createRelationshipAssertion()` accepts a second assertion with an existing `relationship_assertion_id`. Because RDF subject IRIs are derived from that ID and the store validates only the candidate Turtle before `insertTurtle`, the duplicate create appends triples for the same subject instead of rejecting or replacing via a governed transition. Repro: run `node --test tests/red-team/phase-b-b11-create-existing-id-repro.mjs`; the second create is expected to reject but succeeds. Direct probe showed the merged read row retained `review_status: "approved"` while exposing both `pharmev:bridge-evidence-original` and `pharmev:bridge-evidence-duplicate`, with source versions `2026-06-27` and `2026-06-28`. This bypasses the evidence-change demotion guard by using create-with-existing-id instead of PATCH. | Angela; Kevin | Enforce uniqueness before create: load the dedicated relationship graph/read model and reject any existing `relationship_assertion_id`/subject IRI with a conflict error before validation/insert. Alternatively route same-ID writes through an explicit governed update transition, but do not append duplicate subject triples. Add the B11 create-existing-id repro to the normal regression suite after the fix. | Closed - create uniqueness re-RT confirmed |
+
+## Semantic Bridge Phase B B11 Write-Path Uniqueness Final Sweep (2026-06-27)
+
+GO/NO-GO: NO-GO for Phase B integration. SB-B-RT-002 is closed: duplicate API/store create now rejects with a 409-class conflict, emits `relationship_assertion.create_conflict`, and preserves the original evidence/source lineage. However, a remaining public write path can still append a duplicate relationship subject outside `RelationshipAssertionStore`.
+
+Verification run:
+- `node --test tests/red-team/phase-b-b11-create-existing-id-repro.mjs` = 1 pass, 0 fail.
+- `node --test tests/red-team/phase-b-b11-evidence-patch-repro.mjs` = 1 pass, 0 fail.
+- `node --test tests/unit/semantic-store.test.mjs tests/unit/relationship-assertion-api.test.mjs` = 51 pass, 0 fail.
+- `node --test tests/e2e/semantic-bridge-relationship-export.test.mjs` = 4 pass, 0 fail.
+- Full suite: `npm test` = 328 tests, 317 pass, 0 fail, 11 skipped.
+- Residual repro: `node --test tests/red-team/phase-b-b11-graph-writer-duplicate-subject-repro.mjs` fails because the generic graph writer accepts a duplicate relationship subject and the merged read exposes both original and duplicate evidence/source versions.
+
+Passing checks:
+- Duplicate `POST /relationship-assertions` with the same `relationship_assertion_id` now rejects before append.
+- Evidence/source-lineage `PATCH` still demotes approved assertions through `updateRelationshipEvidence`, clears reviewer metadata, and rejects mixed evidence-plus-other-field patches.
+- B7 release inclusion validates release-bound Turtle and does not append to working graphs.
+- B8 export staging remains read/export-only, regulated by source-license packet, release scope, and row-content hashing.
+- Relationship API routes still persist via `RelationshipAssertionStore`; service-account writes, direct release/review field patches, unsafe release inclusion, and unauthorized working reads remain blocked.
+
+| Finding ID | Severity | Risk | Owner | Mitigation | Status |
+|---|---|---|---|---|---|
+| SB-B-RT-003 | P0 | `SemanticGraphWriter.insertValidatedWorkingTurtle()` is publicly exported and accepts `graph:tenant:<tenant>:relationships:working`. It validates only the incoming Turtle, then calls `insertTurtle()`, so a caller can append another valid Turtle block with the same relationship assertion subject and bypass `RelationshipAssertionStore` uniqueness/conflict/audit handling. Repro: run `node --test tests/red-team/phase-b-b11-graph-writer-duplicate-subject-repro.mjs`; the second insert succeeds and the merged read row contains both `pharmev:bridge-evidence-writer-original` and `pharmev:bridge-evidence-writer-duplicate`, with source versions `2026-06-27` and `2026-06-28`. This is the same governed-mutation class as SB-B-RT-002 through the generic graph writer rather than the API create path. | Kevin; Angela | Prevent the generic graph writer from writing relationship assertion subjects into the dedicated relationships graph, or make it relationship-aware: detect `pharm:RelationshipAssertion` subjects, check existing subject IRIs in the target graph before append, and route same-subject changes through `RelationshipAssertionStore` governed transitions with audit. Add the repro as a regression after the fix. | Closed - exact graph-writer append re-RT confirmed |
+
+## Semantic Bridge Phase B B11 Relationships Graph Surface Final Sweep (2026-06-27)
+
+GO/NO-GO: NO-GO for Phase B integration. SB-B-RT-003 is closed for the exact graph-writer append path: the original graph-writer duplicate-subject repro now rejects the second insert, the semantic-store regression suite is green, and exact `replaceValidatedWorkingGraph()` on `graph:tenant:<tenant>:relationships:working` is denied. However, the reserved relationships graph family is not fail-safe across the exported semantic-store write surface.
+
+Verification run:
+- `node --test tests/red-team/phase-b-b11-graph-writer-duplicate-subject-repro.mjs tests/red-team/phase-b-b11-create-existing-id-repro.mjs tests/red-team/phase-b-b11-evidence-patch-repro.mjs` = 3 pass, 0 fail.
+- `node --test tests/unit/semantic-store.test.mjs` = 43 pass, 0 fail.
+- `node --test tests/e2e/semantic-bridge-relationship-export.test.mjs tests/unit/relationship-assertion-api.test.mjs` = 13 pass, 0 fail.
+- Full suite: `npm test` = 329 tests, 318 pass, 0 fail, 11 skipped.
+- Residual repro: `node --test tests/red-team/phase-b-b11-relationships-graph-reservation-repro.mjs` fails with two missing expected rejections.
+
+Public semantic-store write surface enumerated:
+- `SemanticGraphWriter.insertValidatedWorkingTurtle({ graphName })`: exact reserved relationships graph now rejects duplicate RelationshipAssertion subjects and non-RelationshipAssertion inserts to the exact graph.
+- `SemanticGraphWriter.replaceValidatedWorkingGraph({ graphName })`: exact reserved relationships graph rejects, but case/domain near-miss working graphs can still be replaced with RelationshipAssertion Turtle.
+- `MappingStore.createMapping({ graphName })`: accepts caller-supplied `graphName` and can write MappingAssertion Turtle into the exact reserved relationships graph.
+- `RelationshipAssertionStore.createRelationshipAssertion`, `transitionRelationshipAssertion`, `updateRelationshipEvidence`, `attachRelationshipEvidence`, `replaceRelationshipEvidence`, and `replaceRelationshipAssertionTurtle`: exact dedicated relationships graph only; governed/audited path.
+- `EntityStore.createCanonicalEntity()`: fixed canonical working graph, no caller `graphName`.
+- `ReleaseSnapshotService.createReleaseSnapshot({ workingGraph, domain })`: generic release-copy path with release gates; no evidence found in this sweep that it appends or mutates existing working RelationshipAssertion subjects directly.
+- `FusekiClient` low-level `putGraph`, `insertTurtle`, `clearGraph`, `copyGraph`, and `update` are not exported from the public semantic-store barrel, but remain backing-client capabilities behind higher-level services.
+
+| Finding ID | Severity | Risk | Owner | Mitigation | Status |
+|---|---|---|---|---|---|
+| SB-B-RT-004 | P0 | The relationships graph reservation is exact-method/exact-name rather than fail-safe across the write surface. Repro: run `node --test tests/red-team/phase-b-b11-relationships-graph-reservation-repro.mjs`. Failure 1: `SemanticGraphWriter.replaceValidatedWorkingGraph()` rejects exact `graph:tenant:acme:relationships:working`, but accepts case/domain near-misses such as `graph:tenant:acme:Relationships:working` and `graph:tenant:acme:relationships:shadow:working` containing full `pharm:RelationshipAssertion` Turtle. Failure 2: `MappingStore.createMapping({ graphName: tenantWorkingGraph("acme", "relationships") })` writes MappingAssertion Turtle into the exact reserved relationships graph because it only checks tenant working graph shape and tenant. This violates the requested fail-safe property that new or overlooked methods targeting the relationships family are denied by default rather than silently allowed. | Kevin; Angela | Centralize the reserved relationships graph policy in named-graph assertions and make all public write methods use it before any persistence. Deny any non-`RelationshipAssertionStore` write to the exact relationships working/release family, and either canonicalize/reject case/domain near-misses that can carry `RelationshipAssertion` subjects or define a strict allowed graph-domain registry so `Relationships`/`relationships:*` cannot become alternate relationship assertion stores. Add the reservation repro as a normal regression after the fix. | Closed - central policy re-RT confirmed for current high-level graph-writer and mapping-store paths |
+
+## Semantic Bridge Phase B B11 Default-Deny Final Sweep (2026-06-27)
+
+GO/NO-GO: NO-GO for Phase B integration. SB-B-RT-004 is closed for the current high-level methods: graph-writer, mapping-store, and relationship-store writes now call the centralized named-graph policy, the relationships graph reservation repro is promoted and green, and ordinary callers are denied for `graph:tenant:<tenant>:relationships:working`. However, the policy is not yet fail-safe at the actual persistence boundary.
+
+Verification run:
+- `node --test tests/red-team/phase-b-b11-relationships-graph-reservation-repro.mjs tests/red-team/phase-b-b11-graph-writer-duplicate-subject-repro.mjs tests/red-team/phase-b-b11-create-existing-id-repro.mjs tests/red-team/phase-b-b11-evidence-patch-repro.mjs tests/unit/phase-b-b11-relationships-graph-reservation-repro.test.mjs` = 7 pass, 0 fail.
+- `node --test tests/unit/semantic-store.test.mjs tests/e2e/semantic-bridge-relationship-export.test.mjs tests/unit/relationship-assertion-api.test.mjs` = 57 pass, 0 fail.
+- Full suite after adding the standalone default-deny red-team repro: `npm test` = 332 tests, 321 pass, 0 fail, 11 skipped.
+- Residual repro: `node --test tests/red-team/phase-b-b11-graph-policy-default-deny-repro.mjs` fails with two missing expected rejections.
+
+Default-deny sweep:
+- `assertGraphWritePolicy()` rejects `unknown`, `semantic_graph_writer`, and `mapping_store` callers for `graph:tenant:acme:relationships:working` with `governed_relationship_graph_reserved`.
+- `assertGraphWritePolicy()` is exported and authorizes a caller-supplied string of `relationship_assertion_store`, so non-store code can forge the privileged caller when calling the policy directly.
+- `FusekiClient` low-level write methods are not exported from the public semantic-store barrel, but `putGraph`, `insertTurtle`, `clearGraph`, `copyGraph`, and generic `update` remain unguarded persistence capabilities for internal services and direct path imports.
+- `ReleaseSnapshotService.createReleaseSnapshot({ workingGraph, domain })` still accepts caller-controlled source graph/domain pairs and can bulk-copy `graph:tenant:<tenant>:relationships:working` into `graph:tenant:<tenant>:release:<release>:relationships` without invoking the centralized graph write policy.
+
+| Finding ID | Severity | Risk | Owner | Mitigation | Status |
+|---|---|---|---|---|---|
+| SB-B-RT-005 | P0 | The centralized graph write policy is convention-level rather than enforced at the persistence chokepoint. The high-level B11 methods audited in SB-B-RT-004 now call it, but new or overlooked services can still bypass the policy through lower-level Fuseki operations or generic bulk-copy flows. Repro: run `node --test tests/red-team/phase-b-b11-graph-policy-default-deny-repro.mjs`. Failure 1: `assertGraphWritePolicy()` is exported and trusts the caller string, so code outside `RelationshipAssertionStore` can pass `caller: "relationship_assertion_store"` and receive OK for the governed relationships graph. Failure 2: `ReleaseSnapshotService.createReleaseSnapshot()` can copy `graph:tenant:acme:relationships:working` to `graph:tenant:acme:release:<release>:relationships` without a graph-policy denial, proving relationship-family writes are not default-denied at the persistence boundary. | Kevin; Angela | Enforce graph write policy at the actual persistence chokepoint or a mandatory write gateway around all Fuseki write operations, including insert, replace, clear, copy, and update. Do not model privileged access as a forgeable exported string; use a module-private capability, non-exported privileged helper, or relationship-store-owned adapter. Make release snapshot relationship-family copy either route through a governed relationship release adapter or explicitly call the central policy with a non-forgeable authorized release capability. Add the new default-deny repro to the normal regression suite after the fix. | Closed - persistence chokepoint and caller-string spoof re-RT confirmed |
+
+## Semantic Bridge Phase B B11 Capability Final Sweep (2026-06-27)
+
+GO/NO-GO: GO for SB-B11 Phase B red-team gate. SB-B-RT-001 through SB-B-RT-006 are closed. The final RT-006 architecture has no exported token, getter, mint function, registration function, stack/filename gate, or singleton module path. `named-graphs.js` owns the module-private WeakSet and adds capabilities only inside the lexical scope of `createGovernedRelationshipAssertionStore()`. The safe factory returns a `RelationshipAssertionStore`, not the raw capability; the store keeps the capability and gateway in private fields; look-alike and forged objects reject by WeakSet membership.
+
+Verification run:
+- `node --test tests/red-team/phase-b-b11-graph-policy-default-deny-repro.mjs tests/unit/phase-b-b11-graph-policy-default-deny-repro.test.mjs` = 4 pass, 0 fail.
+- `node --test tests/red-team/phase-b-b11-graph-policy-default-deny-repro.mjs tests/red-team/phase-b-b11-relationships-graph-reservation-repro.mjs tests/red-team/phase-b-b11-graph-writer-duplicate-subject-repro.mjs tests/red-team/phase-b-b11-create-existing-id-repro.mjs tests/red-team/phase-b-b11-evidence-patch-repro.mjs tests/unit/phase-b-b11-graph-policy-default-deny-repro.test.mjs tests/unit/phase-b-b11-relationships-graph-reservation-repro.test.mjs` = 11 pass, 0 fail.
+- `node --test tests/unit/semantic-store.test.mjs tests/e2e/semantic-bridge-relationship-export.test.mjs tests/unit/relationship-assertion-api.test.mjs` = 57 pass, 0 fail.
+- Full suite: `npm test` = 334 tests, 323 pass, 0 fail, 11 skipped.
+- Residual repro: `node --test tests/red-team/phase-b-b11-capability-export-repro.mjs` fails with 0 pass, 2 fail.
+- Round-7 confirmation update: after tightening the promoted RT-006 repro to check the singleton module, `node --test tests/red-team/phase-b-b11-capability-export-repro.mjs` = 1 pass, 2 fail; all six B11 repro/promoted stack = 14 pass, 4 fail due to duplicated RT-006 import failures; `npm test` = 337 tests, 324 pass, 2 fail, 11 skipped.
+- Round-8 confirmation update: `relationship-graph-capability.js` is deleted, `named-graphs.js` no longer exports a minting factory/getter, and direct look-alike objects still reject. However, the stack-gated registration can be spoofed. `node --test tests/red-team/phase-b-b11-capability-export-repro.mjs` = 3 pass, 1 fail. All six B11 repro/promoted stack = 18 pass, 2 fail due to duplicated RT-006 stack-gate failures. Focused semantic/API/export stack = 57 pass, 0 fail. Full suite: `npm test` = 338 tests, 326 pass, 1 fail, 11 skipped.
+- Round-9 confirmation update: `node --test tests/red-team/phase-b-b11-capability-export-repro.mjs tests/unit/phase-b-b11-capability-export-repro.test.mjs` = 8 pass, 0 fail. All six B11 repro/promoted stack = 20 pass, 0 fail. Focused semantic/API/export stack = 57 pass, 0 fail. Full suite: `npm test` = 338 tests, 327 pass, 0 fail, 11 skipped.
+
+Direct FusekiClient chokepoint probe:
+- Without capability, `putGraph`, `insertTurtle`, `clearGraph`, `copyGraph`, and `update` all reject relationships-family writes with `GraphWritePolicyError` / `governed_relationship_graph_reserved` before network write.
+- A look-alike object `{ owner: "RelationshipAssertionStore" }` is rejected.
+- A capability minted via direct import of `createRelationshipGraphWriteCapability()` is accepted and permits `FusekiClient.putGraph()` to make the network write.
+- After the factory removal, direct import of `RELATIONSHIP_GRAPH_WRITE_CAPABILITY` from `services/semantic-store/src/relationship-graph-capability.js` is accepted and permits `FusekiClient.putGraph()` to make the network write.
+- After the singleton deletion, a non-store temporary module named `not-real-relationship-assertion-store.js` can import `registerRelationshipGraphWriteCapability()` from `named-graphs.js`; the guard checks `/relationship-assertion-store\.js/` against `Error().stack`, accepts the spoofed filename, registers the attacker's frozen object, and direct `FusekiClient.putGraph()` with that object reaches the network write.
+- After the lexical-capture fix, `rg -n "registerRelationshipGraphWriteCapability|createRelationshipGraphWriteCapability|relationshipAssertionStoreGraphWriteCapability|RELATIONSHIP_GRAPH_WRITE_CAPABILITY|Error\\(\\)\\.stack|\\.stack|calledFromRelationship|relationship-graph-capability" services/semantic-store/src` has no source matches; only `createGovernedRelationshipAssertionStore()` remains as the safe construction entrypoint. The stack-spoof repro now fails closed because there is no exported registration function to import.
+
+| Finding ID | Severity | Risk | Owner | Mitigation | Status |
+|---|---|---|---|---|---|
+| SB-B-RT-006 | P0 | The relationship graph capability authority surface allowed non-store code to obtain or register a capability through direct factory/singleton exports or a spoofable stack-gated registration function. Final regression: run `node --test tests/red-team/phase-b-b11-capability-export-repro.mjs`. The repro verifies no mint/getter/token/register export, no singleton module import, no public capability or gateway leak from the safe factory, look-alike object rejection, and stack-spoof registration failure. | Kevin; Angela | Closed by lexical capture: keep the WeakSet and its only `.add()` in `named-graphs.js` lexical scope inside `createGovernedRelationshipAssertionStore()`, inject the registered object into `RelationshipAssertionStore` private fields, and expose only the safe store factory. Avoid future exported registration, stack/filename gates, or singleton token modules. | Closed - lexical-capture capability architecture confirmed |

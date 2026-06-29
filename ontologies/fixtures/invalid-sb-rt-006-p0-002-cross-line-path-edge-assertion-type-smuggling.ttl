@@ -1,0 +1,125 @@
+@prefix pharm: <https://w3id.org/pharmaops/ontology/core#> .
+@prefix pharmrel: <https://w3id.org/pharmaops/ontology/relationship#> .
+@prefix pharment: <https://example.pharmaops.local/tenant/acme/entity/> .
+@prefix pharmrelobj: <https://example.pharmaops.local/tenant/acme/relationship/> .
+@prefix pharmpath: <https://example.pharmaops.local/tenant/acme/path/> .
+@prefix pharmwarn: <https://example.pharmaops.local/tenant/acme/warning/> .
+@prefix pharmev: <https://example.pharmaops.local/tenant/acme/evidence/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+pharmrelobj:rt006-p0-002-cross-line-smuggled-model-edge
+    a pharm:RelationshipAssertion ;
+    pharm:canonicalId "pharmrelobj:rt006-p0-002-cross-line-smuggled-model-edge" ;
+    pharm:entityType "RelationshipAssertion" ;
+    pharm:preferredLabel "Invalid path edge with cross-line smuggled model assertion type" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:assertionType "human_curated",
+        # First split object-list.
+        "model_suggested" ;
+    pharm:hasAssertionType "human_curated",
+        # Second split object-list in the same edge.
+        "model_suggested" ;
+    pharm:modelName "fixture-linker" ;
+    pharm:modelVersion "0.0.1" ;
+    pharm:modelRationale "Creed RT-006 cross-line object-list smuggling fixture." ;
+    pharm:hasRelationshipClass "mechanistic" ;
+    pharm:relationshipDirectionality "directed" ;
+    pharm:relationshipPolarity "positive" ;
+    pharm:confidenceScore 0.94 ;
+    pharm:confidenceBand "high" ;
+    pharm:hasEvidenceStrength "moderate" ;
+    pharm:hasEvidence pharmev:rt006-p0-002 ;
+    pharm:reviewStatus "approved" ;
+    pharm:reviewedBy "curator:fixture" ;
+    pharm:reviewedAt "2026-06-27T14:12:00Z"^^xsd:dateTime ;
+    pharm:dataLicenseClass "open_materializable" ;
+    pharm:releaseId "not_released" ;
+    pharm:createdBy "curator:fixture" ;
+    pharm:createdAt "2026-06-27T14:12:00Z"^^xsd:dateTime ;
+    pharm:updatedAt "2026-06-27T14:12:00Z"^^xsd:dateTime ;
+    pharm:hasCausalClaimStatus "not_causal" ;
+    pharm:usesRestrictedEvidence false ;
+    pharm:exportAuthorizationStatus "authorized" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:relationshipSubject pharment:rt006-p0-002-source ;
+    pharm:relationshipPredicate pharmrel:compound_has_target ;
+    pharm:relationshipObject pharment:rt006-p0-002-target ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:rt006-p0-002-edge" ;
+        pharm:activityType "approve" ;
+        pharm:activityId "activity:rt006-p0-002-edge" ;
+        pharm:methodType "reviewer_decision" ;
+        pharm:confidenceType "reviewer_decision" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:rt006-p0-002-edge" ;
+        pharm:actor "curator:fixture" ;
+        pharm:sourceName "Creed RT-006 fixture" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T14:12:00Z"^^xsd:dateTime
+    ] .
+
+pharmpath:rt006-p0-002-weak-link
+    a pharm:WeakLinkAssessment ;
+    pharm:canonicalId "pharmpath:rt006-p0-002-weak-link" ;
+    pharm:entityType "WeakLinkAssessment" ;
+    pharm:preferredLabel "RT-006 P0-002 weakest link" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:rt006-p0-002-weak-link" ;
+        pharm:activityType "validate" ;
+        pharm:activityId "activity:rt006-p0-002-weak-link" ;
+        pharm:methodType "rule" ;
+        pharm:confidenceType "rule_score" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:rt006-p0-002-weak-link" ;
+        pharm:actor "validator:semantic-bridge" ;
+        pharm:sourceName "Creed RT-006 fixture" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T14:12:00Z"^^xsd:dateTime
+    ] .
+
+pharmpath:rt006-p0-002-released-path
+    a pharm:RelationshipPath ;
+    pharm:canonicalId "pharmpath:rt006-p0-002-released-path" ;
+    pharm:entityType "RelationshipPath" ;
+    pharm:preferredLabel "Invalid released path with cross-line smuggled model edge" ;
+    pharm:lifecycleStatus "released" ;
+    pharm:releaseMembership "graph:tenant:acme:release:2026.1:canonical" ;
+    pharm:relationshipPathStart pharment:rt006-p0-002-source ;
+    pharm:relationshipPathEnd pharment:rt006-p0-002-target ;
+    pharm:relationshipPathEdge pharmrelobj:rt006-p0-002-cross-line-smuggled-model-edge ;
+    pharm:hasPathConfidence 0.94 ;
+    pharm:pathConfidenceBand "high" ;
+    pharm:hasWeakestLink pharmpath:rt006-p0-002-weak-link ;
+    pharm:pathStatus "released" ;
+    pharm:releaseId "2026.1" ;
+    pharm:validationReportId "validation:rt006-p0-002" ;
+    pharm:usesRestrictedEvidence false ;
+    pharm:pathContainsBlockedEdge false ;
+    pharm:pathContainsUnreviewedModelSuggestedEdge false ;
+    pharm:exportAuthorizationStatus "authorized" ;
+    pharm:hasRelationshipWarning pharmwarn:rt006-p0-002 ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:rt006-p0-002-path" ;
+        pharm:activityType "release" ;
+        pharm:activityId "activity:rt006-p0-002-path" ;
+        pharm:methodType "release_process" ;
+        pharm:confidenceType "rule_score" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "released" ;
+        pharm:auditEventId "audit:rt006-p0-002-path" ;
+        pharm:actor "release-manager:fixture" ;
+        pharm:sourceName "Creed RT-006 fixture" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T14:12:00Z"^^xsd:dateTime
+    ] .
+

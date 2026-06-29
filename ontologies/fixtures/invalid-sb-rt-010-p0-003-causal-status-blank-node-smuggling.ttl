@@ -1,0 +1,57 @@
+@prefix pharm: <https://w3id.org/pharmaops/ontology/core#> .
+@prefix pharmrel: <https://w3id.org/pharmaops/ontology/relationship#> .
+@prefix pharment: <https://example.pharmaops.local/tenant/acme/entity/> .
+@prefix pharmrelobj: <https://example.pharmaops.local/tenant/acme/relationship/> .
+@prefix pharmev: <https://example.pharmaops.local/tenant/acme/evidence/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+pharmrelobj:rt010-p0-003-causal-status-blank-node-smuggling
+    a pharm:RelationshipAssertion ;
+    pharm:canonicalId "pharmrelobj:rt010-p0-003-causal-status-blank-node-smuggling" ;
+    pharm:entityType "RelationshipAssertion" ;
+    pharm:preferredLabel "Invalid blank node causal status" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:assertionType "human_curated" ;
+    pharm:hasAssertionType "human_curated" ;
+    pharm:hasRelationshipClass "safety" ;
+    pharm:relationshipDirectionality "directed" ;
+    pharm:relationshipPolarity "positive" ;
+    pharm:confidenceScore 0.75 ;
+    pharm:confidenceBand "medium" ;
+    pharm:hasEvidenceStrength "moderate" ;
+    pharm:hasEvidence pharmev:rt010-p0-003 ;
+    pharm:reviewStatus "approved" ;
+    pharm:reviewedBy "curator:fixture" ;
+    pharm:reviewedAt "2026-06-27T16:25:00Z"^^xsd:dateTime ;
+    pharm:dataLicenseClass "open_materializable" ;
+    pharm:releaseId "not_released" ;
+    pharm:createdBy "curator:fixture" ;
+    pharm:createdAt "2026-06-27T16:25:00Z"^^xsd:dateTime ;
+    pharm:updatedAt "2026-06-27T16:25:00Z"^^xsd:dateTime ;
+    pharm:safetyLimitationId "safety-limit:rt010-p0-003" ;
+    pharm:knownLimitation "Safety signal is non-causal unless separately reviewed." ;
+    pharm:hasCausalClaimStatus [ rdf:value "causal_claim_reviewed" ] ;
+    pharm:usesRestrictedEvidence false ;
+    pharm:exportAuthorizationStatus "authorized" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:relationshipSubject pharment:rt010-p0-003-product ;
+    pharm:relationshipPredicate pharmrel:product_has_adverse_event ;
+    pharm:relationshipObject pharment:rt010-p0-003-event ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:rt010-p0-003" ;
+        pharm:activityType "approve" ;
+        pharm:activityId "activity:rt010-p0-003" ;
+        pharm:methodType "reviewer_decision" ;
+        pharm:confidenceType "reviewer_decision" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:rt010-p0-003" ;
+        pharm:actor "curator:fixture" ;
+        pharm:sourceName "Creed RT-010 fixture" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T16:25:00Z"^^xsd:dateTime
+    ] .
+

@@ -137,16 +137,12 @@ test("P5-RT-001 export drops rows missing regulated provenance, vocabulary, arti
   assert.equal(exported.invalid_record_count, 1);
   assert.deepEqual(missingExportFields(releasedResult({
     provenance_id: undefined,
-    source_vocabulary_version: undefined,
-    target_vocabulary_version: undefined,
     artifact_hash: undefined,
     license_policy_id: undefined
   })), [
     "provenance_id",
     "artifact_hash",
-    "license_policy_id",
-    "source_vocabulary_version",
-    "target_vocabulary_version"
+    "license_policy_id"
   ]);
 });
 
@@ -160,22 +156,18 @@ test("P5-RT-002 export manifest digest changes when regulated row content change
     ...base,
     candidateResults: [releasedResult({
       id: "same-id",
-      source_vocabulary_version: "rxnorm:2026-01",
-      target_vocabulary_version: "mesh:2026-01",
-      provenance_id: "pharmprov:first",
+      provenance_id: "pharmprov:internal:first",
       artifact_hash: "sha256:1111111111111111111111111111111111111111111111111111111111111111",
-      license_policy_id: "license-policy:first"
+      license_policy_id: "license-policy:internal:first"
     })]
   });
   const second = buildAuthorizedExport({
     ...base,
     candidateResults: [releasedResult({
       id: "same-id",
-      source_vocabulary_version: "rxnorm:2026-02",
-      target_vocabulary_version: "mesh:2026-02",
-      provenance_id: "pharmprov:second",
+      provenance_id: "pharmprov:internal:second",
       artifact_hash: "sha256:2222222222222222222222222222222222222222222222222222222222222222",
-      license_policy_id: "license-policy:second"
+      license_policy_id: "license-policy:internal:second"
     })]
   });
 
@@ -221,19 +213,15 @@ function releasedResult(overrides = {}) {
     id: "result",
     tenant_id: "tenant-a",
     environment: "prod",
-    assertion_type: "canonical",
+    assertion_type: "evidence",
     release_id: "release-2026-01",
     lifecycle_status: "released",
     permitted_uses: ["search", "export"],
     license_status: "valid",
-    provenance_id: "pharmprov:export",
-    source_vocabulary: "rxnorm",
-    source_vocabulary_version: "rxnorm:2026-01",
-    target_vocabulary: "mesh",
-    target_vocabulary_version: "mesh:2026-01",
+    provenance_id: "pharmprov:internal:export",
     artifact_hash: "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    license_classification: "open_materializable",
-    license_policy_id: "license-policy:open",
+    license_classification: "internal",
+    license_policy_id: "license-policy:internal:authz-fixture",
     ...overrides
   };
 }

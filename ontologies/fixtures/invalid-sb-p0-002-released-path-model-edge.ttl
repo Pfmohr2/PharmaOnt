@@ -1,0 +1,118 @@
+@prefix pharm: <https://w3id.org/pharmaops/ontology/core#> .
+@prefix pharmrel: <https://w3id.org/pharmaops/ontology/relationship#> .
+@prefix pharment: <https://example.pharmaops.local/tenant/acme/entity/> .
+@prefix pharmrelobj: <https://example.pharmaops.local/tenant/acme/relationship/> .
+@prefix pharmpath: <https://example.pharmaops.local/tenant/acme/path/> .
+@prefix pharmwarn: <https://example.pharmaops.local/tenant/acme/warning/> .
+@prefix pharmev: <https://example.pharmaops.local/tenant/acme/evidence/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+pharmrelobj:p0-002-model-edge
+    a pharm:RelationshipAssertion ;
+    pharm:canonicalId "pharmrelobj:p0-002-model-edge" ;
+    pharm:entityType "RelationshipAssertion" ;
+    pharm:preferredLabel "Invalid path model edge" ;
+    pharm:lifecycleStatus "proposed" ;
+    pharm:assertionType "model_suggested" ;
+    pharm:hasAssertionType "model_suggested" ;
+    pharm:modelName "fixture-linker" ;
+    pharm:modelVersion "0.0.1" ;
+    pharm:modelRationale "Creed counterexample: path summary booleans hide this edge." ;
+    pharm:hasRelationshipClass "mechanistic" ;
+    pharm:relationshipDirectionality "directed" ;
+    pharm:relationshipPolarity "positive" ;
+    pharm:confidenceScore 0.94 ;
+    pharm:confidenceBand "high" ;
+    pharm:hasEvidenceStrength "moderate" ;
+    pharm:hasEvidence pharmev:p0-002 ;
+    pharm:reviewStatus "proposed" ;
+    pharm:dataLicenseClass "open_materializable" ;
+    pharm:releaseId "not_released" ;
+    pharm:createdBy "model:fixture-linker" ;
+    pharm:createdAt "2026-06-27T12:55:00Z"^^xsd:dateTime ;
+    pharm:updatedAt "2026-06-27T12:55:00Z"^^xsd:dateTime ;
+    pharm:hasCausalClaimStatus "not_causal" ;
+    pharm:usesRestrictedEvidence false ;
+    pharm:exportAuthorizationStatus "authorized" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:relationshipSubject pharment:p0-002-source ;
+    pharm:relationshipPredicate pharmrel:compound_has_target ;
+    pharm:relationshipObject pharment:p0-002-target ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:p0-002-edge" ;
+        pharm:activityType "suggest" ;
+        pharm:activityId "activity:p0-002-edge" ;
+        pharm:methodType "model" ;
+        pharm:confidenceType "model_score" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:p0-002-edge" ;
+        pharm:actor "model:fixture-linker" ;
+        pharm:sourceName "Creed counterexample fixture" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T12:55:00Z"^^xsd:dateTime
+    ] .
+
+pharmpath:p0-002-weak-link
+    a pharm:WeakLinkAssessment ;
+    pharm:canonicalId "pharmpath:p0-002-weak-link" ;
+    pharm:entityType "WeakLinkAssessment" ;
+    pharm:preferredLabel "P0-002 weakest link" ;
+    pharm:lifecycleStatus "approved" ;
+    pharm:releaseMembership "graph:tenant:acme:data:canonical:working" ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:p0-002-weak-link" ;
+        pharm:activityType "validate" ;
+        pharm:activityId "activity:p0-002-weak-link" ;
+        pharm:methodType "rule" ;
+        pharm:confidenceType "rule_score" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "not_released" ;
+        pharm:auditEventId "audit:p0-002-weak-link" ;
+        pharm:actor "validator:semantic-bridge" ;
+        pharm:sourceName "Creed counterexample fixture" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T12:55:00Z"^^xsd:dateTime
+    ] .
+
+pharmpath:p0-002-released-path
+    a pharm:RelationshipPath ;
+    pharm:canonicalId "pharmpath:p0-002-released-path" ;
+    pharm:entityType "RelationshipPath" ;
+    pharm:preferredLabel "Invalid released path with model edge" ;
+    pharm:lifecycleStatus "released" ;
+    pharm:releaseMembership "graph:tenant:acme:release:2026.1:canonical" ;
+    pharm:relationshipPathStart pharment:p0-002-source ;
+    pharm:relationshipPathEnd pharment:p0-002-target ;
+    pharm:relationshipPathEdge pharmrelobj:p0-002-model-edge ;
+    pharm:hasPathConfidence 0.94 ;
+    pharm:pathConfidenceBand "high" ;
+    pharm:hasWeakestLink pharmpath:p0-002-weak-link ;
+    pharm:pathStatus "released" ;
+    pharm:releaseId "2026.1" ;
+    pharm:validationReportId "validation:p0-002" ;
+    pharm:usesRestrictedEvidence false ;
+    pharm:pathContainsBlockedEdge false ;
+    pharm:pathContainsUnreviewedModelSuggestedEdge false ;
+    pharm:exportAuthorizationStatus "authorized" ;
+    pharm:hasRelationshipWarning pharmwarn:p0-002 ;
+    pharm:hasProvenance [
+        a pharm:ProvenanceRecord ;
+        pharm:provenanceId "pharmprov:p0-002-path" ;
+        pharm:activityType "release" ;
+        pharm:activityId "activity:p0-002-path" ;
+        pharm:methodType "release_process" ;
+        pharm:confidenceType "rule_score" ;
+        pharm:environmentName "test" ;
+        pharm:tenantId "acme" ;
+        pharm:releaseStatus "released" ;
+        pharm:auditEventId "audit:p0-002-path" ;
+        pharm:actor "release-manager:fixture" ;
+        pharm:sourceName "Creed counterexample fixture" ;
+        pharm:sourceVersion "2026-06-27" ;
+        pharm:generatedAtTime "2026-06-27T12:55:00Z"^^xsd:dateTime
+    ] .
